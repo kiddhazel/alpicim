@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Ana pencere ve ayrılmış panel pencereleri için izinler. Ağ ve dosya başlatma Rust komutlarıyla denetlenir.",
+  "windows": ["main", "panel-*"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "store:default",
+    "dialog:allow-open",
+    "opener:default"
+  ]
+}

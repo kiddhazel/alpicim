@@ -1,0 +1,66 @@
+[package]
+name = "alpicim"
+version = "0.1.0"
+description = "Kişisel masaüstü kontrol merkezi"
+authors = ["Alperen"]
+edition = "2021"
+rust-version = "1.80"
+
+[lib]
+# Tauri 2 şablonundaki adlandırma: Windows'ta bin ile çakışmaması için "_lib" eki.
+name = "alpicim_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# "unstable": pencere içine alt webview ekleme (uygulama içi tarayıcı) için gerekli.
+tauri = { version = "2", features = ["tray-icon", "unstable"] }
+tauri-plugin-store = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-opener = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["native-tls", "gzip", "brotli"] }
+keyring = { version = "3", features = ["windows-native"] }
+url = "2"
+encoding_rs = "0.8"
+png = "0.17"
+base64 = "0.22"
+# Reklam engelleyici (Brave adblock-rust). "single-thread" kapalı → Engine: Send + Sync.
+adblock = { version = "0.13.3", default-features = false, features = ["embedded-domain-resolver", "full-regex-handling"] }
+
+[target.'cfg(windows)'.dependencies]
+# Tauri/wry'nin zaten kullandığı sürüm (yeni indirme gerektirmez): YouTube Music sessize alma (ICoreWebView2_8).
+webview2-com = "0.39"
+windows = { version = "0.62", features = [
+  "Foundation",
+  "Foundation_Collections",
+  "Media_Control",
+  "Win32_Foundation",
+  "Win32_Graphics_Dwm",
+  "Win32_Graphics_Gdi",
+  "Win32_Security",
+  "Win32_Storage_FileSystem",
+  "Win32_System_Com",
+  "Win32_System_Com_StructuredStorage",
+  "Win32_System_DataExchange",
+  "Win32_System_LibraryLoader",
+  "Win32_System_Memory",
+  "Win32_System_Registry",
+  "Win32_System_SystemInformation",
+  "Win32_System_Threading",
+  "Win32_UI_Controls",
+  "Win32_UI_Input_KeyboardAndMouse",
+  "Win32_UI_Shell",
+  "Win32_UI_Shell_Common",
+  "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.release]
+# Boyut için iyileştirme. Not: Rust 1.99 + Windows'ta `panic = "abort"`, `lto = true` ve `strip = true`
+# birlikteyken proc-macro (zerovec_derive) yüklenemiyordu (E0463); bu yüzden kapalı tutuluyor.
+codegen-units = 1
+opt-level = "s"

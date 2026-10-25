@@ -1,0 +1,38 @@
+# Bağımlılıklar ve derleme çıktıları
+node_modules/
+dist/
+src-tauri/target/
+src-tauri/gen/schemas/
+*.tsbuildinfo
+
+# Günlükler
+logs/
+*.log
+npm-debug.log*
+
+# Ortam ve gizli bilgiler — API anahtarları asla depoya girmez
+# (uygulama anahtarları Windows Kimlik Bilgisi Yöneticisi'nde tutar; depoda anahtar dosyası yoktur)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+
+# Yerel uygulama verisi kopyaları (normalde %APPDATA% altındadır; elle kopyalanırsa depoya girmesin)
+alpicim.json
+layout.json
+launcher.json
+clipboard.json
+adblock.json
+
+# Makineye özel Claude Code ayarları (paylaşılan .claude/launch.json depoda kalır)
+.claude/settings.local.json
+
+# Editör / işletim sistemi
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
