@@ -5,17 +5,24 @@ import {
   Clock3,
   CloudSun,
   Coins,
+  Cookie,
+  Smile,
   Cpu,
   Hourglass,
   Link2,
   ListChecks,
   NotebookPen,
+  SlidersHorizontal,
   Music2,
+  Image as ImageIcon,
+  ScrollText,
   Newspaper,
   StickyNote,
   Star,
   Timer,
   TrendingUp,
+  Clapperboard,
+  MonitorCog,
 } from 'lucide-react';
 import { CalendarWidget, calendarDefaults, sanitizeCalendar } from './basic/CalendarWidget';
 import { LinksSettings, LinksWidget, linksDefaults, sanitizeLinks } from './basic/LinksWidget';
@@ -27,12 +34,19 @@ import { FavoritesSettings, FavoritesWidget, favoritesDefaults, sanitizeFavorite
 import { MarketsWidget } from './data/MarketsWidget';
 import { MusicWidget } from './data/MusicWidget';
 import { NewsSettings, NewsWidget, newsDefaults, sanitizeNewsWidget } from './data/NewsWidget';
+import { GpuWidget, gpuDefaults, sanitizeGpu } from './data/GpuWidget';
 import { SystemSettings, SystemWidget, sanitizeSystem, systemDefaults } from './data/SystemWidget';
+import { MixerWidget } from './data/MixerWidget';
 import { WindowsWidget } from './data/WindowsWidget';
 import { ConverterWidget, converterDefaults, sanitizeConverter } from './daily/ConverterWidget';
 import { CountdownSettings, CountdownWidget, countdownDefaults, sanitizeCountdown } from './daily/CountdownWidget';
 import { HabitsSettings, HabitsWidget, habitsDefaults, sanitizeHabits } from './daily/HabitsWidget';
 import { QuickNoteWidget } from './daily/QuickNoteWidget';
+import { FortuneWidget } from './fun/FortuneWidget';
+import { MoodWidget } from './fun/MoodWidget';
+import { WatchlistWidget } from './fun/WatchlistWidget';
+import { PhotoWidget, photoDefaults, sanitizePhoto } from './photo/PhotoWidget';
+import { ProverbWidget } from './proverbs/ProverbWidget';
 import type { WidgetDefinition, WidgetType } from './types';
 import { WeatherSettings, WeatherWidget, sanitizeWeather, weatherDefaults } from './weather/WeatherWidget';
 
@@ -234,6 +248,17 @@ export const WIDGETS: readonly WidgetDefinition<Record<string, unknown>>[] = [
     Component: ConverterWidget,
   }),
   def({
+    type: 'mixer',
+    titleKey: 'widgets.mixer.title',
+    descriptionKey: 'widgets.mixer.description',
+    icon: SlidersHorizontal,
+    defaultSize: { w: 4, h: 3 },
+    limits: { minW: 3, minH: 2, maxW: 8, maxH: 8 },
+    defaults: {},
+    sanitize: empty,
+    Component: MixerWidget,
+  }),
+  def({
     type: 'quicknote',
     titleKey: 'widgets.quicknote.title',
     descriptionKey: 'widgets.quicknote.description',
@@ -243,6 +268,72 @@ export const WIDGETS: readonly WidgetDefinition<Record<string, unknown>>[] = [
     defaults: {},
     sanitize: empty,
     Component: QuickNoteWidget,
+  }),
+  def({
+    type: 'fortune',
+    titleKey: 'widgets.fortune.title',
+    descriptionKey: 'widgets.fortune.description',
+    icon: Cookie,
+    defaultSize: { w: 3, h: 3 },
+    limits: { minW: 2, minH: 2, maxW: 6, maxH: 6 },
+    defaults: {},
+    sanitize: empty,
+    Component: FortuneWidget,
+  }),
+  def({
+    type: 'mood',
+    titleKey: 'widgets.mood.title',
+    descriptionKey: 'widgets.mood.description',
+    icon: Smile,
+    defaultSize: { w: 4, h: 4 },
+    limits: { minW: 3, minH: 2, maxW: 8, maxH: 8 },
+    defaults: {},
+    sanitize: empty,
+    Component: MoodWidget,
+  }),
+  def({
+    type: 'photo',
+    titleKey: 'widgets.photo.title',
+    descriptionKey: 'widgets.photo.description',
+    icon: ImageIcon,
+    defaultSize: { w: 4, h: 3 },
+    limits: { minW: 3, minH: 2, maxW: 12, maxH: 8 },
+    defaults: photoDefaults,
+    sanitize: sanitizePhoto,
+    Component: PhotoWidget,
+  }),
+  def({
+    type: 'proverb',
+    titleKey: 'widgets.proverb.title',
+    descriptionKey: 'widgets.proverb.description',
+    icon: ScrollText,
+    defaultSize: { w: 4, h: 3 },
+    limits: { minW: 3, minH: 2, maxW: 8, maxH: 6 },
+    defaults: {},
+    sanitize: empty,
+    Component: ProverbWidget,
+  }),
+  def({
+    type: 'watchlist',
+    titleKey: 'widgets.watchlist.title',
+    descriptionKey: 'widgets.watchlist.description',
+    icon: Clapperboard,
+    defaultSize: { w: 5, h: 5 },
+    limits: { minW: 4, minH: 3, maxW: 10, maxH: 10 },
+    defaults: {},
+    sanitize: empty,
+    Component: WatchlistWidget,
+  }),
+  def({
+    type: 'gpu',
+    titleKey: 'widgets.gpu.title',
+    descriptionKey: 'widgets.gpu.description',
+    icon: MonitorCog,
+    defaultSize: { w: 4, h: 3 },
+    limits: { minW: 3, minH: 2, maxW: 8, maxH: 5 },
+    defaults: gpuDefaults,
+    sanitize: sanitizeGpu,
+    Component: GpuWidget,
   }),
 ];
 

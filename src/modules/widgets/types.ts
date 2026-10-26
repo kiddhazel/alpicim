@@ -20,7 +20,14 @@ export type WidgetType =
   | 'habits'
   | 'countdown'
   | 'converter'
-  | 'quicknote';
+  | 'quicknote'
+  | 'mixer'
+  | 'fortune'
+  | 'mood'
+  | 'photo'
+  | 'proverb'
+  | 'watchlist'
+  | 'gpu';
 
 /** Kalıcı widget kaydı: ızgara konumu + tür + widget'a özel ayarlar. */
 export interface WidgetInstance extends GridItem {

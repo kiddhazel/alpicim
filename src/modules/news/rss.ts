@@ -202,3 +202,63 @@ export function stableId(input: string): string {
   }
   return `n${(hash >>> 0).toString(36)}${input.length.toString(36)}`;
 }
+
+export interface PodcastEpisodeRaw {
+  id: string;
+  title: string;
+  audioUrl: string;
+  publishedAt: number | null;
+  durationSec: number | null;
+  summary: string;
+}
+
+export interface PodcastFeed {
+  title: string;
+  image: string;
+  episodes: PodcastEpisodeRaw[];
+}
+
+/** "1:02:03", "12:30" veya "754" biçimli süreyi saniyeye çevirir. */
+export function parseDuration(value: string): number | null {
+  const v = value.trim();
+  if (!/^\d+(:\d{1,2}){0,2}$/.test(v)) return null;
+  const parts = v.split(':').map(Number);
+  const sec = parts.reduce((acc, n) => acc * 60 + n, 0);
+  return sec > 0 ? sec : null;
+}
+
+/** Podcast RSS'i: <enclosure> sesi, itunes:duration ve itunes:image okunur (ad alanı öneki kaldırılmıştır). */
+export function parsePodcast(xml: string): PodcastFeed {
+  let doc: Node;
+  try {
+    doc = parser.parse(xml) as Node;
+  } catch (err) {
+    throw new FeedParseError(err instanceof Error ? err.message : 'XML okunamadı');
+  }
+  const channel = asNode(asNode(doc.rss)?.channel);
+  if (!channel) throw new FeedParseError('Podcast RSS akışı değil');
+  let image = '';
+  for (const c of Array.isArray(channel.image) ? channel.image : [channel.image]) {
+    const n = asNode(c);
+    const found = typeof n?.['@_href'] === 'string' ? n['@_href'] : text(n?.url);
+    if (found) image = found.trim();
+    if (image) break;
+  }
+  const episodes: PodcastEpisodeRaw[] = [];
+  for (const raw of asArray(channel.item).slice(0, 200)) {
+    const enclosure = asNode(Array.isArray(raw.enclosure) ? raw.enclosure[0] : raw.enclosure);
+    const audioUrl = typeof enclosure?.['@_url'] === 'string' ? enclosure['@_url'].trim() : '';
+    const title = cleanText(text(raw.title));
+    if (!audioUrl || !title || !/^https?:\/\//i.test(audioUrl)) continue;
+    const guid = text(raw.guid).trim() || audioUrl;
+    episodes.push({
+      id: stableId(guid),
+      title,
+      audioUrl,
+      publishedAt: parseDate(text(raw.pubDate)),
+      durationSec: parseDuration(text(raw.duration)),
+      summary: makeSummary(text(raw.description) || text(raw.summary), title, ''),
+    });
+  }
+  return { title: cleanText(text(channel.title)), image: /^https:\/\//i.test(image) ? image : '', episodes };
+}

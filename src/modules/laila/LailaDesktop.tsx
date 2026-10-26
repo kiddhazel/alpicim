@@ -1,23 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
+import { usePersistentState } from '../../shared/lib/usePersistentState';
+import { BOND_KEY, DEFAULT_BOND, sanitizeBond, type Bond } from './bond';
 import { line, pick } from './brain';
+import { landingLedge, matchLedge, pickJumpTarget, usableLedges, type Ledge } from './ledges';
 import { lailaService, type LailaGeometry } from './lailaService';
-import { frameUrls, SPRITE_H, SPRITE_W, type FrameId } from './sprite';
+import { currentHoliday } from '../fx/holidays';
+import { accessoryFor, frameUrls, SPRITE_H, SPRITE_W, type FrameId } from './sprite';
 
 /**
  * Laila'nın masaüstü hâli: birincil monitörün en altında (görev çubuğu üstünde) gezinen saydam pencere.
  * Konumlandırma fiziksel piksel cinsindendir; pencere yalnız konuşma balonu varken büyür.
  */
 
-const SCALE = 3;
-const SPRITE_LW = SPRITE_W * SCALE; // 72
-const SPRITE_LH = SPRITE_H * SCALE; // 96
+const SCALE = 2;
+const SPRITE_LW = SPRITE_W * SCALE; // 48
+const SPRITE_LH = SPRITE_H * SCALE; // 64
 const BIG_LW = 240;
-const BIG_LH = 170;
-const SPEED = 45; // mantıksal px/sn
+const BIG_LH = 150;
+const SPEED = 30; // mantıksal px/sn
 const TICK_MS = 40;
 const CLIMB_MS = 800;
 const BUBBLE_MS = 5000;
+const LEDGE_REFRESH_MS = 2000;
+const JUMP_MS = 700;
 
 type Mode = 'walk' | 'idle' | 'wave';
 
@@ -38,6 +44,7 @@ export function LailaDesktop() {
   useEffect(() => {
     let cancelled = false;
     let timer: number | undefined;
+    let ledgeTimer: number | undefined;
 
     void lailaService.geometry().then((geo: LailaGeometry) => {
       if (cancelled) return;
@@ -73,6 +80,41 @@ export function LailaDesktop() {
       };
       let bubbleText: string | null = null;
 
+      // Pencere çıkıntıları (salt okunur): üstüne zıplayıp yürüyebilir, ucundan düşebilir.
+      let ledges: Ledge[] = [];
+      let surface: Ledge | null = null;
+      let nextJump = phaseStart + rand(8000, 16_000);
+      let jump: { t0: number; x0: number; top0: number; x1: number; top1: number; ledge: Ledge } | null = null;
+      let falling: { vy: number; sinkAfter: boolean } | null = null;
+
+      const startFall = (sinkAfter: boolean) => {
+        surface = null;
+        falling = { vy: 0, sinkAfter };
+        bubbleText = null;
+        bubbleUntil = 0;
+      };
+
+      const refreshLedges = () => {
+        void lailaService
+          .ledges()
+          .then((raw) => {
+            if (cancelled) return;
+            ledges = usableLedges(raw, geo, sw, sh);
+            if (surface && !jump) {
+              const m = matchLedge(surface, ledges, x + sw / 2, 6 * s);
+              if (m) {
+                surface = m;
+                top = m.y - sh;
+              } else {
+                startFall(false); // üzerinde durduğu pencere kımıldadı ya da kayboldu
+              }
+            }
+          })
+          .catch(() => undefined);
+      };
+      refreshLedges();
+      ledgeTimer = window.setInterval(refreshLedges, LEDGE_REFRESH_MS);
+
       api.current.poke = () => {
         const now = performance.now();
         happyUntil = now + 1600;
@@ -103,6 +145,7 @@ export function LailaDesktop() {
         if (phase === 'sink' && top >= bottom) {
           cancelled = true;
           if (timer !== undefined) window.clearInterval(timer);
+          if (ledgeTimer !== undefined) window.clearInterval(ledgeTimer);
           void lailaService.comeBack();
           return;
         }
@@ -116,16 +159,65 @@ export function LailaDesktop() {
             chooseMode(now);
           }
         } else if (phase === 'wander') {
-          if (now - phaseStart > wanderMs) {
-            phase = 'sink';
-            phaseStart = now;
-            bubbleText = null;
-            bubbleUntil = 0;
+          const expired = now - phaseStart > wanderMs;
+          if (jump) {
+            const p = Math.min(1, (now - jump.t0) / JUMP_MS);
+            x = jump.x0 + (jump.x1 - jump.x0) * p;
+            top = jump.top0 + (jump.top1 - jump.top0) * p - 4 * 50 * s * p * (1 - p);
+            if (p >= 1) {
+              x = jump.x1;
+              top = jump.top1;
+              surface = jump.ledge;
+              jump = null;
+              chooseMode(now);
+            }
+          } else if (falling) {
+            const prevFeet = top + sh;
+            falling.vy += 2400 * s * dt;
+            top += falling.vy * dt;
+            x = Math.min(maxX, Math.max(minX, x + dir * 25 * s * dt));
+            const feet = top + sh;
+            const land = falling.sinkAfter ? null : landingLedge(ledges, x + sw / 2, prevFeet, feet);
+            if (land) {
+              surface = land;
+              top = land.y - sh;
+              falling = null;
+              chooseMode(now);
+            } else if (feet >= bottom) {
+              top = bottom - sh;
+              const sinkAfter = falling.sinkAfter;
+              falling = null;
+              if (sinkAfter) {
+                phase = 'sink';
+                phaseStart = now;
+              } else {
+                chooseMode(now);
+              }
+            }
+          } else if (expired) {
+            if (surface) {
+              startFall(true);
+            } else {
+              phase = 'sink';
+              phaseStart = now;
+              bubbleText = null;
+              bubbleUntil = 0;
+            }
           } else {
             if (now >= modeUntil) chooseMode(now);
             if (mode === 'walk') {
               x += dir * SPEED * s * dt;
-              if (x <= minX) {
+              if (surface) {
+                const c = x + sw / 2;
+                if (c < surface.x || c > surface.x + surface.width) {
+                  if (Math.random() < 0.5) {
+                    x = c < surface.x ? surface.x - sw / 2 : surface.x + surface.width - sw / 2;
+                    dir = -dir;
+                  } else {
+                    startFall(false);
+                  }
+                }
+              } else if (x <= minX) {
                 x = minX;
                 dir = 1;
               } else if (x >= maxX) {
@@ -133,7 +225,22 @@ export function LailaDesktop() {
                 dir = -1;
               }
             }
-            if (now >= nextTalk && bubbleText === null) {
+            if (!falling && now >= nextJump && bubbleText === null) {
+              nextJump = now + rand(7000, 16_000);
+              const tgt = pickJumpTarget(ledges, { x, feet: top + sh, spriteW: sw, scale: s }, surface);
+              if (tgt && Math.random() < 0.7) {
+                if (tgt.tx !== x) dir = tgt.tx > x ? 1 : -1;
+                jump = { t0: now, x0: x, top0: top, x1: tgt.tx, top1: tgt.ledge.y - sh, ledge: tgt.ledge };
+                surface = null;
+              }
+            }
+            if (
+              !falling &&
+              !jump &&
+              now >= nextTalk &&
+              bubbleText === null &&
+              top - (bigH - sh) >= geo.y
+            ) {
               bubbleText = line('laila.lines.outsideTalk');
               bubbleUntil = now + BUBBLE_MS;
               nextTalk = now + rand(12_000, 25_000);
@@ -152,14 +259,18 @@ export function LailaDesktop() {
         }
         let f: FrameId = 'stand';
         if (phase === 'wander') {
-          if (now < happyUntil) f = 'happy';
+          if (jump) f = 'happy';
+          else if (falling) f = 'wave';
+          else if (now < happyUntil) f = 'happy';
           else if (mode === 'walk') f = Math.floor(now / 180) % 2 === 0 ? 'stand' : 'walk';
           else if (mode === 'wave') f = 'wave';
           else if (now < blinkUntil) f = 'blink';
         }
 
         // Pencere yerleşimi: balon varken sprite aynı ekran noktasında kalır, pencere büyür.
-        const big = bubbleText !== null;
+        const room = top - (bigH - sh) >= geo.y;
+        const shownBubble = room ? bubbleText : null;
+        const big = shownBubble !== null;
         const w = Math.round(big ? bigW : sw);
         const h = Math.round(big ? bigH : sh);
         let wx = Math.round(x);
@@ -182,13 +293,13 @@ export function LailaDesktop() {
         if (
           shown.frame !== f ||
           shown.flip !== nextFlip ||
-          shown.bubble !== bubbleText ||
+          shown.bubble !== shownBubble ||
           shown.off !== off
         ) {
-          shown = { frame: f, flip: nextFlip, bubble: bubbleText, off };
+          shown = { frame: f, flip: nextFlip, bubble: shownBubble, off };
           setFrame(f);
           setFlip(nextFlip);
-          setBubble(bubbleText);
+          setBubble(shownBubble);
           setOffsetX(off);
         }
       };
@@ -199,10 +310,12 @@ export function LailaDesktop() {
     return () => {
       cancelled = true;
       if (timer !== undefined) window.clearInterval(timer);
+      if (ledgeTimer !== undefined) window.clearInterval(ledgeTimer);
     };
   }, []);
 
-  const urls = frameUrls();
+  const [bond] = usePersistentState<Bond>(BOND_KEY, DEFAULT_BOND, sanitizeBond);
+  const urls = frameUrls(bond.outfit, accessoryFor(currentHoliday()));
   const big = bubble !== null;
 
   return (

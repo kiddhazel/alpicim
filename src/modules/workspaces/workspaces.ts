@@ -61,6 +61,13 @@ const WIDGET_TYPES: readonly WidgetType[] = [
   'countdown',
   'converter',
   'quicknote',
+  'mixer',
+  'fortune',
+  'mood',
+  'photo',
+  'proverb',
+  'watchlist',
+  'gpu',
 ];
 
 function w(id: string, type: WidgetType, x: number, y: number, ww: number, h: number): WidgetInstance {

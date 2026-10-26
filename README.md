@@ -58,6 +58,39 @@ veya bulut altyapısı yoktur.
 - Tema (koyu / açık / sistem), haber ve piyasa yenileme sıklığı, tepsiye gizleme,
   **Entegrasyonlar** (her dış hizmeti aç/kapat, kendi API anahtarlarınızı girin/test edin), DEMO verisi, uygulamadan tamamen çıkış
 
+## v0.9 Eğlence ve araçlar
+
+### Laila (masaüstü evcil hayvanı)
+- Sevgi puanı, okşama ve 5 kıyafet; açlık, eğlence ve enerji ihtiyaçları (besleyerek karşılanır).
+- Müziğe dans eder; göz molası ve su hatırlatmaları (varsayılan kapalı); sabah özeti.
+- Oyunları kendisi oynar (kullanıcının oyunu saklanır); mevsim aksesuarları.
+- Pencerelerin üst kenarında yürür (masaüstü evcil hayvanı).
+
+### Tema
+- Saate ve havaya göre aurora teması (gece yıldızları).
+- Özel gün temaları: Cadılar Bayramı, 29 Ekim, Yılbaşı, Sevgililer Günü, 23 Nisan, Ramazan ve Kurban (2026–2028 için sabit, yaklaşık hicri tablo).
+- Widget arkasında süsler; görev ve pomodoro tamamlanınca konfeti.
+- Ayarlar → Efektler bölümünde önizleme.
+
+### Paneller
+- Oyunlar: 2048, Yılan, Hafıza, Kelime (Türkçe Wordle), Taş-Kâğıt-Makas, XOX, Adam asmaca.
+- Laila'nın odası ve 20 başarım rozeti.
+- Radyo (Radio Browser) ve Podcast (RSS).
+- Oyun kütüphanesi (Steam, Epic, Riot).
+
+### Widget'lar
+- Şans kurabiyesi, Ruh hâli günlüğü, Günün fotoğrafı (Wikimedia).
+- Film/dizi listesi ve çark; Atasözü ve deyim (+ sınav).
+- Alışkanlık serileri, Ses mikseri, GPU (nvidia-smi), takvim .ics aboneliği.
+
+### Araçlar
+- Odak modu.
+- Spotlight (Alt+Space): arama, hesap, birim ve kur çevirme.
+- Hızlı pano (Ctrl+Shift+V): yalnızca kopyalar.
+- Ekran görüntüsü (Resimler\Alpicim); kayıt için Windows'un kendi aracı açılır.
+- Ekran koruyucu (varsayılan kapalı).
+- Oyun modu: oyun açılınca animasyon ve bildirimler durur.
+
 ## v0.8 Laila
 
 - Laila, alt çubukta yürüyen piksel art karakterdir; widget'ların arkasına saklanır, ara sıra çıkıp konuşur.
@@ -379,6 +412,8 @@ Sıfırlamak için uygulamayı kapatıp bu klasörü silin.
 - Gram altın, ons fiyatı ve kurdan hesaplanır; kuyumcu/banka satış fiyatı değildir.
 - Ücretsiz Twelve Data planında bazı semboller/borsalar kapalı olabilir veya veri gecikmeli olabilir.
 - OpenWeatherMap kaynağı birim testleriyle doğrulandı; gerçek bir anahtarla uygulama içinde henüz denenmedi.
+- Ekran kaydı: Alpicim kendi kodlayıcısına sahip değildir. "Ekran kaydı başlat" komutu Windows’un kendi kaydedicisini (`ms-screenclip:?type=recording`, Ekran Alıntısı Aracı) açar; desteklenmeyen sürümlerde Ekran Alıntısı Aracı açılır. Kayıt Alpicim dışında yapılır ve saklanır.
+- Ekran görüntüsü, ses mikseri ve .ics takvim aboneliği birim testlerle ve `cargo check` ile doğrulandı; uygulama içinde (`tauri dev`) henüz denenmedi. Takvim aboneliği yalnızca günlük/haftalık tekrarları (RRULE) destekler; aylık/yıllık tekrarlar gösterilmez.
 - YouTube Music ve reklam engelleme listeleri Entegrasyonlar'da yalnızca listelenir (açma/kapama kendi panel/bölümünden).
 - Bazı resmî sunuculara (ör. TCMB) ilk bağlantı bu ağda ~9 sn sürüyor; ilk açılışta kurların gelmesi birkaç saniye gecikebilir.
 - Release profilinde `lto`, `panic = "abort"` ve `strip` kapalı: Rust 1.99 + Windows'ta proc-macro yükleme hatasına (E0463) yol açıyordu. Paket yine küçük (~1,7 MB kurulum).
@@ -435,6 +470,13 @@ Sıfırlamak için uygulamayı kapatıp bu klasörü silin.
   kaydeden kazanır. Markdown desteği bilinçli olarak küçüktür (tablo, resim, iç içe alıntı yok).
 - Laila, yerel pencerelerin (tarayıcı, YouTube Music, gömülü uygulamalar) altında çizilir; bu pencereler açıkken arkasında kalır.
 - Laila'nın sohbet yanıtları yalnızca anahtar kelimelere göre seçilir; yapay zekâ veya internet bağlantısı yoktur.
+- Ayrılmış panel penceresindeki etkinlikler başarım saymaz.
+- Ekran kaydı yerleşik değildir.
+- Discord sesli kanal widget'ı yapılmadı (Discord RPC izni gerektiriyor).
+- Epic başlatma bağlantısı doğrulanmadı.
+- Alt+Space Windows pencere menüsünü geçersiz kılar (Ayarlar → Kısayollar'dan değiştirilebilir).
+- Takvimde aylık/yıllık tekrarlar gösterilmez.
+- Atasözü anlamları gözden geçirilmeli.
 
 ## Proje yapısı
 

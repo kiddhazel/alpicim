@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { usePersistentState } from '../../shared/lib/usePersistentState';
 import type { Chattiness } from '../laila/brain';
+import { sanitizeScreensaverMinutes, type ScreensaverMinutes } from '../screensaver/saverLogic';
 import { isNewsCategory, type NewsCategory } from '../news/types';
 
 export type ThemeMode = 'dark' | 'light' | 'system';
@@ -21,6 +22,16 @@ export interface Settings {
   startHidden: boolean;
   /** Performans modu: daha seyrek yenileme, animasyon yok, saniyesiz saat. */
   performanceMode: boolean;
+  /** Tam ekran oyun algılanınca oyun modu (animasyonlar/Laila/bildirimler susar). */
+  gameModeAuto: boolean;
+  /** Hava durumuna göre arka plan parçacık efekti. */
+  fxWeather: boolean;
+  /** Görev/odak tamamlanınca konfeti. */
+  fxConfetti: boolean;
+  /** Gün dilimi + hava durumuna göre arka plan rengi ve geceleri yıldızlar. */
+  fxAmbient: boolean;
+  /** Özel gün temaları. */
+  fxHolidays: boolean;
   /** Müzik paneli gizlenince/kapatılınca çalmaya devam etsin mi? (false → ses durur) */
   musicKeepPlaying: boolean;
   /** Açık Windows pencerelerini panellere alma özelliği (deneysel). */
@@ -43,6 +54,16 @@ export interface Settings {
   lailaDesktop: boolean;
   /** Laila ne kadar konuşkan. */
   lailaChat: Chattiness;
+  /** Laila sağlık hatırlatıcıları (göz molası, su). */
+  lailaReminders: boolean;
+  /** Göz molası aralığı (dk). */
+  lailaEyeMin: 20 | 40 | 60;
+  /** Su hatırlatma aralığı (dk). */
+  lailaWaterMin: 60 | 90;
+  /** Boşta kalınca sakin ekran koruyucu sahnesi. */
+  screensaverEnabled: boolean;
+  /** Ekran koruyucu için boşta kalma süresi (dakika: 3/5/10/15). */
+  screensaverMinutes: ScreensaverMinutes;
 }
 
 export const SETTINGS_KEY = 'settings';
@@ -55,6 +76,11 @@ export const DEFAULT_SETTINGS: Settings = {
   showDemoData: false,
   startHidden: false,
   performanceMode: false,
+  gameModeAuto: true,
+  fxWeather: true,
+  fxConfetti: true,
+  fxAmbient: true,
+  fxHolidays: true,
   musicKeepPlaying: true,
   embedEnabled: true,
   launcherFocusExisting: true,
@@ -66,6 +92,11 @@ export const DEFAULT_SETTINGS: Settings = {
   lailaEnabled: true,
   lailaDesktop: true,
   lailaChat: 'normal',
+  lailaReminders: false,
+  lailaEyeMin: 40,
+  lailaWaterMin: 90,
+  screensaverEnabled: false,
+  screensaverMinutes: 5,
 };
 
 export const LIMITS = {
@@ -107,7 +138,17 @@ export function sanitizeSettings(raw: unknown): Settings {
     lailaEnabled: typeof r.lailaEnabled === 'boolean' ? r.lailaEnabled : d.lailaEnabled,
     lailaDesktop: typeof r.lailaDesktop === 'boolean' ? r.lailaDesktop : d.lailaDesktop,
     lailaChat: r.lailaChat === 'quiet' || r.lailaChat === 'normal' || r.lailaChat === 'chatty' ? r.lailaChat : d.lailaChat,
+    lailaReminders: typeof r.lailaReminders === 'boolean' ? r.lailaReminders : d.lailaReminders,
+    lailaEyeMin: r.lailaEyeMin === 20 || r.lailaEyeMin === 40 || r.lailaEyeMin === 60 ? r.lailaEyeMin : d.lailaEyeMin,
+    lailaWaterMin: r.lailaWaterMin === 60 || r.lailaWaterMin === 90 ? r.lailaWaterMin : d.lailaWaterMin,
+    screensaverEnabled: typeof r.screensaverEnabled === 'boolean' ? r.screensaverEnabled : d.screensaverEnabled,
+    screensaverMinutes: sanitizeScreensaverMinutes(r.screensaverMinutes),
     performanceMode: typeof r.performanceMode === 'boolean' ? r.performanceMode : d.performanceMode,
+    gameModeAuto: typeof r.gameModeAuto === 'boolean' ? r.gameModeAuto : d.gameModeAuto,
+    fxWeather: typeof r.fxWeather === 'boolean' ? r.fxWeather : d.fxWeather,
+    fxConfetti: typeof r.fxConfetti === 'boolean' ? r.fxConfetti : d.fxConfetti,
+    fxAmbient: typeof r.fxAmbient === 'boolean' ? r.fxAmbient : d.fxAmbient,
+    fxHolidays: typeof r.fxHolidays === 'boolean' ? r.fxHolidays : d.fxHolidays,
     musicKeepPlaying: typeof r.musicKeepPlaying === 'boolean' ? r.musicKeepPlaying : d.musicKeepPlaying,
     embedEnabled: typeof r.embedEnabled === 'boolean' ? r.embedEnabled : d.embedEnabled,
     launcherFocusExisting:

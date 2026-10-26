@@ -14,6 +14,7 @@ import {
   type ShortcutStatus,
 } from '../display/displayService';
 import { MonitorSelect } from '../display/MonitorSelect';
+import { SCREENSAVER_MINUTES, sanitizeScreensaverMinutes } from '../screensaver/saverLogic';
 import { useSettings } from './settings';
 import { Group, Row } from './SettingsLayout';
 
@@ -106,6 +107,30 @@ export function StartupSettings() {
   );
 }
 
+/** Boşta kalınca gösterilen sakin ekran koruyucu sahnesi. */
+export function ScreensaverSettings() {
+  const [settings, setSettings] = useSettings();
+  return (
+    <Group title={t('screensaver.title')}>
+      <Row label={t('screensaver.enabled')} hint={t('screensaver.enabledHint')}>
+        <Toggle
+          checked={settings.screensaverEnabled}
+          label={t('screensaver.enabled')}
+          onChange={(v) => setSettings((s) => ({ ...s, screensaverEnabled: v }))}
+        />
+      </Row>
+      <Row label={t('screensaver.after')}>
+        <Segmented<string>
+          label={t('screensaver.after')}
+          value={String(settings.screensaverMinutes)}
+          options={SCREENSAVER_MINUTES.map((m) => ({ value: String(m), label: `${m} ${t('settings.minutes')}` }))}
+          onChange={(v) => setSettings((s) => ({ ...s, screensaverMinutes: sanitizeScreensaverMinutes(Number(v)) }))}
+        />
+      </Row>
+    </Group>
+  );
+}
+
 /** Monitörlerin küçük ölçekli yerleşim haritası (hangisi hedef, hangisinde açık). */
 function MonitorMap({ snapshot }: { snapshot: ReturnType<typeof useDisplay>['snapshot'] }) {
   const ms = snapshot.monitors;
@@ -137,6 +162,8 @@ const ACTION_LABELS: Record<ShortcutAction, MessageKey> = {
   toggleVisible: 'shortcuts.toggleVisible',
   toggleFullscreen: 'shortcuts.toggleFullscreen',
   palette: 'shortcuts.palette',
+  quickSearch: 'shortcuts.quickSearch',
+  quickClipboard: 'shortcuts.quickClipboard',
 };
 
 export function ShortcutSettings() {

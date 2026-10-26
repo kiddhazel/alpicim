@@ -4,6 +4,7 @@ import { frankfurterProvider } from '../markets/adapters/frankfurter';
 import { tcmbProvider } from '../markets/adapters/tcmb';
 import { twelveDataProvider } from '../markets/adapters/twelvedata';
 import { DEFAULT_FEEDS } from '../news/defaultFeeds';
+import { testIcs } from '../widgets/basic/icsService';
 import { searchCities } from '../widgets/weather/weatherService';
 import { assertIntegrationEnabled } from './integrationsService';
 import type { IntegrationId } from './registry';
@@ -19,6 +20,7 @@ const TESTS: Partial<Record<IntegrationId, () => Promise<unknown>>> = {
   twelvedata: () => twelveDataProvider.getQuote({ symbol: 'EUR/USD', providerId: 'twelvedata' }),
   openmeteo: () => searchCities('Ankara', 'openmeteo'),
   openweathermap: () => searchCities('Ankara', 'openweathermap'),
+  ics: () => testIcs(),
   googlenews: async () => {
     await assertIntegrationEnabled('googlenews');
     const feed = DEFAULT_FEEDS[0];

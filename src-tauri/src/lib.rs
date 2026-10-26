@@ -2,16 +2,22 @@
 
 mod adblock;
 mod browser;
+mod capture;
 mod clipboard;
 mod display;
 mod embed;
+mod gamelib;
 mod geometry;
+mod gpu;
 mod hotkeys;
+mod idle;
 mod laila;
 mod launcher;
+mod mixer;
 mod music;
 mod net;
 mod providers;
+mod quick;
 mod scanner;
 mod secrets;
 mod system;
@@ -46,6 +52,7 @@ pub fn run() {
             app.manage(launcher::LauncherState::load(config_dir));
             app.manage(net::NetState::new().map_err(std::io::Error::other)?);
             app.manage(display::DisplayState::default());
+            app.manage(gamelib::GameLibState::default());
             app.manage(hotkeys::HotkeyState::default());
 
             let handle = app.handle().clone();
@@ -53,6 +60,8 @@ pub fn run() {
             windows::spawn_autosave(handle.clone());
             hotkeys::spawn(handle.clone());
             clipboard::spawn(handle.clone());
+            idle::spawn(handle.clone());
+            gamelib::spawn(handle.clone());
             // Reklam engelleyici: ayarlar + önbellekten motor + liste yenileme arka planda (kurulumu bekletmez).
             if let Err(err) = adblock::init(&handle) {
                 eprintln!("Reklam engelleyici başlatılamadı: {err}");
@@ -80,6 +89,20 @@ pub fn run() {
             laila::laila_geometry,
             laila::laila_place,
             laila::laila_open_main,
+            capture::snip_start,
+            capture::snip_finish,
+            capture::snip_cancel,
+            capture::snip_reveal,
+            capture::snip_open_folder,
+            capture::screen_record_open,
+            mixer::mixer_list,
+            mixer::mixer_set_volume,
+            mixer::mixer_set_mute,
+            mixer::mixer_icon,
+            quick::quick_mode,
+            quick::quick_hide,
+            quick::quick_open_main,
+            laila::laila_window_ledges,
             windows::layout_get,
             windows::panel_open_window,
             windows::panel_close_window,
@@ -101,6 +124,11 @@ pub fn run() {
             clipboard::clipboard_set_paused,
             clipboard::clipboard_pin,
             net::net_get,
+            gamelib::gamelib_list,
+            gamelib::gamelib_scan,
+            gamelib::gamelib_launch,
+            gamelib::gamelib_icon,
+            gpu::gpu_stats,
             secrets::secret_set,
             secrets::secret_clear,
             secrets::secret_status,

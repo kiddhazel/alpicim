@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { t } from '../../../i18n';
 import { cx, IconButton, TextInput } from '../../../shared/ui/primitives';
 import type { WidgetProps } from '../types';
+import { useIcsEvents } from './icsService';
 import {
   addEvent,
   addMonths,
@@ -42,6 +43,7 @@ function fmt(f: Intl.DateTimeFormat, key: string): string {
 }
 
 function EventRow({ ev, showDate, onRemove }: { ev: CalendarEvent; showDate?: boolean; onRemove: (id: string) => void }) {
+  const readOnly = ev.source === 'ics';
   return (
     <li className="group flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-surface-3">
       <span className="w-[72px] shrink-0 text-xs text-accent tabular-nums">
@@ -49,22 +51,28 @@ function EventRow({ ev, showDate, onRemove }: { ev: CalendarEvent; showDate?: bo
         {showDate && ev.time ? ' ' : ''}
         {ev.time ?? (showDate ? '' : t('widgets.calendar.allDay'))}
       </span>
-      <span className="selectable min-w-0 flex-1 truncate text-sm" title={ev.title}>
+      <span className="selectable min-w-0 flex-1 truncate text-sm" title={ev.location ? `${ev.title} · ${ev.location}` : ev.title}>
         {ev.title}
       </span>
-      <button
-        type="button"
-        aria-label={t('common.remove')}
-        onClick={() => onRemove(ev.id)}
-        className="rounded p-1 text-faint opacity-0 group-hover:opacity-100 hover:text-down focus:opacity-100"
-      >
-        <X size={14} />
-      </button>
+      {readOnly ? (
+        <span title={t('widgets.calendar.icsReadOnly')} className="shrink-0 rounded-md bg-surface-3 px-1.5 py-0.5 text-xs text-muted">
+          {t('widgets.calendar.icsBadge')}
+        </span>
+      ) : (
+        <button
+          type="button"
+          aria-label={t('common.remove')}
+          onClick={() => onRemove(ev.id)}
+          className="rounded p-1 text-faint opacity-0 group-hover:opacity-100 hover:text-down focus:opacity-100"
+        >
+          <X size={14} />
+        </button>
+      )}
     </li>
   );
 }
 
-export function CalendarWidget({ config, setConfig, size }: WidgetProps<CalendarConfig>) {
+export function CalendarWidget({ config, setConfig, size, active }: WidgetProps<CalendarConfig>) {
   const today = useToday();
   const large = size.w >= 4 && size.h >= 4;
   const [view, setView] = useState(() => {
@@ -74,20 +82,22 @@ export function CalendarWidget({ config, setConfig, size }: WidgetProps<Calendar
   const [selected, setSelected] = useState<string | null>(null);
   const [time, setTime] = useState('');
   const [title, setTitle] = useState('');
-  const events = config.events;
+  const own = config.events;
+  const { events: icsEvents, error: icsError } = useIcsEvents(active);
+  const events = useMemo(() => (icsEvents.length ? [...own, ...icsEvents] : own), [own, icsEvents]);
   const marked = useMemo(() => datesWithEvents(events), [events]);
   const matrix = useMemo(() => monthMatrix(view.year, view.month), [view.year, view.month]);
   const day = selected ?? today;
   const dayEvents = useMemo(() => eventsOn(events, day), [events, day]);
   const soon = useMemo(() => upcoming(events, today, 7), [events, today]);
-  const remove = (id: string) => setConfig({ events: removeEvent(events, id) });
+  const remove = (id: string) => setConfig({ events: removeEvent(own, id) });
 
   const addForm = (
     <form
       className="flex gap-1.5 px-1 pt-1"
       onSubmit={(e) => {
         e.preventDefault();
-        setConfig({ events: addEvent(events, day, time, title) });
+        setConfig({ events: addEvent(own, day, time, title) });
         setTitle('');
       }}
     >
@@ -105,7 +115,7 @@ export function CalendarWidget({ config, setConfig, size }: WidgetProps<Calendar
         placeholder={t('widgets.calendar.placeholder')}
         className="h-[30px] min-w-0 flex-1 text-sm"
       />
-      <IconButton size="sm" icon={Plus} label={t('common.add')} type="submit" disabled={!title.trim() || events.length >= 300} />
+      <IconButton size="sm" icon={Plus} label={t('common.add')} type="submit" disabled={!title.trim() || own.length >= 300} />
     </form>
   );
 
@@ -124,6 +134,7 @@ export function CalendarWidget({ config, setConfig, size }: WidgetProps<Calendar
             <EventRow key={ev.id} ev={ev} showDate onRemove={remove} />
           ))}
         </ul>
+        {icsError != null && <p className="px-1 pt-1 text-xs text-down">{t('widgets.calendar.icsFailed')}</p>}
         {addForm}
       </div>
     );
@@ -192,6 +203,7 @@ export function CalendarWidget({ config, setConfig, size }: WidgetProps<Calendar
             </>
           )}
         </ul>
+        {icsError != null && <p className="px-1 pt-1 text-xs text-down">{t('widgets.calendar.icsFailed')}</p>}
         {addForm}
       </div>
     </div>

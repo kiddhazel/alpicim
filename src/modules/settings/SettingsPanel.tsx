@@ -3,12 +3,16 @@ import { useEffect, useState } from 'react';
 import { t, type MessageKey } from '../../i18n';
 import { isTauri } from '../../shared/lib/tauri';
 import type { Chattiness } from '../laila/brain';
-import { Button, cx, Segmented, TextInput, Toggle } from '../../shared/ui/primitives';
+import { Button, cx, Segmented, Select, TextInput, Toggle } from '../../shared/ui/primitives';
+import { setFxPreview, useFxPreview, type FxPreview } from '../fx/preview';
+
+const PREVIEW_IDS = ['dawn', 'day', 'sunset', 'night', 'halloween', 'republic', 'newYear', 'christmas', 'valentine', 'children', 'ramadan', 'kurban'] as const;
 import { AdblockSettings } from '../browser/AdblockSettings';
 import { IntegrationsSettings } from '../integrations/IntegrationsSettings';
 import { windowService } from '../window-manager/windowService';
+import { FocusSettings } from '../focus/FocusSettings';
 import { BarSettings } from './BarSettings';
-import { ScreenSettings, ShortcutSettings, StartupSettings } from './DisplaySettings';
+import { ScreenSettings, ScreensaverSettings, ShortcutSettings, StartupSettings } from './DisplaySettings';
 import { LIMITS, useSettings, type ThemeMode } from './settings';
 import { Group, Row, SectionTitleContext } from './SettingsLayout';
 import { WorkspaceSettings } from './WorkspaceSettings';
@@ -42,6 +46,7 @@ const SECTIONS: { id: SectionId; icon: LucideIcon; title: MessageKey; desc: Mess
 
 export function SettingsPanel() {
   const [settings, setSettings] = useSettings();
+  const preview = useFxPreview();
   const [section, setSection] = useState<SectionId>('appearance');
   const set = <K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) =>
     setSettings((s) => ({ ...s, [key]: value }));
@@ -120,6 +125,7 @@ export function SettingsPanel() {
             <>
               <ScreenSettings />
               <StartupSettings />
+              <ScreensaverSettings />
             </>
           )}
           {section === 'bar' && <BarSettings />}
@@ -128,9 +134,13 @@ export function SettingsPanel() {
           {section === 'adblock' && <AdblockSettings />}
 
           {section === 'features' && (
+            <>
             <Group title={t('settings.features')}>
               <Row label={t('settings.performance')} hint={t('settings.performanceHint')}>
                 <Toggle checked={settings.performanceMode} label={t('settings.performance')} onChange={(v) => set('performanceMode', v)} />
+              </Row>
+              <Row label={t('settings.gameModeAuto')} hint={t('settings.gameModeAutoHint')}>
+                <Toggle checked={settings.gameModeAuto} label={t('settings.gameModeAuto')} onChange={(v) => set('gameModeAuto', v)} />
               </Row>
               <Row label={t('settings.musicKeepPlaying')} hint={t('settings.musicKeepPlayingHint')}>
                 <Toggle checked={settings.musicKeepPlaying} label={t('settings.musicKeepPlaying')} onChange={(v) => set('musicKeepPlaying', v)} />
@@ -142,6 +152,31 @@ export function SettingsPanel() {
                 <Toggle checked={settings.launcherFocusExisting} label={t('settings.focusExisting')} onChange={(v) => set('launcherFocusExisting', v)} />
               </Row>
             </Group>
+            <Group title={t('fx.title')}>
+              <Row label={t('fx.weather')} hint={t('fx.weatherHint')}>
+                <Toggle checked={settings.fxWeather} label={t('fx.weather')} onChange={(v) => set('fxWeather', v)} />
+              </Row>
+              <Row label={t('fx.confetti')} hint={t('fx.confettiHint')}>
+                <Toggle checked={settings.fxConfetti} label={t('fx.confetti')} onChange={(v) => set('fxConfetti', v)} />
+              </Row>
+              <Row label={t('fx.ambient')} hint={t('fx.ambientHint')}>
+                <Toggle checked={settings.fxAmbient} label={t('fx.ambient')} onChange={(v) => set('fxAmbient', v)} />
+              </Row>
+              <Row label={t('fx.holidays')} hint={t('fx.holidaysHint')}>
+                <Toggle checked={settings.fxHolidays} label={t('fx.holidays')} onChange={(v) => set('fxHolidays', v)} />
+              </Row>
+              <Row label={t('fx.preview')} hint={t('fx.previewHint')}>
+                <Select value={preview} aria-label={t('fx.preview')} onChange={(e) => setFxPreview(e.target.value as FxPreview)}>
+                  <option value="none">{t('fx.previewNone')}</option>
+                  {PREVIEW_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {t(`fx.names.${id}` as MessageKey)}
+                    </option>
+                  ))}
+                </Select>
+              </Row>
+            </Group>
+            </>
           )}
 
           {section === 'features' && (
@@ -164,6 +199,36 @@ export function SettingsPanel() {
                   onChange={(v) => set('lailaChat', v)}
                 />
               </Row>
+              <Row label={t('laila.reminders')} hint={t('laila.remindersHint')}>
+                <Toggle checked={settings.lailaReminders} label={t('laila.reminders')} onChange={(v) => set('lailaReminders', v)} />
+              </Row>
+              {settings.lailaReminders && (
+                <>
+                  <Row label={t('laila.eyeEvery')}>
+                    <Segmented<'20' | '40' | '60'>
+                      label={t('laila.eyeEvery')}
+                      value={String(settings.lailaEyeMin) as '20' | '40' | '60'}
+                      options={[
+                        { value: '20', label: t('laila.minutes', { n: 20 }) },
+                        { value: '40', label: t('laila.minutes', { n: 40 }) },
+                        { value: '60', label: t('laila.minutes', { n: 60 }) },
+                      ]}
+                      onChange={(v) => set('lailaEyeMin', v === '20' ? 20 : v === '60' ? 60 : 40)}
+                    />
+                  </Row>
+                  <Row label={t('laila.waterEvery')}>
+                    <Segmented<'60' | '90'>
+                      label={t('laila.waterEvery')}
+                      value={settings.lailaWaterMin === 60 ? '60' : '90'}
+                      options={[
+                        { value: '60', label: t('laila.minutes', { n: 60 }) },
+                        { value: '90', label: t('laila.minutes', { n: 90 }) },
+                      ]}
+                      onChange={(v) => set('lailaWaterMin', v === '60' ? 60 : 90)}
+                    />
+                  </Row>
+                </>
+              )}
             </Group>
           )}
 
@@ -173,6 +238,10 @@ export function SettingsPanel() {
                 <Toggle checked={settings.closeToTray} label={t('settings.closeToTray')} onChange={(v) => set('closeToTray', v)} />
               </Row>
             </Group>
+          )}
+
+          {section === 'windows' && (
+            <FocusSettings />
           )}
 
           {section === 'providers' && (

@@ -22,12 +22,14 @@ import { launcherService, type LaunchItem } from '../launcher/launcherService';
 import { NOTEBOOK_KEY, notePreview, noteTitle, sanitizeNotebook, sortNotes, type Note } from '../notebook/notebook';
 import { requestNotebook } from '../notebook/notebookService';
 import { LAILA_CHAT_EVENT, LAILA_LEAVE_EVENT } from '../laila/lailaEvents';
+import { screenshotService } from '../screenshot/screenshotService';
 import { useSettings } from '../settings/settings';
 import { WIDGETS } from '../widgets/registry';
 import type { WidgetType } from '../widgets/types';
 import { PANELS, type PanelId } from '../window-manager/panels';
 import type { Workspace } from '../workspaces/workspaces';
-import { rankItems, type PaletteGroup, type PaletteItem } from './palette';
+import { useFocus } from '../focus/useFocus';
+import { rankItems,type PaletteGroup, type PaletteItem } from './palette';
 
 export interface PaletteCommands {
   workspaces: Workspace[];
@@ -60,6 +62,7 @@ const GROUP: Record<PaletteGroup, { key: MessageKey; icon: LucideIcon }> = {
 export function CommandPalette({ commands, onClose }: { commands: PaletteCommands; onClose: () => void }) {
   const toast = useToast();
   const [settings] = useSettings();
+  const { focus, toggle: toggleFocus } = useFocus();
   const [query, setQuery] = useState('');
   const [index, setIndex] = useState(0);
   const [apps, setApps] = useState<LaunchItem[]>([]);
@@ -82,12 +85,37 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
     const list: PaletteItem[] = [
       { id: 'act:fullscreen', group: 'action', title: t('palette.toggleFullscreen'), keywords: 'tam ekran f11 monitör', run: commands.toggleFullscreen },
       { id: 'act:hide', group: 'action', title: t('palette.hideApp'), keywords: 'gizle tepsi', run: commands.hideApp },
+      ...(isTauri()
+        ? [
+            {
+              id: 'act:screenshot',
+              group: 'action' as const,
+              title: t('palette.screenshot'),
+              keywords: 'ekran görüntüsü ekran alıntısı screenshot snip kırp',
+              run: () => screenshotService.start().catch((err: unknown) => toast.push('error', `${t('screenshot.failed')}: ${describeError(err).description}`)),
+            },
+            {
+              id: 'act:record',
+              group: 'action' as const,
+              title: t('palette.recordScreen'),
+              keywords: 'ekran kaydı video kayıt record',
+              run: () => screenshotService.openRecorder().catch(() => toast.push('error', t('screenshot.recordFailed'))),
+            },
+          ]
+        : []),
       {
         id: 'act:perf',
         group: 'action',
         title: settings.performanceMode ? t('palette.perfOff') : t('palette.perfOn'),
         keywords: 'performans hız animasyon',
         run: commands.togglePerformance,
+      },
+      {
+        id: 'act:focus',
+        group: 'action',
+        title: focus.on ? t('focus.paletteOff') : t('focus.paletteOn'),
+        keywords: 'odak focus sessiz dikkat pomodoro',
+        run: toggleFocus,
       },
       ...(settings.lailaEnabled
         ? [
@@ -168,7 +196,7 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
       })),
     ];
     return list;
-  }, [commands, apps, bookmarks, notes, settings.performanceMode, settings.lailaEnabled, settings.lailaDesktop, settings.launcherFocusExisting, toast]);
+  }, [commands, apps, bookmarks, notes, focus.on, toggleFocus, settings.performanceMode, settings.lailaEnabled, settings.lailaDesktop, settings.launcherFocusExisting, toast]);
 
   const results = useMemo(() => rankItems(items, query, 40), [items, query]);
   useEffect(() => setIndex(0), [query]);

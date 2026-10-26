@@ -4,8 +4,8 @@ import { t, type MessageKey } from '../../i18n';
 
 export type Chattiness = 'quiet' | 'normal' | 'chatty';
 export type DayPart = 'morning' | 'afternoon' | 'evening' | 'night';
-export type Behavior = 'walk' | 'idle' | 'wave' | 'peek' | 'leave' | 'sleep';
-export type ReplyAction = 'wave' | 'peek' | 'leave' | 'sleep' | 'happy';
+export type Behavior = 'walk' | 'idle' | 'wave' | 'peek' | 'leave' | 'sleep' | 'play' | 'dance';
+export type ReplyAction = 'wave' | 'peek' | 'leave' | 'sleep' | 'happy' | 'play' | 'briefing';
 
 export interface Reply {
   text: string;
@@ -69,17 +69,19 @@ export function talkDelayMs(c: Chattiness, rng: Rng = Math.random): number | nul
 }
 
 export function nextBehavior(
-  opts: { canPeek: boolean; canLeave: boolean; hour: number },
+  opts: { canPeek: boolean; canLeave: boolean; hour: number; canPlay?: boolean; waveBoost?: boolean; canDance?: boolean; sleepy?: boolean },
   rng: Rng = Math.random,
 ): Behavior {
   const night = dayPart(opts.hour) === 'night';
   const table: [Behavior, number][] = [
     ['walk', 5],
     ['idle', 3],
-    ['wave', 1],
+    ['wave', opts.waveBoost ? 3 : 1],
+    ['play', opts.canPlay ? 2 : 0],
     ['peek', opts.canPeek ? 1.2 : 0],
     ['leave', opts.canLeave ? 0.6 : 0],
-    ['sleep', night ? 1.5 : 0.2],
+    ['dance', opts.canDance ? 2.5 : 0],
+    ['sleep', opts.sleepy ? 4 : night ? 1.5 : 0.2],
   ];
   const total = table.reduce((sum, [, w]) => sum + w, 0);
   let roll = rng() * total;
@@ -93,10 +95,14 @@ export function nextBehavior(
 const has = (text: string, words: readonly string[]) => words.some((w) => text.includes(w));
 
 /** Sohbet yanıtı: anahtar kelimelere göre hazır cümle (+ isteğe bağlı hareket). */
-export function reply(input: string, ctx: { now: Date }, rng: Rng = Math.random): Reply {
+export function reply(input: string, ctx: { now: Date; gamesVisible?: boolean }, rng: Rng = Math.random): Reply {
   const text = input.toLocaleLowerCase('tr').trim();
   if (!text) return { text: line('laila.chat.empty', rng) };
 
+  if (has(text, ['özet', 'ozet', 'bugün ne var'])) return { text: line('laila.chat.briefing', rng), action: 'briefing' };
+  if (has(text, ['oyna', 'oyun'])) {
+    return ctx.gamesVisible ? { text: line('laila.chat.play', rng), action: 'play' } : { text: line('laila.chat.playHint', rng) };
+  }
   if (has(text, ['dışarı', 'disari', 'gez', 'yürüyüş'])) return { text: line('laila.chat.leave', rng), action: 'leave' };
   if (has(text, ['saklan', 'gizlen', 'saklambaç'])) return { text: line('laila.chat.hide', rng), action: 'peek' };
   if (has(text, ['uyu', 'uyku', 'iyi geceler'])) return { text: line('laila.chat.sleep', rng), action: 'sleep' };

@@ -3,6 +3,7 @@ import { Bookmark, BookmarkCheck, Check, CheckCheck, ExternalLink, RefreshCw, Rs
 import { memo, useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { t } from '../../i18n';
 import { useNow } from '../../shared/lib/hooks';
+import { track } from '../../shared/lib/track';
 import { isTauri } from '../../shared/lib/tauri';
 import { formatDateTime, formatRelative } from '../../shared/lib/time';
 import { Button, cx, IconButton, Segmented, TextInput } from '../../shared/ui/primitives';
@@ -37,6 +38,7 @@ export function NewsPanel() {
 
   const open = async (item: NewsItem) => {
     news.markRead(item.id);
+    track('news.read');
     try {
       if (isTauri()) await openUrl(item.link);
       else window.open(item.link, '_blank', 'noopener');
@@ -52,6 +54,7 @@ export function NewsPanel() {
   const select = (item: NewsItem) => {
     setSelected(item);
     news.markRead(item.id);
+    track('news.read');
   };
 
   useEffect(() => {

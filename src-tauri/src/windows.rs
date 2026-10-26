@@ -37,6 +37,11 @@ const PANELS: &[(&str, &str, f64, f64)] = &[
     ("apps", "Alpicim — Uygulama pencereleri", 1000.0, 720.0),
     ("notes", "Alpicim — Notlar", 900.0, 680.0),
     ("clipboard", "Alpicim — Pano geçmişi", 520.0, 680.0),
+    ("games", "Alpicim — Oyunlar", 560.0, 720.0),
+    ("library", "Alpicim — Oyun kütüphanesi", 760.0, 700.0),
+    ("room", "Alpicim — Laila'nın odası", 760.0, 640.0),
+    ("radio", "Alpicim — Radyo", 520.0, 680.0),
+    ("podcasts", "Alpicim — Podcast", 520.0, 680.0),
 ];
 
 fn panel_spec(panel: &str) -> Option<&'static (&'static str, &'static str, f64, f64)> {

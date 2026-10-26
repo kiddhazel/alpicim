@@ -14,6 +14,7 @@ import { findSpot, GRID_COLS, gridHeight, moveItem, resizeItem } from './grid';
 import { widgetDef } from './registry';
 import type { WidgetInstance, WidgetType } from './types';
 import { HomeHero } from './HomeHero';
+import { FxDecor } from '../fx/WeatherFx';
 import { WidgetFrame } from './WidgetFrame';
 import { WidgetHostContext } from './WidgetHost';
 
@@ -217,7 +218,8 @@ export function WidgetBoard({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void
               }
             />
           ) : stacked ? (
-            <div className="flex flex-col gap-3">
+            <div className="relative flex flex-col gap-3">
+              <FxDecor />
               {sorted.map((w) => (
                 <div key={w.id} className="relative" style={{ height: w.h * ROW + (w.h - 1) * GAP }}>
                   <WidgetFrame
@@ -240,6 +242,7 @@ export function WidgetBoard({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void
                 className={cx('relative', editing && 'rounded-xl bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:16px_16px]')}
                 style={{ height: (gridHeight(shown) + (editing ? 2 : 0)) * (ROW + GAP) }}
               >
+                <FxDecor />
                 {shown.map((w) => (
                   <WidgetFrame
                     key={w.id}

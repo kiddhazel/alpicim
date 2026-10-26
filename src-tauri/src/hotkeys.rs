@@ -24,6 +24,8 @@ pub const ACTIONS: &[(&str, &str)] = &[
     ("toggleVisible", "Ctrl+Alt+Space"),
     ("toggleFullscreen", "Ctrl+Alt+F"),
     ("palette", "Ctrl+Alt+K"),
+    ("quickSearch", "Alt+Space"),
+    ("quickClipboard", "Ctrl+Shift+V"),
 ];
 
 const MOD_ALT: u32 = 0x0001;
@@ -154,6 +156,8 @@ fn dispatch<R: Runtime>(app: &AppHandle<R>, action: &str) {
             crate::windows::show_main(app);
             let _ = app.emit(PALETTE_EVENT, ());
         }
+        "quickSearch" => crate::quick::show(app, "search"),
+        "quickClipboard" => crate::quick::show(app, "clipboard"),
         _ => {}
     }
 }

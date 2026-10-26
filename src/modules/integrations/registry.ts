@@ -12,9 +12,9 @@ import type { MessageKey } from '../../i18n';
  *   - "info": yalnızca kullanıcı ilgili paneli açtığında yüklenir; bilgi amaçlı listelenir.
  */
 
-export type IntegrationCategory = 'markets' | 'weather' | 'news' | 'browser' | 'media';
+export type IntegrationCategory = 'markets' | 'weather' | 'news' | 'browser' | 'media' | 'calendar';
 
-export const INTEGRATION_CATEGORIES: readonly IntegrationCategory[] = ['markets', 'weather', 'news', 'browser', 'media'];
+export const INTEGRATION_CATEGORIES: readonly IntegrationCategory[] = ['markets', 'weather', 'news', 'browser', 'media', 'calendar'];
 
 export type IntegrationId =
   | 'tcmb'
@@ -25,7 +25,12 @@ export type IntegrationId =
   | 'googlenews'
   | 'favicons'
   | 'adblock'
-  | 'youtubemusic';
+  | 'youtubemusic'
+  | 'wikimedia'
+  | 'steamcdn'
+  | 'radiobrowser'
+  | 'podcasts'
+  | 'ics';
 
 export interface IntegrationKey {
   /** Rust `providers.rs` kimliği; `net_get` ve `secret_*` komutlarına bu gönderilir. */
@@ -150,6 +155,62 @@ export const INTEGRATIONS: readonly IntegrationDef[] = [
     homepage: 'https://music.youtube.com',
     key: null,
     control: 'info',
+    defaultEnabled: true,
+  },
+  {
+    id: 'wikimedia',
+    category: 'media',
+    name: 'integrations.items.wikimedia.name',
+    description: 'integrations.items.wikimedia.desc',
+    powers: 'integrations.items.wikimedia.powers',
+    homepage: 'https://commons.wikimedia.org',
+    key: null,
+    control: 'toggle',
+    defaultEnabled: true,
+  },
+  {
+    id: 'steamcdn',
+    category: 'media',
+    name: 'integrations.items.steamcdn.name',
+    description: 'integrations.items.steamcdn.desc',
+    powers: 'integrations.items.steamcdn.powers',
+    homepage: 'https://store.steampowered.com',
+    key: null,
+    control: 'toggle',
+    defaultEnabled: true,
+  },
+  {
+    id: 'radiobrowser',
+    category: 'media',
+    name: 'integrations.items.radiobrowser.name',
+    description: 'integrations.items.radiobrowser.desc',
+    powers: 'integrations.items.radiobrowser.powers',
+    homepage: 'https://www.radio-browser.info',
+    key: null,
+    control: 'toggle',
+    defaultEnabled: true,
+  },
+  {
+    id: 'podcasts',
+    category: 'media',
+    name: 'integrations.items.podcasts.name',
+    description: 'integrations.items.podcasts.desc',
+    powers: 'integrations.items.podcasts.powers',
+    homepage: 'https://podcasts.apple.com',
+    key: null,
+    control: 'toggle',
+    defaultEnabled: true,
+  },
+  {
+    id: 'ics',
+    category: 'calendar',
+    name: 'integrations.items.ics.name',
+    description: 'integrations.items.ics.desc',
+    powers: 'integrations.items.ics.powers',
+    // Kullanıcının kendi adresi; genel bir ana sayfa yoktur (iCalendar belirtimi).
+    homepage: 'https://www.rfc-editor.org/rfc/rfc5545',
+    key: null,
+    control: 'toggle',
     defaultEnabled: true,
   },
 ];

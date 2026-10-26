@@ -6,14 +6,21 @@ import { Button, IconButton, TextInput } from '../../shared/ui/primitives';
 import { describeError } from '../../shared/ui/StateView';
 import { formatTrackTime } from '../system/systemService';
 import type { PanelId } from '../window-manager/panels';
+import { audioService, showInternalAudio, useAudio } from '../radio/audioService';
 import { useMiniPlayer, useSheetWebview } from './useMiniPlayer';
 
 /** Alt çubuktaki YouTube Music mini oynatıcısı: arama, SMTC denetimleri, ilerleme ve genişletilmiş sayfa. */
 export function MiniPlayer({ onOpenPanel, musicTabOpen }: { onOpenPanel: (p: PanelId) => void; musicTabOpen: boolean }) {
   const p = useMiniPlayer(musicTabOpen, onOpenPanel);
+  const audio = useAudio();
+  const internal = showInternalAudio(audio.source !== null, audio.playing, p.playing);
   const { session } = p;
-  const hasTitle = Boolean(session && session.title);
-  const pct = p.positionMs !== null && p.durationMs ? Math.min(100, (p.positionMs / p.durationMs) * 100) : 0;
+  const hasTitle = internal ? Boolean(audio.source) : Boolean(session && session.title);
+  const positionMs = internal ? (audio.durationSec ? audio.positionSec * 1000 : null) : p.positionMs;
+  const durationMs = internal ? (audio.durationSec ? audio.durationSec * 1000 : null) : p.durationMs;
+  const title = internal ? (audio.source?.title ?? '') : (session?.title ?? '');
+  const artist = internal ? (audio.source?.subtitle ?? '') : (session?.artist ?? '');
+  const pct = positionMs !== null && durationMs ? Math.min(100, (positionMs / durationMs) * 100) : 0;
 
   return (
     <div className="flex h-full w-[560px] max-w-full shrink-0 items-center gap-2">
@@ -37,36 +44,36 @@ export function MiniPlayer({ onOpenPanel, musicTabOpen }: { onOpenPanel: (p: Pan
       </form>
 
       <div className="flex shrink-0 items-center">
-        <IconButton icon={SkipBack} label={t('media.previous')} disabled={!session?.canPrevious} onClick={() => p.run('previous')} />
+        <IconButton icon={SkipBack} label={t('media.previous')} disabled={internal ? audio.durationSec === null : !session?.canPrevious} onClick={() => (internal ? audioService.skip(-10) : p.run('previous'))} />
         <IconButton
-          icon={p.playing ? Pause : Play}
-          label={p.playing ? t('media.pause') : t('media.play')}
-          disabled={!session?.canPlayPause}
-          onClick={() => p.run('playPause')}
+          icon={(internal ? audio.playing : p.playing) ? Pause : Play}
+          label={(internal ? audio.playing : p.playing) ? t('media.pause') : t('media.play')}
+          disabled={internal ? false : !session?.canPlayPause}
+          onClick={() => (internal ? audioService.toggle() : p.run('playPause'))}
         />
-        <IconButton icon={SkipForward} label={t('media.next')} disabled={!session?.canNext} onClick={() => p.run('next')} />
+        <IconButton icon={SkipForward} label={t('media.next')} disabled={internal ? audio.durationSec === null : !session?.canNext} onClick={() => (internal ? audioService.skip(30) : p.run('next'))} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col justify-center">
-        {hasTitle && session ? (
+        {hasTitle && (internal ? audio.source : session) ? (
           <>
-            <p className="truncate text-sm leading-5" title={`${session.title} — ${session.artist}`}>
-              <span className="font-medium text-fg">{session.title}</span>
-              {session.artist && <span className="text-muted"> · {session.artist}</span>}
+            <p className="truncate text-sm leading-5" title={`${title} — ${artist}`}>
+              <span className="font-medium text-fg">{title}</span>
+              {artist && <span className="text-muted"> · {artist}</span>}
             </p>
-            {p.positionMs !== null && (
+            {positionMs !== null && (
               <div className="flex items-center gap-2 text-xs leading-4 text-faint">
-                <span className="tabular">{formatTrackTime(p.positionMs)}</span>
+                <span className="tabular">{formatTrackTime(positionMs)}</span>
                 <div
                   className="h-1 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-3"
                   role="progressbar"
                   aria-valuemin={0}
-                  aria-valuemax={p.durationMs ?? undefined}
-                  aria-valuenow={Math.round(p.positionMs)}
+                  aria-valuemax={durationMs ?? undefined}
+                  aria-valuenow={Math.round(positionMs)}
                 >
                   <div className="h-full rounded-full bg-accent-gradient" style={{ width: `${pct}%` }} />
                 </div>
-                <span className="tabular">{p.durationMs ? formatTrackTime(p.durationMs) : '--:--'}</span>
+                <span className="tabular">{durationMs ? formatTrackTime(durationMs) : '--:--'}</span>
               </div>
             )}
           </>
@@ -79,7 +86,7 @@ export function MiniPlayer({ onOpenPanel, musicTabOpen }: { onOpenPanel: (p: Pan
         icon={p.muted ? VolumeX : Volume2}
         active={p.muted}
         label={p.muted ? t('music.unmute') : t('music.mute')}
-        disabled={!session?.own}
+        disabled={internal || !session?.own}
         onClick={() => void p.toggleMute()}
       />
       <IconButton icon={Maximize2} label={t('mini.expand')} onClick={p.expand} />

@@ -6,6 +6,7 @@ import { Button, Segmented, Toggle } from '../../shared/ui/primitives';
 import { describeError } from '../../shared/ui/StateView';
 import { useToast } from '../../shared/ui/Toast';
 import { displayService, type DisplayMode, type DisplaySnapshot } from '../display/displayService';
+import { useFocus } from '../focus/useFocus';
 import { MonitorSelect } from '../display/MonitorSelect';
 import { useSettings, type ThemeMode } from '../settings/settings';
 import { PANELS, type PanelId } from './panels';
@@ -33,6 +34,7 @@ export function QuickSettings({
   onClose: () => void;
 }) {
   const [settings, setSettings] = useSettings();
+  const { focus, toggle: toggleFocus } = useFocus();
   const toast = useToast();
   const ref = useRef<HTMLDivElement>(null);
 
@@ -126,6 +128,13 @@ export function QuickSettings({
           })}
         </div>
       </Section>
+      <div className="flex items-center justify-between py-1.5">
+        <div>
+          <p className="text-sm font-medium">{t('focus.enable')}</p>
+          <p className="text-xs text-muted">{t('focus.quickHint')}</p>
+        </div>
+        <Toggle checked={focus.on} label={t('focus.enable')} onChange={toggleFocus} />
+      </div>
       <div className="flex items-center justify-between py-1.5">
         <div>
           <p className="text-sm font-medium">{t('settings.performance')}</p>

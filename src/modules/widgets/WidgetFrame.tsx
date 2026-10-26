@@ -30,6 +30,12 @@ const HUES: Record<WidgetType, string> = {
   favorites: '#818cf8',
   calendar: '#22d3ee',
   links: '#2dd4bf',
+  fortune: '#f59e0b',
+  mood: '#a3e635',
+  photo: '#e879f9',
+  proverb: '#14b8a6',
+  watchlist: '#38bdf8',
+  gpu: '#76b900',
   news: '#fb923c',
   markets: '#4ade80',
   music: '#f472b6',
@@ -38,6 +44,7 @@ const HUES: Record<WidgetType, string> = {
   countdown: '#c084fc',
   converter: '#10b981',
   quicknote: '#fde047',
+  mixer: '#60a5fa',
 };
 
 /** Tek widget çerçevesi: başlık, düzenleme düğmeleri, ayar görünümü ve hata sınırı. */
@@ -74,7 +81,7 @@ export const WidgetFrame = memo(function WidgetFrame({
       aria-label={t(def.titleKey)}
       style={frameStyle}
       className={cx(
-        'group absolute flex flex-col overflow-hidden rounded-2xl bg-surface-2 shadow-[inset_0_0_0_1px_var(--glass-edge)] transition-colors hover:bg-surface-3',
+        'group absolute z-10 flex flex-col overflow-hidden backdrop-blur-md rounded-2xl bg-surface-2 shadow-[inset_0_0_0_1px_var(--glass-edge)] transition-colors hover:bg-surface-3',
         dragging && 'z-20 shadow-panel ring-2 ring-accent',
         widget.disabled && 'opacity-60',
       )}

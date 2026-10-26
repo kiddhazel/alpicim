@@ -7,6 +7,9 @@ export interface CalendarEvent {
   /** HH:MM (isteğe bağlı). */
   time?: string;
   title: string;
+  /** Yalnızca .ics aboneliğinden gelen salt okunur etkinliklerde ("ics"); depoya yazılmaz. */
+  source?: 'ics';
+  location?: string;
 }
 
 export interface CalendarConfig {

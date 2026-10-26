@@ -39,8 +39,12 @@ import { widgetDef } from '../widgets/registry';
 import type { WidgetType } from '../widgets/types';
 import { activeWorkspace, updateActive, useWorkspaces, type MainLayout } from '../workspaces/workspaces';
 import { Laila } from '../laila/Laila';
+import { useAchievementTracker } from '../achievements/useAchievements';
 import { MiniPlayer } from '../music/MiniPlayer';
+import { WeatherFx } from '../fx/WeatherFx';
 import { TickerBar } from '../ticker/TickerBar';
+import { FocusChip } from '../focus/FocusChip';
+import { useQuickRequests } from '../quick/quickService';
 import { dockPanel, promote, setSecondary, swapPanels, togglePanel, undockPanel } from './mainLayout';
 import { usePanelDrag, type PanelDragState } from './usePanelDrag';
 import { PanelHost } from './PanelHost';
@@ -58,6 +62,7 @@ export function Shell() {
   const [settings, setSettings] = useSettings();
   const [store, setStore, storeLoaded] = useWorkspaces();
   const toast = useToast();
+  useAchievementTracker();
   const { snapshot: display, setSnapshot: setDisplay } = useDisplay();
   const [quickOpen, setQuickOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -204,6 +209,7 @@ export function Shell() {
   }, [toggleFullscreen, switchWorkspace, store.items, cycleTab, closeCurrentTab, toggleSplit, secondary, visibleDocked.length]);
   // Sistem çapındaki palet kısayolu (Rust → olay).
   useEffect(() => subscribe<null>(PALETTE_EVENT, () => setPaletteOpen(true)), []);
+  useQuickRequests(openPanel);
 
   const paletteCommands = useMemo<PaletteCommands>(
     () => ({
@@ -283,7 +289,8 @@ export function Shell() {
   };
 
   return (
-    <div className={cx('flex h-full flex-col', drag && 'cursor-grabbing')}>
+    <div className={cx('relative isolate flex h-full flex-col', drag && 'cursor-grabbing')}>
+      <WeatherFx />
       {drag && <DragGhost drag={drag} />}
       <TitleBar
         title="Alpicim"
@@ -452,6 +459,7 @@ export function Shell() {
               ) : (
                 <div className="flex-1" />
               )}
+              <FocusChip />
               {settings.barPlayer && (
                 <div className="shrink-0">
                   <MiniPlayer onOpenPanel={openPanel} musicTabOpen={visibleDocked.includes('music')} />

@@ -7,6 +7,11 @@ import type { PanelId } from './panels';
 // Paneller ayrı parçalar (chunk) olarak yalnızca ilk gösterildiklerinde yüklenir.
 const AppsPanel = lazy(() => import('../apps/AppsPanel').then((m) => ({ default: m.AppsPanel })));
 const ClipboardPanel = lazy(() => import('../clipboard/ClipboardPanel').then((m) => ({ default: m.ClipboardPanel })));
+const GamesPanel = lazy(() => import('../games/GamesPanel').then((m) => ({ default: m.GamesPanel })));
+const LibraryPanel = lazy(() => import('../library/LibraryPanel').then((m) => ({ default: m.LibraryPanel })));
+const RoomPanel = lazy(() => import('../room/RoomPanel').then((m) => ({ default: m.RoomPanel })));
+const RadioPanel = lazy(() => import('../radio/RadioPanel').then((m) => ({ default: m.RadioPanel })));
+const PodcastsPanel = lazy(() => import('../podcasts/PodcastsPanel').then((m) => ({ default: m.PodcastsPanel })));
 const NotesPanel = lazy(() => import('../notebook/NotesPanel').then((m) => ({ default: m.NotesPanel })));
 const BrowserPanel = lazy(() => import('../browser/BrowserPanel').then((m) => ({ default: m.BrowserPanel })));
 const LauncherPanel = lazy(() => import('../launcher/LauncherPanel').then((m) => ({ default: m.LauncherPanel })));
@@ -47,6 +52,16 @@ function PanelContent({ panel, onOpenPanel }: { panel: PanelId; onOpenPanel: (p:
       return <NotesPanel onOpenPanel={onOpenPanel} />;
     case 'clipboard':
       return <ClipboardPanel onOpenPanel={onOpenPanel} />;
+    case 'radio':
+      return <RadioPanel />;
+    case 'podcasts':
+      return <PodcastsPanel />;
+    case 'room':
+      return <RoomPanel />;
+    case 'games':
+      return <GamesPanel />;
+    case 'library':
+      return <LibraryPanel />;
     case 'settings':
       return <SettingsPanel />;
   }

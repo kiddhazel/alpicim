@@ -11,6 +11,7 @@ import { aggregate } from '../../news/newsService';
 import { NEWS_CATEGORIES, isNewsCategory, type NewsCategory, type NewsItem } from '../../news/types';
 import { useNews } from '../../news/useNews';
 import { useSettings } from '../../settings/settings';
+import { track } from '../../../shared/lib/track';
 import { num, obj, type WidgetProps, type WidgetSettingsProps } from '../types';
 
 export interface NewsConfig {
@@ -42,6 +43,7 @@ export function NewsWidget({ config }: WidgetProps<NewsConfig>) {
 
   const open = async (item: NewsItem) => {
     news.markRead(item.id);
+    track('news.read');
     try {
       if (isTauri()) await openUrl(item.link);
       else window.open(item.link, '_blank', 'noopener');

@@ -26,4 +26,6 @@ export const lailaService = {
   place: (x: number, y: number, width: number, height: number) =>
     call<void>('laila_place', { x: Math.round(x), y: Math.round(y), width: Math.round(width), height: Math.round(height) }),
   openMain: () => call<void>('laila_open_main'),
+  /** Birincil monitördeki açık pencerelerin üst kenarları (salt okunur, fiziksel piksel). */
+  ledges: () => call<Array<{ x: number; y: number; width: number }>>('laila_window_ledges'),
 };

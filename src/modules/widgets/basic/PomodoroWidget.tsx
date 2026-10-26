@@ -3,6 +3,9 @@ import { useEffect } from 'react';
 import { t } from '../../../i18n';
 import { useNow } from '../../../shared/lib/hooks';
 import { Button, cx, TextInput } from '../../../shared/ui/primitives';
+import { celebrate } from '../../fx/confetti';
+import { signalPomodoro } from '../../focus/useFocus';
+import { track } from '../../../shared/lib/track';
 import { num, obj, type WidgetProps, type WidgetSettingsProps } from '../types';
 import { advance, formatClock, pause, remaining, reset, sanitizeState, start, type PomodoroState } from './pomodoro';
 
@@ -43,12 +46,22 @@ export function PomodoroWidget({ config, setConfig, size }: WidgetProps<Pomodoro
   const now = useNow(running ? 500 : 60_000);
   const left = remaining(config.state, now);
 
+  // Odak modu (focus/): çalışma evresi başlayınca açılır, durunca/bitince kapanır.
+  useEffect(() => {
+    signalPomodoro({ phase: config.state.phase, endsAt: config.state.endsAt });
+  }, [config.state.phase, config.state.endsAt]);
+
   // Süre dolunca evre değiştir ve uyar.
   useEffect(() => {
     const next = advance(config.state, now, config.workMin, config.breakMin);
     if (next !== config.state) {
       setConfig({ state: next });
       chime();
+      if (config.state.phase === 'work') {
+        celebrate();
+        track('pomodoro.done');
+        window.dispatchEvent(new Event('alpicim:pomodoro-done'));
+      }
     }
   }, [now, config.state, config.workMin, config.breakMin, setConfig]);
 

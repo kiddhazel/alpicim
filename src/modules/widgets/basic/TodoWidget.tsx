@@ -2,6 +2,8 @@ import { Plus, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { t } from '../../../i18n';
 import { cx, IconButton, TextInput } from '../../../shared/ui/primitives';
+import { celebrate } from '../../fx/confetti';
+import { track } from '../../../shared/lib/track';
 import { obj, type WidgetProps } from '../types';
 
 export interface TodoItem {
@@ -60,7 +62,14 @@ export function TodoWidget({ config, setConfig }: WidgetProps<TodoConfig>) {
               type="checkbox"
               checked={item.done}
               aria-label={item.text}
-              onChange={() => set(items.map((i) => (i.id === item.id ? { ...i, done: !i.done } : i)))}
+              onChange={(e) => {
+                if (!item.done) {
+                  track('todo.done');
+                  const r = e.currentTarget.getBoundingClientRect();
+                  celebrate({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+                }
+                set(items.map((i) => (i.id === item.id ? { ...i, done: !i.done } : i)));
+              }}
               className="h-4 w-4 accent-[var(--accent)]"
             />
             <span className={cx('selectable min-w-0 flex-1 truncate text-sm', item.done && 'text-faint line-through')} title={item.text}>

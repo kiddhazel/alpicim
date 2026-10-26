@@ -55,6 +55,20 @@ describe('reply', () => {
     expect(reply('dışarı çık', { now }).action).toBe('leave');
   });
 
+  it('oyna: oyunlar açıkken play, değilken ipucu', () => {
+    expect(reply('oyna benimle', { now, gamesVisible: true }).action).toBe('play');
+    const hint = reply('oyun oynayalım', { now });
+    expect(hint.action).toBeUndefined();
+    expect(hint.text.length).toBeGreaterThan(0);
+  });
+
+  it('play yalnız canPlay iken seçilir', () => {
+    for (let i = 0; i < 50; i++) expect(nextBehavior({ canPeek: false, canLeave: false, hour: 12 }, () => i / 50)).not.toBe('play');
+    const seen = new Set<string>();
+    for (let i = 0; i < 100; i++) seen.add(nextBehavior({ canPeek: false, canLeave: false, hour: 12, canPlay: true }, () => i / 100));
+    expect(seen.has('play')).toBe(true);
+  });
+
   it('saklan peek hareketi verir', () => {
     expect(reply('saklan', { now }).action).toBe('peek');
   });

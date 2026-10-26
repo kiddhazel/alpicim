@@ -149,6 +149,9 @@ Veri konumları (Windows): `%APPDATA%\com.alperen.alpicim\` → `alpicim.json` (
 
 - **Bilgisayara dosya gönderirken** aynı geçici yolu tekrar kullanma: köprü eski içeriği yazabiliyor. Her gönderim için yeni klasör kullan ve boyutları doğrula.
 
+- **Kurulumu Claude oturumundan doğrudan çalıştırma**: Claude masaüstü uygulaması paketli (MSIX) olduğundan alt
+  süreçlerin `%LOCALAPPDATA%`/`%APPDATA%` yazımları `Packages\Claude_…\LocalCache` içine sanallaşır; kullanıcı programı
+  göremez. Kurulumu `explorer.exe <setup.exe>` ile başlat (Gezgin oturumu dışında, gerçek konuma kurar).
 - **Windows'ta pencere oluşturan komutlar `async` olmalı** (senkron komutta `WebviewWindowBuilder::build` kilitlenir).
 - TCMB'ye ilk bağlantı ~9 sn sürebiliyor: `net.rs` zaman aşımları 20/30 sn.
 - Release profilinde `lto`/`panic="abort"`/`strip` açılınca Rust 1.99'da `zerovec_derive` E0463 hatası veriyor.

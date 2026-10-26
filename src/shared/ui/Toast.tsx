@@ -8,10 +8,16 @@ interface ToastItem {
   id: number;
   tone: Tone;
   text: string;
+  actions?: ToastAction[];
+}
+
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
 }
 
 interface ToastApi {
-  push: (tone: Tone, text: string) => void;
+  push: (tone: Tone, text: string, actions?: ToastAction[]) => void;
 }
 
 const ToastContext = createContext<ToastApi>({ push: () => {} });
@@ -23,10 +29,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const dismiss = useCallback((id: number) => setItems((list) => list.filter((i) => i.id !== id)), []);
 
   const push = useCallback(
-    (tone: Tone, text: string) => {
+    (tone: Tone, text: string, actions?: ToastAction[]) => {
+      // Odak modu (focus/focus.ts → toastAllowed): açıkken yalnız hatalar gösterilir.
+      if (tone !== 'error' && document.documentElement.dataset.focusToasts === 'off') return;
+      // Oyun modu: hata dışındaki bildirimler bastırılır.
+      if (tone !== 'error' && document.documentElement.dataset.game === 'on') return;
       const id = nextId.current++;
-      setItems((list) => [...list.slice(-2), { id, tone, text }]);
-      window.setTimeout(() => dismiss(id), tone === 'error' ? 6000 : 3000);
+      setItems((list) => [...list.slice(-2), { id, tone, text, actions }]);
+      window.setTimeout(() => dismiss(id), actions?.length ? 9000 : tone === 'error' ? 6000 : 3000);
     },
     [dismiss],
   );
@@ -52,7 +62,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   item.tone === 'success' ? 'text-up' : item.tone === 'error' ? 'text-down' : 'text-accent',
                 )}
               />
-              <p className="selectable flex-1 text-sm text-fg">{item.text}</p>
+              <div className="min-w-0 flex-1">
+                <p className="selectable text-sm text-fg">{item.text}</p>
+                {item.actions && (
+                  <div className="mt-1.5 flex flex-wrap gap-3">
+                    {item.actions.map((a) => (
+                      <button
+                        key={a.label}
+                        type="button"
+                        onClick={() => {
+                          a.onClick();
+                          dismiss(item.id);
+                        }}
+                        className="text-sm text-accent hover:underline"
+                      >
+                        {a.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 aria-label={t('common.close')}

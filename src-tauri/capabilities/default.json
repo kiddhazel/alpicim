@@ -2,7 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Ana pencere ve ayrılmış panel pencereleri için izinler. Ağ ve dosya başlatma Rust komutlarıyla denetlenir.",
-  "windows": ["main", "panel-*", "laila"],
+  "windows": ["main", "panel-*", "laila", "snip", "quick"],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",

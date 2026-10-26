@@ -1,10 +1,15 @@
 import {
   AppWindow,
   ClipboardList,
+  Gamepad2,
+  Library,
+  Sofa,
   Globe,
   LayoutDashboard,
   Music2,
   Newspaper,
+  Podcast,
+  Radio,
   NotebookPen,
   PictureInPicture2,
   Settings as SettingsIcon,
@@ -23,6 +28,11 @@ export type PanelId =
   | 'apps'
   | 'notes'
   | 'clipboard'
+  | 'games'
+  | 'library'
+  | 'room'
+  | 'radio'
+  | 'podcasts'
   | 'settings';
 
 export interface PanelMeta {
@@ -45,6 +55,11 @@ export const PANELS: readonly PanelMeta[] = [
   { id: 'apps', titleKey: 'panels.apps', icon: PictureInPicture2 },
   { id: 'notes', titleKey: 'panels.notes', icon: NotebookPen },
   { id: 'clipboard', titleKey: 'panels.clipboard', icon: ClipboardList },
+  { id: 'games', titleKey: 'panels.games', icon: Gamepad2 },
+  { id: 'library', titleKey: 'panels.library', icon: Library },
+  { id: 'room', titleKey: 'panels.room', icon: Sofa },
+  { id: 'radio', titleKey: 'panels.radio', icon: Radio },
+  { id: 'podcasts', titleKey: 'panels.podcasts', icon: Podcast },
   { id: 'settings', titleKey: 'panels.settings', icon: SettingsIcon },
 ];
 

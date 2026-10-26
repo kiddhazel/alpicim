@@ -6,7 +6,9 @@ import { isTauri } from '../../shared/lib/tauri';
 import { Badge, Button, TextInput, Toggle, type BadgeTone } from '../../shared/ui/primitives';
 import { describeError } from '../../shared/ui/StateView';
 import { useToast } from '../../shared/ui/Toast';
+import { usePersistentState } from '../../shared/lib/usePersistentState';
 import { Group } from '../settings/SettingsLayout';
+import { ICS_URL_KEY, sanitizeIcsUrl, saveIcsUrl } from '../widgets/basic/icsService';
 import { canTestIntegration, testIntegration } from './integrationTests';
 import { clearIntegrationKey, saveIntegrationKey } from './integrationsService';
 import { groupByCategory, isUsable, type IntegrationDef, type IntegrationStatus } from './registry';
@@ -134,6 +136,66 @@ function IntegrationRow({
       {def.control === 'settings' && <p className="mt-1 text-xs text-faint">{t('integrations.managedElsewhere')}</p>}
       {def.control === 'info' && <p className="mt-1 text-xs text-faint">{t('integrations.infoOnly')}</p>}
       {def.key && enabled && <KeyEditor def={def} name={name} hasKey={hasKey} />}
+      {def.id === 'ics' && enabled && <IcsUrlEditor />}
+    </div>
+  );
+}
+
+/** Takvim aboneliği adresi: yalnızca https; uygulama deposunda saklanır (depoya/koda yazılmaz). */
+function IcsUrlEditor() {
+  const toast = useToast();
+  const [saved, setSaved] = usePersistentState<string>(ICS_URL_KEY, '', sanitizeIcsUrl);
+  const [value, setValue] = useState('');
+  const desktop = isTauri();
+
+  const save = async () => {
+    try {
+      const url = await saveIcsUrl(value);
+      setValue('');
+      toast.push(url ? 'success' : 'info', t(url ? 'integrations.ics.saved' : 'integrations.ics.cleared'));
+    } catch {
+      toast.push('error', t('integrations.ics.invalid'));
+    }
+  };
+
+  return (
+    <div className="mt-3">
+      <form
+        className="flex flex-wrap gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void save();
+        }}
+      >
+        <TextInput
+          type="url"
+          autoComplete="off"
+          spellCheck={false}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={saved ? t('integrations.keyReplacePlaceholder') : t('integrations.ics.placeholder')}
+          aria-label={t('integrations.ics.label')}
+          className="min-w-48 flex-1"
+          disabled={!desktop}
+        />
+        <Button type="submit" variant="primary" icon={Save} disabled={!value.trim() || !desktop}>
+          {t('common.save')}
+        </Button>
+        {saved && (
+          <Button
+            variant="danger"
+            icon={Trash2}
+            onClick={() => {
+              setSaved('');
+              void saveIcsUrl('');
+              toast.push('info', t('integrations.ics.cleared'));
+            }}
+          >
+            {t('common.remove')}
+          </Button>
+        )}
+      </form>
+      {saved && <p className="selectable mt-1 truncate text-xs text-faint">{saved.replace(/\?.*$/, '?…')}</p>}
     </div>
   );
 }

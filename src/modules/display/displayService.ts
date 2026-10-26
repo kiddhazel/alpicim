@@ -23,7 +23,7 @@ export interface DisplaySnapshot {
   fullscreen: boolean;
 }
 
-export type ShortcutAction = 'toggleVisible' | 'toggleFullscreen' | 'palette';
+export type ShortcutAction = 'toggleVisible' | 'toggleFullscreen' | 'palette' | 'quickSearch' | 'quickClipboard';
 
 export interface ShortcutStatus {
   action: ShortcutAction;

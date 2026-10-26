@@ -3,7 +3,21 @@ import type { Quote } from '../../markets/types';
 import { sanitizeWidgets } from '../../workspaces/workspaces';
 import { convert, parseAmount, ratesFromQuotes, sanitizeConverter } from './converter';
 import { addCountdown, daysBetween, nextOccurrence, occurrences, sanitizeCountdown, type CountdownEvent } from './countdown';
-import { addHabit, bestStreak, currentStreak, lastDays, sanitizeHabits, toggleDay } from './habits';
+import {
+  addHabit,
+  bestStreak,
+  currentStreak,
+  habitStats,
+  lastDays,
+  milestoneCrossed,
+  sanitizeHabits,
+  setGoal,
+  toggleDay,
+  toggleWithMilestone,
+  weekStart,
+  weeklyStreaks,
+  type Habit,
+} from './habits';
 
 describe('habits', () => {
   it('sanitizes and dedupes days', () => {
@@ -14,7 +28,7 @@ describe('habits', () => {
         { id: 'b', name: '' },
       ],
     });
-    expect(cfg.habits).toEqual([{ id: 'a', name: 'Kitap', days: ['2026-10-01', '2026-10-02'] }]);
+    expect(cfg.habits).toEqual([{ id: 'a', name: 'Kitap', days: ['2026-10-01', '2026-10-02'], goal: 7 }]);
     expect(sanitizeHabits(null)).toEqual({ habits: [] });
   });
 
@@ -35,6 +49,55 @@ describe('habits', () => {
     expect(currentStreak(days, '2026-10-05')).toBe(0);
     expect(bestStreak(days)).toBe(3);
     expect(lastDays('2026-10-02', 3)).toEqual(['2026-09-30', '2026-10-01', '2026-10-02']);
+  });
+
+  it('keeps old entries compatible and validates goals', () => {
+    expect(sanitizeHabits({ habits: [{ id: 'a', name: 'Yürüyüş', days: [], goal: 3 }] }).habits[0]?.goal).toBe(3);
+    expect(sanitizeHabits({ habits: [{ id: 'a', name: 'Yürüyüş', days: [], goal: 0 }] }).habits[0]?.goal).toBe(7);
+    expect(sanitizeHabits({ habits: [{ id: 'a', name: 'Yürüyüş', days: [], goal: 2.5 }] }).habits[0]?.goal).toBe(7);
+    expect(sanitizeHabits({ habits: [{ id: 'a', name: 'Yürüyüş', days: [], goal: 9 }] }).habits[0]?.goal).toBe(7);
+    expect(addHabit([], 'Yüzme', 2)[0]?.goal).toBe(2);
+    const habits = addHabit([], 'Yüzme');
+    expect(setGoal(habits, habits[0]?.id ?? '', 4)[0]?.goal).toBe(4);
+  });
+
+  it('finds the start of the Monday-based week', () => {
+    expect(weekStart('2026-10-25')).toBe('2026-10-19'); // Pazar
+    expect(weekStart('2026-10-19')).toBe('2026-10-19'); // Pazartesi
+    expect(weekStart('2026-11-01')).toBe('2026-10-26');
+  });
+
+  it('computes weekly-goal streaks', () => {
+    // 3 gün/hafta hedefi: iki tam hafta + bu hafta henüz 1 gün.
+    const days = ['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-21'];
+    expect(weeklyStreaks(days, 3, '2026-10-22')).toEqual({ current: 2, best: 2 });
+    // Bu hafta hedef tutturulunca seri uzar.
+    expect(weeklyStreaks([...days, '2026-10-22', '2026-10-23'], 3, '2026-10-25')).toEqual({ current: 3, best: 3 });
+    // Ara hafta hedefi tutturmazsa seri kopar: bu hafta 1, en uzun 1.
+    expect(weeklyStreaks(['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-19', '2026-10-20', '2026-10-21'], 3, '2026-10-22')).toEqual({ current: 1, best: 1 });
+  });
+
+  it('builds habit stats for daily and weekly goals', () => {
+    const daily: Habit = { id: 'd', name: 'Kitap', days: ['2026-10-23', '2026-10-24', '2026-10-25'], goal: 7 };
+    expect(habitStats(daily, '2026-10-25')).toEqual({ streak: 3, best: 3, unit: 'day', weekDone: 3, goal: 7 });
+    const weekly: Habit = { ...daily, id: 'w', goal: 2 };
+    expect(habitStats(weekly, '2026-10-25')).toEqual({ streak: 1, best: 1, unit: 'week', weekDone: 3, goal: 2 });
+  });
+
+  it('celebrates only when a streak reaches a milestone', () => {
+    expect(milestoneCrossed(6, 7)).toBe(7);
+    expect(milestoneCrossed(7, 8)).toBeNull();
+    expect(milestoneCrossed(29, 30)).toBe(30);
+    expect(milestoneCrossed(99, 100)).toBe(100);
+    expect(milestoneCrossed(3, 3)).toBeNull();
+
+    const days = ['2026-10-19', '2026-10-20', '2026-10-21', '2026-10-22', '2026-10-23', '2026-10-24'];
+    const habits: Habit[] = [{ id: 'a', name: 'Koş', days, goal: 7 }];
+    expect(toggleWithMilestone(habits, 'a', '2026-10-25', '2026-10-25').milestone).toBe(7);
+    // Geri alma kutlama tetiklemez.
+    const seven: Habit[] = [{ id: 'a', name: 'Koş', days: [...days, '2026-10-25'], goal: 7 }];
+    expect(toggleWithMilestone(seven, 'a', '2026-10-25', '2026-10-25').milestone).toBeNull();
+    expect(toggleWithMilestone(habits, 'a', '2026-10-26', '2026-10-25').milestone).toBeNull();
   });
 });
 

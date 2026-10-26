@@ -220,3 +220,136 @@ html.laila-window #root {
   background: transparent !important;
   background-image: none !important;
 }
+
+/* Ortam teması (fx): yalnız aurora ışımaları ve hafif zemin kayması değişir; metin/yüzey belirteçlerine dokunulmaz.
+   Öncelik: gün dilimi < hava < özel gün (sonraki kural kazanır). --amb-k açık temada yoğunluğu azaltır. */
+@property --aurora-1 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgb(139 124 255 / 0.3);
+}
+@property --aurora-2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgb(34 211 238 / 0.2);
+}
+@property --aurora-3 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: rgb(236 72 153 / 0.1);
+}
+
+:root {
+  --amb-k: 1;
+  transition:
+    --aurora-1 2s ease,
+    --aurora-2 2s ease,
+    --aurora-3 2s ease;
+}
+:root[data-theme='light'] {
+  --amb-k: 0.8;
+}
+
+:root[data-ambient='dawn'] {
+  --aurora-1: color-mix(in srgb, #fb7185 calc(30% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #fbbf24 calc(20% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #a78bfa calc(16% * var(--amb-k)), transparent);
+}
+:root[data-ambient='day'] {
+  --aurora-1: color-mix(in srgb, #fbbf24 calc(30% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #38bdf8 calc(26% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #fde68a calc(18% * var(--amb-k)), transparent);
+}
+:root[data-ambient='sunset'] {
+  --aurora-1: color-mix(in srgb, #fb923c calc(34% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #ec4899 calc(24% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #8b5cf6 calc(16% * var(--amb-k)), transparent);
+}
+:root[data-ambient='night'] {
+  --aurora-1: color-mix(in srgb, #1e3a8a calc(40% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #312e81 calc(30% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #0f172a calc(30% * var(--amb-k)), transparent);
+}
+:root[data-theme='dark'][data-ambient='night'] {
+  --bg: #04060d;
+}
+
+:root[data-ambient][data-ambient-weather='cloudy'] {
+  --aurora-1: color-mix(in srgb, #64748b calc(30% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #94a3b8 calc(20% * var(--amb-k)), transparent);
+}
+:root[data-ambient][data-ambient-weather='rain'] {
+  --aurora-1: color-mix(in srgb, #475569 calc(38% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #3b82f6 calc(20% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #64748b calc(20% * var(--amb-k)), transparent);
+}
+:root[data-ambient][data-ambient-weather='fog'] {
+  --aurora-1: color-mix(in srgb, #94a3b8 calc(30% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #cbd5e1 calc(22% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #94a3b8 calc(14% * var(--amb-k)), transparent);
+}
+:root[data-ambient][data-ambient-weather='snow'] {
+  --aurora-1: color-mix(in srgb, #bae6fd calc(32% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #e0f2fe calc(26% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #93c5fd calc(18% * var(--amb-k)), transparent);
+}
+
+:root[data-holiday='halloween'][data-holiday] {
+  --aurora-1: color-mix(in srgb, #7c3aed calc(36% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #f97316 calc(26% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #4c1d95 calc(24% * var(--amb-k)), transparent);
+}
+:root[data-holiday='republic'][data-holiday] {
+  --aurora-1: color-mix(in srgb, #e30a17 calc(34% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #f8fafc calc(22% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #b91c1c calc(18% * var(--amb-k)), transparent);
+}
+:root[data-holiday='newYear'][data-holiday],
+:root[data-holiday='christmas'][data-holiday] {
+  --aurora-1: color-mix(in srgb, #dc2626 calc(28% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #16a34a calc(22% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #facc15 calc(16% * var(--amb-k)), transparent);
+}
+:root[data-holiday='valentine'][data-holiday] {
+  --aurora-1: color-mix(in srgb, #f43f5e calc(34% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #ec4899 calc(24% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #fda4af calc(18% * var(--amb-k)), transparent);
+}
+:root[data-holiday='children'][data-holiday] {
+  --aurora-1: color-mix(in srgb, #38bdf8 calc(30% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #facc15 calc(24% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #f43f5e calc(18% * var(--amb-k)), transparent);
+}
+:root[data-holiday='ramadan'][data-holiday],
+:root[data-holiday='kurban'][data-holiday] {
+  --aurora-1: color-mix(in srgb, #fbbf24 calc(30% * var(--amb-k)), transparent);
+  --aurora-2: color-mix(in srgb, #0d9488 calc(26% * var(--amb-k)), transparent);
+  --aurora-3: color-mix(in srgb, #312e81 calc(22% * var(--amb-k)), transparent);
+}
+
+/* Odak modu (modules/focus): ikincil sahne paneli soluk, kayan şerit durur, Laila sakin. */
+:root[data-focus-dim='on'] [data-stage-role='secondary'] {
+  opacity: 0.45;
+  filter: saturate(0.7);
+  transition: opacity 0.2s ease;
+}
+:root[data-focus-dim='on'] [data-stage-role='secondary']:hover {
+  opacity: 0.9;
+}
+:root[data-focus='on'] [style*='alpicim-marquee'] {
+  animation-play-state: paused !important;
+}
+:root[data-focus='on'] [data-laila-root] {
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+
+/* Oyun modu: tam ekran oyun açıkken tüm animasyonlar durur; Laila (masaüstü penceresi) gizlenir. */
+:root[data-game='on'] *,
+:root[data-game='on'] *::before,
+:root[data-game='on'] *::after {
+  animation-play-state: paused !important;
+}
+:root[data-game='on'].laila-window body {
+  visibility: hidden;
+}

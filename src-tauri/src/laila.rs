@@ -134,3 +134,149 @@ pub fn laila_open_main<R: Runtime>(app: AppHandle<R>) {
     crate::windows::show_main(&app);
 }
 
+
+/// Bir pencerenin üst kenarı (fiziksel piksel): Laila'nın üstüne çıkabileceği "çıkıntı".
+#[derive(Serialize, Clone, Debug, PartialEq)]
+pub struct Ledge {
+    x: i32,
+    y: i32,
+    width: u32,
+}
+
+const MAX_LEDGES: usize = 30;
+
+/// Birincil monitördeki görünür, simge durumunda olmayan, gizlenmemiş (cloaked) üst düzey pencerelerin üst kenarları.
+/// Yalnızca okur: başka pencerelere dokunmaz. Alpicim'in kendi pencereleri hariç tutulur.
+#[tauri::command]
+pub fn laila_window_ledges<R: Runtime>(app: AppHandle<R>) -> Vec<Ledge> {
+    let Ok(Some(monitor)) = app.primary_monitor() else {
+        return Vec::new();
+    };
+    let pos = monitor.position();
+    let size = monitor.size();
+    let bounds = (pos.x, pos.y, pos.x + size.width as i32, pos.y + size.height as i32);
+    ledges_impl::collect(bounds)
+}
+
+/// Üstte duran bir dikdörtgen (sol, üst, sağ, alt), altındaki pencerenin kenarını örtüyor mu?
+fn covered(rects: &[(i32, i32, i32, i32)], px: i32, py: i32) -> bool {
+    rects.iter().any(|&(l, t, r, b)| px > l && px < r && py > t && py < b)
+}
+
+#[cfg(windows)]
+mod ledges_impl {
+    use super::{covered, Ledge, MAX_LEDGES};
+    use windows::core::BOOL;
+    use windows::Win32::Foundation::{HWND, LPARAM, RECT};
+    use windows::Win32::Graphics::Dwm::{
+        DwmGetWindowAttribute, DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS,
+    };
+    use windows::Win32::UI::WindowsAndMessaging::{
+        EnumWindows, GetClassNameW, GetWindowLongW, GetWindowTextLengthW, GetWindowThreadProcessId,
+        IsIconic, IsWindowVisible, GWL_EXSTYLE, WS_EX_TOOLWINDOW,
+    };
+
+    struct Acc {
+        bounds: (i32, i32, i32, i32),
+        own_pid: u32,
+        rects: Vec<(i32, i32, i32, i32)>,
+        out: Vec<Ledge>,
+    }
+
+    fn class_name(h: HWND) -> String {
+        let mut buf = [0u16; 128];
+        let n = unsafe { GetClassNameW(h, &mut buf) }.max(0) as usize;
+        String::from_utf16_lossy(&buf[..n.min(buf.len())])
+    }
+
+    unsafe fn frame(h: HWND) -> Option<(i32, i32, i32, i32)> {
+        let mut rc = RECT::default();
+        DwmGetWindowAttribute(
+            h,
+            DWMWA_EXTENDED_FRAME_BOUNDS,
+            &mut rc as *mut _ as *mut core::ffi::c_void,
+            std::mem::size_of::<RECT>() as u32,
+        )
+        .ok()?;
+        Some((rc.left, rc.top, rc.right, rc.bottom))
+    }
+
+    unsafe extern "system" fn enum_proc(h: HWND, lparam: LPARAM) -> BOOL {
+        let acc = &mut *(lparam.0 as *mut Acc);
+        if acc.out.len() >= MAX_LEDGES {
+            return BOOL(0);
+        }
+        if !IsWindowVisible(h).as_bool() || IsIconic(h).as_bool() {
+            return BOOL(1);
+        }
+        let mut cloaked = 0u32;
+        if DwmGetWindowAttribute(h, DWMWA_CLOAKED, &mut cloaked as *mut _ as *mut core::ffi::c_void, 4).is_ok()
+            && cloaked != 0
+        {
+            return BOOL(1);
+        }
+        if (GetWindowLongW(h, GWL_EXSTYLE) as u32) & WS_EX_TOOLWINDOW.0 != 0 {
+            return BOOL(1);
+        }
+        if GetWindowTextLengthW(h) == 0 {
+            return BOOL(1);
+        }
+        let mut pid = 0u32;
+        GetWindowThreadProcessId(h, Some(&mut pid));
+        if pid == acc.own_pid {
+            return BOOL(1);
+        }
+        if matches!(
+            class_name(h).as_str(),
+            "Progman" | "WorkerW" | "Shell_TrayWnd" | "Shell_SecondaryTrayWnd"
+        ) {
+            return BOOL(1);
+        }
+        let Some((l, t, r, b)) = frame(h) else {
+            return BOOL(1);
+        };
+        if r <= l || b <= t {
+            return BOOL(1);
+        }
+        let (ml, mt, mr, mb) = acc.bounds;
+        // Z sırasında yukarıdan aşağıya gelinir: üstteki pencere kenarı örtüyorsa çıkıntı sayılmaz.
+        let mid = l + (r - l) / 2;
+        let visible_edge = !covered(&acc.rects, mid, t + 1);
+        acc.rects.push((l, t, r, b));
+        let cl = l.max(ml);
+        let cr = r.min(mr);
+        if visible_edge && t >= mt && t < mb && cr > cl {
+            acc.out.push(Ledge { x: cl, y: t, width: (cr - cl) as u32 });
+        }
+        BOOL(1)
+    }
+
+    pub fn collect(bounds: (i32, i32, i32, i32)) -> Vec<Ledge> {
+        let mut acc = Acc { bounds, own_pid: std::process::id(), rects: Vec::new(), out: Vec::new() };
+        unsafe {
+            let _ = EnumWindows(Some(enum_proc), LPARAM(&mut acc as *mut _ as isize));
+        }
+        acc.out
+    }
+}
+
+#[cfg(not(windows))]
+mod ledges_impl {
+    use super::Ledge;
+    pub fn collect(_bounds: (i32, i32, i32, i32)) -> Vec<Ledge> {
+        Vec::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::covered;
+
+    #[test]
+    fn covered_requires_strictly_inside() {
+        let rects = [(0, 0, 100, 100)];
+        assert!(covered(&rects, 50, 50));
+        assert!(!covered(&rects, 50, 0));
+        assert!(!covered(&rects, 150, 50));
+    }
+}
