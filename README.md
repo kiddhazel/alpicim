@@ -58,6 +58,13 @@ veya bulut altyapısı yoktur.
 - Tema (koyu / açık / sistem), haber ve piyasa yenileme sıklığı, tepsiye gizleme,
   **Entegrasyonlar** (her dış hizmeti aç/kapat, kendi API anahtarlarınızı girin/test edin), DEMO verisi, uygulamadan tamamen çıkış
 
+## v0.8 Laila
+
+- Laila, alt çubukta yürüyen piksel art karakterdir; widget'ların arkasına saklanır, ara sıra çıkıp konuşur.
+- Konuşmalar hazır cümlelerdir (internet ve yapay zekâ yok). Karaktere tıklayarak sohbet edilir.
+- Bazen ana monitörde görev çubuğu boyunca küçük, saydam bir pencerede yürür ve sonra geri döner.
+- Ayarlar → Özellikler → Laila bölümünden kapatılabilir veya konuşma sıklığı değiştirilebilir.
+
 ## Akıllı pencere yöneticisi (v0.5)
 
 - **Sahne:** ortada tek ana görünüm; açık görünümler üstte sekme (sürükleyerek sırala, üzerine gelince kapat / "sağa
@@ -426,6 +433,8 @@ Sıfırlamak için uygulamayı kapatıp bu klasörü silin.
   liste devamı, paletten not açma, alışkanlık işaretleme ve seri, geri sayım ekleme, örnek kurla çevirici, hızlı not);
   Tauri penceresinde ve ayrı panel penceresinde henüz denenmedi. Aynı not iki pencerede aynı anda düzenlenirse son
   kaydeden kazanır. Markdown desteği bilinçli olarak küçüktür (tablo, resim, iç içe alıntı yok).
+- Laila, yerel pencerelerin (tarayıcı, YouTube Music, gömülü uygulamalar) altında çizilir; bu pencereler açıkken arkasında kalır.
+- Laila'nın sohbet yanıtları yalnızca anahtar kelimelere göre seçilir; yapay zekâ veya internet bağlantısı yoktur.
 
 ## Proje yapısı
 

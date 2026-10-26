@@ -38,6 +38,7 @@ import { findSpot } from '../widgets/grid';
 import { widgetDef } from '../widgets/registry';
 import type { WidgetType } from '../widgets/types';
 import { activeWorkspace, updateActive, useWorkspaces, type MainLayout } from '../workspaces/workspaces';
+import { Laila } from '../laila/Laila';
 import { MiniPlayer } from '../music/MiniPlayer';
 import { TickerBar } from '../ticker/TickerBar';
 import { dockPanel, promote, setSecondary, swapPanels, togglePanel, undockPanel } from './mainLayout';
@@ -87,6 +88,7 @@ export function Shell() {
   const mounted = useMemo(() => PANELS.filter((p) => visibleDocked.includes(p.id)).map((p) => p.id), [visibleDocked]);
   const fullscreen = display.fullscreen;
   const stageRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
   const [live, setLive] = useState<Partial<Record<PanelId, number>> | null>(null);
 
   // Ayarlardaki tepsi tercihlerini Rust tarafına bildir.
@@ -379,7 +381,7 @@ export function Shell() {
             ))}
           </nav>
         </div>
-        <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-3 pl-3">
+        <main ref={mainRef} className="relative flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-3 pl-3">
           <div className="flex min-h-0 flex-1 flex-col gap-3">
             {!storeLoaded ? null : visibleDocked.length === 0 ? (
               <EmptyLayout onOpen={openPanel} />
@@ -457,6 +459,7 @@ export function Shell() {
               )}
             </footer>
           )}
+          {settings.lailaEnabled && <Laila hostRef={mainRef} panel={primary} />}
         </main>
       </div>
       {paletteOpen && <CommandPalette commands={paletteCommands} onClose={() => setPaletteOpen(false)} />}

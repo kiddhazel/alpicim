@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { usePersistentState } from '../../shared/lib/usePersistentState';
+import type { Chattiness } from '../laila/brain';
 import { isNewsCategory, type NewsCategory } from '../news/types';
 
 export type ThemeMode = 'dark' | 'light' | 'system';
@@ -36,6 +37,12 @@ export interface Settings {
   tickerCategory: NewsCategory | 'all';
   /** Şeritteki en fazla fiyat çipi sayısı. */
   tickerQuotes: number;
+  /** Laila uygulamada gezsin mi? */
+  lailaEnabled: boolean;
+  /** Laila ara sıra masaüstüne çıkabilsin mi? */
+  lailaDesktop: boolean;
+  /** Laila ne kadar konuşkan. */
+  lailaChat: Chattiness;
 }
 
 export const SETTINGS_KEY = 'settings';
@@ -56,6 +63,9 @@ export const DEFAULT_SETTINGS: Settings = {
   tickerSpeed: 'normal',
   tickerCategory: 'all',
   tickerQuotes: 4,
+  lailaEnabled: true,
+  lailaDesktop: true,
+  lailaChat: 'normal',
 };
 
 export const LIMITS = {
@@ -94,6 +104,9 @@ export function sanitizeSettings(raw: unknown): Settings {
     closeToTray: typeof r.closeToTray === 'boolean' ? r.closeToTray : d.closeToTray,
     showDemoData: typeof r.showDemoData === 'boolean' ? r.showDemoData : d.showDemoData,
     startHidden: typeof r.startHidden === 'boolean' ? r.startHidden : d.startHidden,
+    lailaEnabled: typeof r.lailaEnabled === 'boolean' ? r.lailaEnabled : d.lailaEnabled,
+    lailaDesktop: typeof r.lailaDesktop === 'boolean' ? r.lailaDesktop : d.lailaDesktop,
+    lailaChat: r.lailaChat === 'quiet' || r.lailaChat === 'normal' || r.lailaChat === 'chatty' ? r.lailaChat : d.lailaChat,
     performanceMode: typeof r.performanceMode === 'boolean' ? r.performanceMode : d.performanceMode,
     musicKeepPlaying: typeof r.musicKeepPlaying === 'boolean' ? r.musicKeepPlaying : d.musicKeepPlaying,
     embedEnabled: typeof r.embedEnabled === 'boolean' ? r.embedEnabled : d.embedEnabled,

@@ -1,3 +1,4 @@
+import { LailaDesktop } from './modules/laila/LailaDesktop';
 import { DetachedWindow } from './modules/window-manager/DetachedWindow';
 import { panelFromLabel } from './modules/window-manager/panels';
 import { Shell } from './modules/window-manager/Shell';
@@ -14,7 +15,9 @@ export function App() {
   useApplyTheme(settings.theme);
   useApplyPerformanceMode(settings.performanceMode);
 
-  const panel = panelFromLabel(currentWindowLabel());
+  const label = currentWindowLabel();
+  if (label === 'laila') return <LailaDesktop />;
+  const panel = panelFromLabel(label);
 
   return (
     <ToastProvider>{panel ? <DetachedWindow panel={panel} /> : <Shell />}</ToastProvider>

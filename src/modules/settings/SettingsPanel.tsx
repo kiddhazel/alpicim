@@ -2,6 +2,7 @@ import { AppWindow, Info, Keyboard, KeyRound, LayoutGrid, LogOut, Monitor, Palet
 import { useEffect, useState } from 'react';
 import { t, type MessageKey } from '../../i18n';
 import { isTauri } from '../../shared/lib/tauri';
+import type { Chattiness } from '../laila/brain';
 import { Button, cx, Segmented, TextInput, Toggle } from '../../shared/ui/primitives';
 import { AdblockSettings } from '../browser/AdblockSettings';
 import { IntegrationsSettings } from '../integrations/IntegrationsSettings';
@@ -139,6 +140,29 @@ export function SettingsPanel() {
               </Row>
               <Row label={t('settings.focusExisting')} hint={t('settings.focusExistingHint')}>
                 <Toggle checked={settings.launcherFocusExisting} label={t('settings.focusExisting')} onChange={(v) => set('launcherFocusExisting', v)} />
+              </Row>
+            </Group>
+          )}
+
+          {section === 'features' && (
+            <Group title={t('laila.settingsTitle')}>
+              <Row label={t('laila.enabled')} hint={t('laila.enabledHint')}>
+                <Toggle checked={settings.lailaEnabled} label={t('laila.enabled')} onChange={(v) => set('lailaEnabled', v)} />
+              </Row>
+              <Row label={t('laila.desktop')} hint={t('laila.desktopHint')}>
+                <Toggle checked={settings.lailaDesktop} label={t('laila.desktop')} onChange={(v) => set('lailaDesktop', v)} />
+              </Row>
+              <Row label={t('laila.chatty')}>
+                <Segmented<Chattiness>
+                  label={t('laila.chatty')}
+                  value={settings.lailaChat}
+                  options={[
+                    { value: 'quiet', label: t('laila.chattyQuiet') },
+                    { value: 'normal', label: t('laila.chattyNormal') },
+                    { value: 'chatty', label: t('laila.chattyChatty') },
+                  ]}
+                  onChange={(v) => set('lailaChat', v)}
+                />
               </Row>
             </Group>
           )}

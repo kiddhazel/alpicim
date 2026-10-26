@@ -21,6 +21,7 @@ import { BROWSER_KEYS, sanitizeBookmarks, type Bookmark } from '../browser/brows
 import { launcherService, type LaunchItem } from '../launcher/launcherService';
 import { NOTEBOOK_KEY, notePreview, noteTitle, sanitizeNotebook, sortNotes, type Note } from '../notebook/notebook';
 import { requestNotebook } from '../notebook/notebookService';
+import { LAILA_CHAT_EVENT, LAILA_LEAVE_EVENT } from '../laila/lailaEvents';
 import { useSettings } from '../settings/settings';
 import { WIDGETS } from '../widgets/registry';
 import type { WidgetType } from '../widgets/types';
@@ -88,6 +89,14 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
         keywords: 'performans hız animasyon',
         run: commands.togglePerformance,
       },
+      ...(settings.lailaEnabled
+        ? [
+            { id: 'act:laila-chat', group: 'action' as const, title: t('laila.paletteChat'), keywords: 'laila sohbet konuş', run: () => window.dispatchEvent(new Event(LAILA_CHAT_EVENT)) },
+            ...(settings.lailaDesktop && isTauri()
+              ? [{ id: 'act:laila-leave', group: 'action' as const, title: t('laila.paletteLeave'), keywords: 'laila dışarı masaüstü gez', run: () => window.dispatchEvent(new Event(LAILA_LEAVE_EVENT)) }]
+              : []),
+          ]
+        : []),
       { id: 'act:nexttab', group: 'action', title: t('bar.paletteNextTab'), keywords: 'sekme sonraki ctrl tab', run: commands.nextTab },
       { id: 'act:closetab', group: 'action', title: t('bar.paletteCloseTab'), keywords: 'sekme kapat ctrl w', run: commands.closeTab },
       { id: 'act:split', group: 'action', title: t('bar.paletteSplit'), keywords: 'bölünmüş split iki panel', run: commands.toggleSplit },
@@ -159,7 +168,7 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
       })),
     ];
     return list;
-  }, [commands, apps, bookmarks, notes, settings.performanceMode, settings.launcherFocusExisting, toast]);
+  }, [commands, apps, bookmarks, notes, settings.performanceMode, settings.lailaEnabled, settings.lailaDesktop, settings.launcherFocusExisting, toast]);
 
   const results = useMemo(() => rankItems(items, query, 40), [items, query]);
   useEffect(() => setIndex(0), [query]);

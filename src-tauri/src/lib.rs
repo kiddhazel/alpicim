@@ -7,6 +7,7 @@ mod display;
 mod embed;
 mod geometry;
 mod hotkeys;
+mod laila;
 mod launcher;
 mod music;
 mod net;
@@ -74,6 +75,11 @@ pub fn run() {
         })
         .on_window_event(windows::handle_window_event)
         .invoke_handler(tauri::generate_handler![
+            laila::laila_desktop_show,
+            laila::laila_desktop_hide,
+            laila::laila_geometry,
+            laila::laila_place,
+            laila::laila_open_main,
             windows::layout_get,
             windows::panel_open_window,
             windows::panel_close_window,

@@ -70,6 +70,7 @@ export const WidgetFrame = memo(function WidgetFrame({
 
   return (
     <section
+      data-laila-hide
       aria-label={t(def.titleKey)}
       style={frameStyle}
       className={cx(

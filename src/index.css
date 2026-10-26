@@ -212,3 +212,11 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Laila masaüstü penceresi: arka plan tamamen saydam olmalı. */
+html.laila-window,
+html.laila-window body,
+html.laila-window #root {
+  background: transparent !important;
+  background-image: none !important;
+}
