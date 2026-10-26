@@ -5,7 +5,7 @@ import { useFocusOn } from '../focus/useFocus';
 import { useSettings } from '../settings/settings';
 import { useGameMode } from '../library/gameMode';
 import type { Weather } from '../widgets/weather/weatherService';
-import { DAYPARTS, daypartForHour, fireworksLive, sceneKinds, weatherGroup, type Daypart } from './ambient';
+import { DAYPARTS, daypartForHour, fireworksLive, sceneKinds, toneFor, weatherGroup, type Daypart, type Tone } from './ambient';
 import { currentHoliday, type HolidayId } from './holidays';
 import { particleCount, spawn, step, twinkle, type FxKind, type Particle } from './particles';
 import { useFxPreview } from './preview';
@@ -165,8 +165,8 @@ function drawLights(ctx: CanvasRenderingContext2D, w: number, t: number) {
   }
 }
 
-/** Ortam: gün dilimi + hava + özel gün. Kök öznitelikleri ve canvas katmanları buradan yönetilir. */
-function useFxScene(setAttrs: boolean) {
+/** Ortam: gün dilimi + hava + özel gün canvas katmanları. Yalnız "Hava efektleri" açıkken (veya önizlemede) çizilir; kök öznitelik/ton değişimi yok. */
+function useFxScene() {
   const [settings] = useSettings();
   const reduced = useReduced();
   const preview = useFxPreview();
@@ -179,58 +179,55 @@ function useFxScene(setAttrs: boolean) {
   const daypart = previewDaypart ?? daypartForHour(date.getHours());
   const holiday: HolidayId | null = previewHoliday ?? (settings.fxHolidays ? currentHoliday(date) : null);
   const showHoliday = holiday !== null && (settings.fxHolidays || previewHoliday !== null);
-  const code = weather ? weather.code : null;
-
-  // Kök öznitelikleri (renk geçişi CSS'te; performans modunda da statik renk uygulanır).
-  useEffect(() => {
-    if (!setAttrs) return;
-    const root = document.documentElement;
-    const ambient = settings.fxAmbient || previewDaypart !== null;
-    if (ambient) {
-      root.dataset.ambient = daypart;
-      root.dataset.ambientWeather = code === null ? 'none' : weatherGroup(code);
-    } else {
-      delete root.dataset.ambient;
-      delete root.dataset.ambientWeather;
-    }
-    if (showHoliday && holiday) root.dataset.holiday = holiday;
-    else delete root.dataset.holiday;
-    return () => {
-      delete root.dataset.ambient;
-      delete root.dataset.ambientWeather;
-      delete root.dataset.holiday;
-    };
-  }, [setAttrs, settings.fxAmbient, previewDaypart, daypart, code, showHoliday, holiday]);
+  const code = weather ? weather.code : previewDaypart !== null ? 0 : null;
 
   const focusOn = useFocusOn();
   const gameMode = useGameMode();
-  const animate = !settings.performanceMode && !reduced && !gameMode && !focusOn;
+  const calm = !settings.performanceMode && !reduced && !gameMode && !focusOn;
+  const decorOn = (settings.fxHolidays && settings.fxHolidayDecor) || previewHoliday !== null;
+  const weatherOn = settings.fxWeather || previewDaypart !== null;
+  const animate = calm && (weatherOn || (showHoliday && decorOn));
   const kinds = useMemo(
     () =>
       animate
         ? sceneKinds({
             daypart,
             weatherCode: code,
-            holiday: showHoliday ? holiday : null,
-            weatherFx: settings.fxWeather,
-            ambientFx: settings.fxAmbient || previewDaypart !== null,
+            holiday: showHoliday && decorOn ? holiday : null,
+            weatherFx: weatherOn,
+            ambientFx: weatherOn,
           })
         : [],
-    [animate, daypart, code, showHoliday, holiday, settings.fxWeather, settings.fxAmbient, previewDaypart],
+    [animate, daypart, code, showHoliday, decorOn, holiday, weatherOn],
   );
-  const fireworks = showHoliday && fireworksLive(holiday, date, previewHoliday !== null);
-  return { kinds, fireworks };
+  const fireworks = showHoliday && decorOn && fireworksLive(holiday, date, previewHoliday !== null);
+  const group = code === null ? null : weatherGroup(code);
+  const tone: Tone | null = settings.fxAmbient || previewDaypart !== null ? toneFor(daypart, group) : null;
+  return { kinds, fireworks, tone };
 }
 
-/** Arka katman (içeriğin altı): yağmur, bulut, sis, güneş parıltısı, yıldız; kök öznitelikleri de burada. */
+/** Ortam teması: yalnız --bg ve --layer-1 birkaç % kayar (CSS: html[data-tone]). */
+function useApplyTone(tone: Tone | null) {
+  useEffect(() => {
+    const root = document.documentElement;
+    if (tone) root.dataset.tone = tone;
+    else delete root.dataset.tone;
+    return () => {
+      delete root.dataset.tone;
+    };
+  }, [tone]);
+}
+
+/** Arka katman (içeriğin altı): yağmur, bulut, sis, güneş parıltısı, yıldız. */
 export function WeatherFx() {
-  const { kinds, fireworks } = useFxScene(true);
+  const { kinds, fireworks, tone } = useFxScene();
+  useApplyTone(tone);
   return <FxCanvas kinds={kinds.filter((k) => BACK_KINDS.includes(k))} fireworks={fireworks} front={false} />;
 }
 
 /** Süs katmanı: WidgetBoard içinde, kartların ARKASINDA (yalnız boşluklarda görünür). */
 export function FxDecor() {
-  const { kinds, fireworks } = useFxScene(false);
+  const { kinds, fireworks } = useFxScene();
   return <FxCanvas kinds={kinds.filter((k) => FRONT_KINDS.includes(k))} fireworks={fireworks} front />;
 }
 

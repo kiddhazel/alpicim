@@ -14,7 +14,7 @@ export function MusicWidget(_props: WidgetProps<MusicWidgetConfig>) {
     <div className="flex h-full flex-col justify-center gap-2 px-3">
       <MediaControls />
       <div className="flex items-center justify-between px-1">
-        <p className="text-xs text-faint">{t('media.source')}</p>
+        <p className="text-xs text-fg-3">{t('media.source')}</p>
         <Button variant="ghost" icon={Music2} onClick={() => host.openPanel('music')} className="h-8 px-2 text-xs">
           {t('panels.music')}
         </Button>

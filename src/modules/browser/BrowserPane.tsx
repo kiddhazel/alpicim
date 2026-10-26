@@ -53,7 +53,7 @@ export function BrowserPane({
       className={cx(
         'flex min-h-0 min-w-0 flex-col rounded-xl',
         split && 'p-0.5',
-        split && (focused ? 'bg-accent-gradient' : 'bg-surface-2'),
+        split && (focused ? 'bg-accent' : 'bg-layer'),
       )}
       onMouseDown={() => {
         if (!focused) api.focus(pane);
@@ -66,7 +66,7 @@ export function BrowserPane({
           onClick={() => api.focus(pane)}
           className={cx(
             'flex h-7 shrink-0 items-center gap-1.5 px-2 text-left text-xs',
-            focused ? 'text-white' : 'text-muted hover:text-fg',
+            focused ? 'text-on-accent' : 'text-fg-2 hover:text-fg',
           )}
         >
           <TabIcon tab={tab} loading={rt.loading} />
@@ -74,7 +74,7 @@ export function BrowserPane({
         </button>
       )}
       {/* Yerel webview bu alanın üstüne yerleştirilir. */}
-      <div ref={contentRef} className={cx('relative min-h-0 flex-1 bg-surface', split && 'overflow-hidden rounded-[10px]')}>
+      <div ref={contentRef} className={cx('relative min-h-0 flex-1 bg-card', split && 'overflow-hidden rounded-[10px]')}>
         {home ? (
           <StartPage bookmarks={bookmarks} onOpen={open} onRemove={onRemoveBookmark} autoFocus={focused} />
         ) : rt.failed ? (
@@ -85,7 +85,7 @@ export function BrowserPane({
             action={<Button onClick={() => api.retry(tab.id)}>{t('common.retry')}</Button>}
           />
         ) : suspended || !rt.opened ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-faint">
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-4 text-center text-sm text-fg-3">
             {!rt.opened && !suspended && <Loader2 size={20} className="animate-spin text-accent" />}
             <span className="max-w-full truncate">{tabLabel(tab)}</span>
           </div>

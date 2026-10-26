@@ -1,109 +1,113 @@
 ﻿@import 'tailwindcss';
 
-/* Renk belirteçleri: bileşenler yalnızca bu anlamsal adları kullanır (bg-surface, text-muted ...). */
+/* Alpicim 1.0 belirteçleri (docs/dev/redesign-v1.md §2). Bileşenler yalnız anlamsal adları kullanır.
+   Yeni adlar: bg-layer, bg-card, bg-card-hover, bg-control, border-stroke, text-fg-2, text-fg-3.
+   Eski surface-, line-, muted, faint, glass ve gradyan adları kaldırıldı. */
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #07080c;
-  --surface: rgb(20 22 30 / 0.72);
-  --surface-solid: #14161e;
-  --surface-2: rgb(255 255 255 / 0.04);
-  --surface-3: rgb(255 255 255 / 0.08);
-  --glass-edge: rgb(255 255 255 / 0.08);
-  --aurora-1: rgb(139 124 255 / 0.32);
-  --aurora-2: rgb(34 211 238 / 0.22);
-  --aurora-3: rgb(236 72 153 / 0.12);
-  --border: rgb(255 255 255 / 0.07);
-  --border-strong: rgb(255 255 255 / 0.14);
-  --text: #eceff4;
-  --muted: #a1a9b8;
-  --faint: #6f7787;
-  --accent: #8b7cff;
-  --accent-2: #22d3ee;
-  --accent-soft: rgb(139 124 255 / 0.16);
-  --up: #4ade80;
-  --down: #f87171;
-  --warn: #fbbf24;
-  --demo: #c084fc;
-  --danger: #ef4444;
-  --on-accent: #ffffff;
-  --shadow-panel: 0 8px 32px rgb(0 0 0 / 0.35);
+  --bg: #1b1b1d;
+  --layer-1: #232326;
+  --card: #2a2a2e;
+  --card-hover: #313136;
+  --control: #34343a;
+  --control-hover: #3c3c43;
+  --raised: #3c3c43;
+  --stroke: rgb(255 255 255 / 0.07);
+  --stroke-strong: rgb(255 255 255 / 0.12);
+  --text: #f2f2f4;
+  --text-2: #a7a7ae;
+  --text-3: #74747c;
+  --accent: #5b9cf5;
+  --accent-hover: #74abf7;
+  --accent-soft: rgb(91 156 245 / 0.14);
+  --up: #4cc38a;
+  --down: #ef6461;
+  --warn: #e8b54a;
+  --on-accent: #0d1b30;
+  --overlay: rgb(0 0 0 / 0.5);
+  --shadow-card: 0 0 0 0 transparent;
+  --shadow-pop: 0 8px 28px rgb(0 0 0 / 0.28);
+  --demo: #b69cf0;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #eef0f7;
-  --surface: rgb(255 255 255 / 0.72);
-  --surface-solid: #ffffff;
-  --surface-2: rgb(15 23 42 / 0.04);
-  --surface-3: rgb(15 23 42 / 0.07);
-  --glass-edge: rgb(255 255 255 / 0.9);
-  --aurora-1: rgb(139 124 255 / 0.25);
-  --aurora-2: rgb(34 211 238 / 0.2);
-  --aurora-3: rgb(236 72 153 / 0.1);
-  --border: rgb(15 23 42 / 0.08);
-  --border-strong: rgb(15 23 42 / 0.16);
-  --text: #121620;
-  --muted: #4b5565;
-  --faint: #8a93a3;
-  --accent: #6d5dfc;
-  --accent-2: #0891b2;
-  --accent-soft: rgb(109 93 252 / 0.14);
-  --up: #15803d;
-  --down: #dc2626;
-  --warn: #b45309;
-  --demo: #9333ea;
-  --danger: #dc2626;
+  --bg: #f3f3f5;
+  --layer-1: #fbfbfc;
+  --card: #ffffff;
+  --card-hover: #f7f7f9;
+  --control: #f0f0f3;
+  --control-hover: #e8e8ec;
+  --raised: #ffffff;
+  --stroke: rgb(0 0 0 / 0.07);
+  --stroke-strong: rgb(0 0 0 / 0.12);
+  --text: #1c1c1f;
+  --text-2: #5d5d66;
+  --text-3: #8b8b94;
+  --accent: #2f6fde;
+  --accent-hover: #2560c8;
+  --accent-soft: rgb(47 111 222 / 0.1);
+  --up: #1f9d63;
+  --down: #d4423f;
+  --warn: #b7851b;
   --on-accent: #ffffff;
-  --shadow-panel: 0 1px 2px rgb(15 23 42 / 0.05), 0 8px 32px rgb(15 23 42 / 0.08);
+  --overlay: rgb(0 0 0 / 0.32);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 8px rgb(0 0 0 / 0.04);
+
+  --demo: #7c4fd0;
 }
 
 @theme inline {
   --color-bg: var(--bg);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-surface-3: var(--surface-3);
-  --color-line: var(--border);
-  --color-line-strong: var(--border-strong);
+  --color-layer: var(--layer-1);
+  --color-card: var(--card);
+  --color-card-hover: var(--card-hover);
+  --color-control: var(--control);
+  --color-control-hover: var(--control-hover);
+  --color-raised: var(--raised);
+  --color-stroke: var(--stroke);
+  --color-stroke-strong: var(--stroke-strong);
+  --color-fg-2: var(--text-2);
+  --color-fg-3: var(--text-3);
+  --color-accent-hover: var(--accent-hover);
+  --color-overlay: var(--overlay);
   --color-fg: var(--text);
-  --color-muted: var(--muted);
-  --color-faint: var(--faint);
   --color-accent: var(--accent);
-  --color-accent-2: var(--accent-2);
   --color-accent-soft: var(--accent-soft);
   --color-up: var(--up);
   --color-down: var(--down);
   --color-warn: var(--warn);
   --color-demo: var(--demo);
-  --color-danger: var(--danger);
   --color-on-accent: var(--on-accent);
-  --shadow-panel: var(--shadow-panel);
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
   --font-sans: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'Cascadia Mono', Consolas, ui-monospace, monospace;
 
   --text-xs: 12px;
-  --text-xs--line-height: 1.5;
+  --text-xs--line-height: 1.45;
   --text-sm: 13px;
-  --text-sm--line-height: 1.5;
+  --text-sm--line-height: 1.45;
   --text-base: 14px;
-  --text-base--line-height: 1.5;
+  --text-base--line-height: 1.45;
   --text-md: 15px;
-  --text-md--line-height: 1.5;
-  --text-lg: 17px;
-  --text-lg--line-height: 1.45;
+  --text-md--line-height: 1.45;
+  --text-lg: 16px;
+  --text-lg--line-height: 1.3;
   --text-xl: 20px;
-  --text-xl--line-height: 1.35;
+  --text-xl--line-height: 1.2;
   --text-2xl: 24px;
-  --text-2xl--line-height: 1.25;
-  --text-3xl: 30px;
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 28px;
   --text-3xl--line-height: 1.15;
-  --text-4xl: 38px;
-  --text-4xl--line-height: 1.15;
+  --text-4xl: 40px;
+  --text-4xl--line-height: 1.1;
   --text-5xl: 48px;
-  --text-5xl--line-height: 1.15;
+  --text-5xl--line-height: 1.1;
   --text-6xl: 60px;
-  --text-6xl--line-height: 1.15;
+  --text-6xl--line-height: 1.1;
 }
 html,
 body,
@@ -114,16 +118,10 @@ body,
 body {
   margin: 0;
   background-color: var(--bg);
-  background-image:
-    radial-gradient(60% 60% at 0% 0%, var(--aurora-1), transparent 70%),
-    radial-gradient(55% 55% at 100% 100%, var(--aurora-2), transparent 70%),
-    radial-gradient(40% 45% at 70% 10%, var(--aurora-3), transparent 70%);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   user-select: none;
   overflow: hidden;
@@ -149,46 +147,19 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--stroke-strong);
   border: 2px solid transparent;
   background-clip: content-box;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-strong);
+  background: var(--text-3);
   background-clip: content-box;
 }
 
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
-
-@utility glass {
-  background: var(--surface);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  backdrop-filter: blur(20px) saturate(140%);
-  box-shadow:
-    inset 0 0 0 1px var(--glass-edge),
-    var(--shadow-panel);
-}
-
-@utility bg-accent-gradient {
-  background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
-}
-
-@utility text-gradient {
-  background-image: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-:root[data-perf='on'] .glass {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: var(--surface-solid);
 }
 
 .tabular {
@@ -221,111 +192,7 @@ html.laila-window #root {
   background-image: none !important;
 }
 
-/* Ortam teması (fx): yalnız aurora ışımaları ve hafif zemin kayması değişir; metin/yüzey belirteçlerine dokunulmaz.
-   Öncelik: gün dilimi < hava < özel gün (sonraki kural kazanır). --amb-k açık temada yoğunluğu azaltır. */
-@property --aurora-1 {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: rgb(139 124 255 / 0.3);
-}
-@property --aurora-2 {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: rgb(34 211 238 / 0.2);
-}
-@property --aurora-3 {
-  syntax: '<color>';
-  inherits: true;
-  initial-value: rgb(236 72 153 / 0.1);
-}
-
-:root {
-  --amb-k: 1;
-  transition:
-    --aurora-1 2s ease,
-    --aurora-2 2s ease,
-    --aurora-3 2s ease;
-}
-:root[data-theme='light'] {
-  --amb-k: 0.8;
-}
-
-:root[data-ambient='dawn'] {
-  --aurora-1: color-mix(in srgb, #fb7185 calc(30% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #fbbf24 calc(20% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #a78bfa calc(16% * var(--amb-k)), transparent);
-}
-:root[data-ambient='day'] {
-  --aurora-1: color-mix(in srgb, #fbbf24 calc(30% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #38bdf8 calc(26% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #fde68a calc(18% * var(--amb-k)), transparent);
-}
-:root[data-ambient='sunset'] {
-  --aurora-1: color-mix(in srgb, #fb923c calc(34% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #ec4899 calc(24% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #8b5cf6 calc(16% * var(--amb-k)), transparent);
-}
-:root[data-ambient='night'] {
-  --aurora-1: color-mix(in srgb, #1e3a8a calc(40% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #312e81 calc(30% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #0f172a calc(30% * var(--amb-k)), transparent);
-}
-:root[data-theme='dark'][data-ambient='night'] {
-  --bg: #04060d;
-}
-
-:root[data-ambient][data-ambient-weather='cloudy'] {
-  --aurora-1: color-mix(in srgb, #64748b calc(30% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #94a3b8 calc(20% * var(--amb-k)), transparent);
-}
-:root[data-ambient][data-ambient-weather='rain'] {
-  --aurora-1: color-mix(in srgb, #475569 calc(38% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #3b82f6 calc(20% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #64748b calc(20% * var(--amb-k)), transparent);
-}
-:root[data-ambient][data-ambient-weather='fog'] {
-  --aurora-1: color-mix(in srgb, #94a3b8 calc(30% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #cbd5e1 calc(22% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #94a3b8 calc(14% * var(--amb-k)), transparent);
-}
-:root[data-ambient][data-ambient-weather='snow'] {
-  --aurora-1: color-mix(in srgb, #bae6fd calc(32% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #e0f2fe calc(26% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #93c5fd calc(18% * var(--amb-k)), transparent);
-}
-
-:root[data-holiday='halloween'][data-holiday] {
-  --aurora-1: color-mix(in srgb, #7c3aed calc(36% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #f97316 calc(26% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #4c1d95 calc(24% * var(--amb-k)), transparent);
-}
-:root[data-holiday='republic'][data-holiday] {
-  --aurora-1: color-mix(in srgb, #e30a17 calc(34% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #f8fafc calc(22% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #b91c1c calc(18% * var(--amb-k)), transparent);
-}
-:root[data-holiday='newYear'][data-holiday],
-:root[data-holiday='christmas'][data-holiday] {
-  --aurora-1: color-mix(in srgb, #dc2626 calc(28% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #16a34a calc(22% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #facc15 calc(16% * var(--amb-k)), transparent);
-}
-:root[data-holiday='valentine'][data-holiday] {
-  --aurora-1: color-mix(in srgb, #f43f5e calc(34% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #ec4899 calc(24% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #fda4af calc(18% * var(--amb-k)), transparent);
-}
-:root[data-holiday='children'][data-holiday] {
-  --aurora-1: color-mix(in srgb, #38bdf8 calc(30% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #facc15 calc(24% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #f43f5e calc(18% * var(--amb-k)), transparent);
-}
-:root[data-holiday='ramadan'][data-holiday],
-:root[data-holiday='kurban'][data-holiday] {
-  --aurora-1: color-mix(in srgb, #fbbf24 calc(30% * var(--amb-k)), transparent);
-  --aurora-2: color-mix(in srgb, #0d9488 calc(26% * var(--amb-k)), transparent);
-  --aurora-3: color-mix(in srgb, #312e81 calc(22% * var(--amb-k)), transparent);
-}
+/* Ortam teması kaldırıldı (docs/dev/redesign-v1.md §7): zemin opak, saate/havaya/özel güne göre ton değişmez. */
 
 /* Odak modu (modules/focus): ikincil sahne paneli soluk, kayan şerit durur, Laila sakin. */
 :root[data-focus-dim='on'] [data-stage-role='secondary'] {
@@ -353,3 +220,16 @@ html.laila-window #root {
 :root[data-game='on'].laila-window body {
   visibility: hidden;
 }
+
+/* Ortam teması (Ayarlar → Efektler): yalnız --bg ve --layer-1 birkaç % kayar; metin kontrastı korunur. */
+@property --bg { syntax: '<color>'; inherits: true; initial-value: #1b1b1d; }
+@property --layer-1 { syntax: '<color>'; inherits: true; initial-value: #232326; }
+:root { transition: --bg 2s ease, --layer-1 2s ease; }
+:root[data-theme='dark'][data-tone='night'] { --bg: #15161a; --layer-1: #1d1e23; }
+:root[data-theme='dark'][data-tone='dawn'] { --bg: #1d1b1f; --layer-1: #252227; }
+:root[data-theme='dark'][data-tone='sunset'] { --bg: #201b1a; --layer-1: #282322; }
+:root[data-theme='dark'][data-tone='gray'] { --bg: #1a1c1f; --layer-1: #222428; }
+:root[data-theme='light'][data-tone='night'] { --bg: #e8e9ef; --layer-1: #f1f2f7; }
+:root[data-theme='light'][data-tone='dawn'] { --bg: #f5f1f3; --layer-1: #fcf8fa; }
+:root[data-theme='light'][data-tone='sunset'] { --bg: #f6f1ec; --layer-1: #fdf9f4; }
+:root[data-theme='light'][data-tone='gray'] { --bg: #eceef1; --layer-1: #f5f6f8; }

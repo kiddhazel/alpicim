@@ -36,8 +36,8 @@ export function WindowsWidget(_props: WidgetProps<WindowsWidgetConfig>) {
         <li key={tab.id} className="flex items-center gap-3 px-4 py-2.5">
           <AppWindow size={16} className="text-accent" />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{appName(tab)}</p>
-            <p className="truncate text-xs text-faint">{tab.title}</p>
+            <p className="truncate text-sm font-semibold">{appName(tab)}</p>
+            <p className="truncate text-xs text-fg-3">{tab.title}</p>
           </div>
           <IconButton
             size="sm"

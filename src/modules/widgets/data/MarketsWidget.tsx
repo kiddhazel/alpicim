@@ -46,12 +46,12 @@ export function MarketsWidget({ size }: WidgetProps<MarketsWidgetConfig>) {
         const down = (q.changePct ?? 0) < 0;
         return (
           <li key={q.key} className="flex items-center gap-2 px-4 py-2.5" title={`${q.sourceName} · ${formatRelative(q.asOf ?? q.fetchedAt, now)}`}>
-            <span className="min-w-0 flex-1 truncate text-sm font-medium">{q.label}</span>
+            <span className="min-w-0 flex-1 truncate text-sm font-semibold">{q.label}</span>
             <Badge tone={badge.tone}>{t(badge.key)}</Badge>
-            <span className="tabular w-24 text-right text-base font-semibold">
+            <span className="tabular-nums w-24 text-right text-base font-semibold">
               {formatNumber(q.price, q.price >= 1000 ? 2 : 4)}
             </span>
-            <span className={cx('tabular w-16 text-right text-xs', up ? 'text-up' : down ? 'text-down' : 'text-faint')}>
+            <span className={cx('tabular-nums w-16 text-right text-xs', up ? 'text-up' : down ? 'text-down' : 'text-fg-3')}>
               {q.changePct === null ? '—' : formatPercent(q.changePct)}
             </span>
           </li>

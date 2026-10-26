@@ -2,9 +2,9 @@ import { readKey } from '../../shared/lib/store';
 import { DEFAULT_SETTINGS, sanitizeSettings, SETTINGS_KEY } from '../settings/settings';
 import { burst, stepConfetto } from './particles';
 
-const COLORS = ['#f472b6', '#facc15', '#34d399', '#60a5fa', '#a78bfa', '#fb923c'];
+const COLORS = ['#5b9cf5', '#4cc38a', '#e8b54a', '#ef6461', '#a7a7ae'];
 
-/** Kısa piksel konfeti patlaması (geçici tam ekran tuval; bitince kaldırılır). Ayar kapalıysa hiçbir şey yapmaz. */
+/** Küçük ve kısa (~0,7 sn) konfeti patlaması (geçici tam ekran tuval; bitince kaldırılır). Ayar kapalıysa hiçbir şey yapmaz. */
 export function celebrate(origin?: { x: number; y: number }): void {
   if (typeof document === 'undefined') return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -27,7 +27,7 @@ function run(origin?: { x: number; y: number }): void {
   if (!ctx) return;
   document.body.appendChild(canvas);
   const o = origin ?? { x: w / 2, y: h * 0.6 };
-  const items = burst(70, o.x, o.y, COLORS.length);
+  const items = burst(32, o.x, o.y, COLORS.length);
   let last = performance.now();
   const frame = (now: number) => {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -36,7 +36,7 @@ function run(origin?: { x: number; y: number }): void {
     let alive = 0;
     for (const c of items) {
       if (c.life <= 0) continue;
-      if (stepConfetto(c, dt)) alive++;
+      if (stepConfetto(c, dt * 1.5)) alive++;
       ctx.globalAlpha = Math.min(1, Math.max(0, c.life * 2));
       ctx.fillStyle = COLORS[c.color] ?? '#fff';
       ctx.fillRect(Math.round(c.x), Math.round(c.y), c.size, c.size);

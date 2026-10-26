@@ -19,7 +19,7 @@ export const NOTE_COLORS: readonly NoteColor[] = ['none', 'violet', 'cyan', 'gre
 export const NOTE_HUE: Record<NoteColor, string | null> = {
   none: null,
   violet: 'var(--accent)',
-  cyan: 'var(--accent-2)',
+  cyan: 'var(--accent)',
   green: 'var(--up)',
   amber: 'var(--warn)',
   rose: 'var(--down)',

@@ -56,7 +56,7 @@ export function ConverterWidget({ config, setConfig, size }: WidgetProps<Convert
           onChange={(e) => setConfig({ amount: e.target.value })}
           aria-label={t('widgets.converter.amount')}
           aria-invalid={amount === null}
-          className="tabular w-28 min-w-0 flex-1 text-right"
+          className="tabular-nums w-28 min-w-0 flex-1 text-right"
         />
         <Select value={from} onChange={(e) => setConfig({ from: e.target.value })} aria-label={t('widgets.converter.from')}>
           {codes.map((c) => (
@@ -80,18 +80,18 @@ export function ConverterWidget({ config, setConfig, size }: WidgetProps<Convert
         {result === null ? (
           <p className="text-sm text-warn">{t('widgets.converter.invalid')}</p>
         ) : (
-          <p className={cx('truncate font-display font-semibold tabular', big ? 'text-3xl' : 'text-2xl')} title={`${formatNumber(result, 6)} ${to}`}>
+          <p className={cx('truncate font-display font-semibold tabular-nums', big ? 'text-3xl' : 'text-2xl')} title={`${formatNumber(result, 6)} ${to}`}>
             {formatNumber(result, digits(result))}
-            <span className="ml-1.5 text-base font-normal text-muted">{to}</span>
+            <span className="ml-1.5 text-base font-normal text-fg-2">{to}</span>
           </p>
         )}
         {unit !== null && (
-          <p className="truncate text-xs text-faint tabular">
+          <p className="truncate text-xs text-fg-3 tabular-nums">
             1 {from} = {formatNumber(unit, 4)} {to}
           </p>
         )}
       </div>
-      <div className="flex items-center gap-2 text-xs text-faint" title={t('widgets.converter.note')}>
+      <div className="flex items-center gap-2 text-xs text-fg-3" title={t('widgets.converter.note')}>
         <Badge tone={badge.tone}>{t(badge.key)}</Badge>
         <span className="truncate">{t('widgets.converter.source', { time: formatRelative(asOf, now) })}</span>
       </div>

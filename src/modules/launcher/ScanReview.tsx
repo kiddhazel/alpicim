@@ -79,7 +79,7 @@ export function ScanReview({ existingPaths, onCancel, onConfirm }: Props) {
         <IconButton icon={ArrowLeft} label={t('common.back')} onClick={onCancel} />
         <div className="min-w-0 flex-1">
           <h3 className="text-md font-semibold">{t('launcher.scanTitle')}</h3>
-          <p className="truncate text-xs text-faint">{t('launcher.scanHint')}</p>
+          <p className="truncate text-xs text-fg-3">{t('launcher.scanHint')}</p>
         </div>
         <Button variant="primary" icon={saving ? Loader2 : Plus} disabled={!rows || selectedCount === 0 || saving} onClick={() => void confirm()}>
           {t('launcher.scanAdd', { n: selectedCount })}
@@ -100,7 +100,7 @@ export function ScanReview({ existingPaths, onCancel, onConfirm }: Props) {
             return (
               <section key={category} className="mb-4">
                 <div className="mb-2 flex items-center gap-2">
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-faint">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-fg-3">
                     {category || t('launcher.uncategorized')} <span className="tabular font-normal">({list.length})</span>
                   </h4>
                   {selectable.length > 0 && (
@@ -109,7 +109,7 @@ export function ScanReview({ existingPaths, onCancel, onConfirm }: Props) {
                     </button>
                   )}
                 </div>
-                <ul className="divide-y divide-line overflow-hidden rounded-xl bg-surface-2">
+                <ul className="divide-y divide-stroke overflow-hidden rounded-xl bg-layer">
                   {list.map((r) => (
                     <li key={r.path} className={cx('flex items-center gap-3 px-4 py-2.5', r.alreadyAdded && 'opacity-55')}>
                       <input
@@ -123,7 +123,7 @@ export function ScanReview({ existingPaths, onCancel, onConfirm }: Props) {
                       <AppIcon path={r.path} fallback={r.target.includes('://') ? Gamepad2 : Monitor} size={24} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{r.name}</p>
-                        <p className="selectable truncate text-xs text-faint" title={r.target}>
+                        <p className="selectable truncate text-xs text-fg-3" title={r.target}>
                           {r.target}
                         </p>
                       </div>
@@ -154,7 +154,7 @@ export function ScanReview({ existingPaths, onCancel, onConfirm }: Props) {
         )}
       </div>
       {rows && rows.length > 0 && (
-        <p className="shrink-0 px-4 py-2 text-xs text-faint">
+        <p className="shrink-0 px-4 py-2 text-xs text-fg-3">
           <ScanSearch size={12} className="mr-1 inline" />
           {t('launcher.scanSummary', { n: rows.length })}
         </p>

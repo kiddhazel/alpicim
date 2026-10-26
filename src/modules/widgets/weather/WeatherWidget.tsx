@@ -112,11 +112,11 @@ export function WeatherWidget({ config, setConfig, size, active }: WidgetProps<W
       <div className="flex items-center gap-3">
         <Icon size={large ? 40 : 32} strokeWidth={1.5} className="shrink-0 text-accent" />
         <div className="min-w-0">
-          <p className="font-display tabular text-4xl leading-none font-semibold">{Math.round(weather.temperature)}°</p>
-          <p className="mt-1 truncate text-sm text-muted">{t(weatherLabelKey(weather.code))}</p>
+          <p className="font-display tabular-nums text-4xl leading-none font-semibold">{Math.round(weather.temperature)}°</p>
+          <p className="mt-1 truncate text-sm text-fg-2">{t(weatherLabelKey(weather.code))}</p>
         </div>
-        <div className="ml-auto min-w-0 text-right text-xs text-muted">
-          <p className="truncate font-medium text-fg">{city.name}</p>
+        <div className="ml-auto min-w-0 text-right text-xs text-fg-2">
+          <p className="truncate font-semibold text-fg">{city.name}</p>
           {weather.apparent !== null && <p>{t('weather.feels', { n: Math.round(weather.apparent) })}</p>}
           {weather.wind !== null && <p>{t('weather.wind', { n: Math.round(weather.wind) })}</p>}
         </div>
@@ -126,18 +126,18 @@ export function WeatherWidget({ config, setConfig, size, active }: WidgetProps<W
           {weather.daily.slice(0, 4).map((d) => {
             const DayIcon = iconFor(d.code, true);
             return (
-              <li key={d.date} className="rounded-lg bg-surface-3 py-1.5">
-                <p className="text-muted">{DAY.format(new Date(`${d.date}T12:00:00`))}</p>
-                <DayIcon size={15} className="mx-auto my-0.5 text-muted" />
-                <p className="tabular">
-                  {Math.round(d.max)}° <span className="text-faint">{Math.round(d.min)}°</span>
+              <li key={d.date} className="rounded-lg bg-control py-1.5">
+                <p className="text-fg-2">{DAY.format(new Date(`${d.date}T12:00:00`))}</p>
+                <DayIcon size={15} className="mx-auto my-0.5 text-fg-2" />
+                <p className="tabular-nums">
+                  {Math.round(d.max)}° <span className="text-fg-3">{Math.round(d.min)}°</span>
                 </p>
               </li>
             );
           })}
         </ul>
       )}
-      <p className="mt-auto truncate text-xs text-faint" title={error ? describeError(error).description : undefined}>
+      <p className="mt-auto truncate text-xs text-fg-3" title={error ? describeError(error).description : undefined}>
         {t('weather.source', { source: sourceName(source), time: formatRelative(weather.fetchedAt, now) })}
         {error ? ` · ${t('weather.stale')}` : ''}
       </p>
@@ -165,7 +165,7 @@ function CityPicker({ source, onPick }: { source: WeatherSource; onPick: (c: Cit
 
   return (
     <div className="flex h-full flex-col gap-2 overflow-y-auto px-4 py-2">
-      <p className="text-sm text-muted">{t('weather.chooseCity')}</p>
+      <p className="text-sm text-fg-2">{t('weather.chooseCity')}</p>
       <form
         className="flex gap-1"
         onSubmit={(e) => {
@@ -179,17 +179,17 @@ function CityPicker({ source, onPick }: { source: WeatherSource; onPick: (c: Cit
         </Button>
       </form>
       {error ? <p className="text-xs text-down">{describeError(error).description}</p> : null}
-      {results && results.length === 0 && <p className="text-xs text-faint">{t('weather.noCity')}</p>}
+      {results && results.length === 0 && <p className="text-xs text-fg-3">{t('weather.noCity')}</p>}
       <ul className="flex flex-col gap-1">
         {results?.map((c) => (
           <li key={`${c.lat},${c.lon}`}>
             <button
               type="button"
               onClick={() => onPick(c)}
-              className="w-full rounded-lg bg-surface-3 px-3 py-2 text-left text-sm transition-colors hover:bg-surface-3/70"
+              className="w-full rounded-lg bg-control px-3 py-2 text-left text-sm transition-colors hover:bg-control-hover"
             >
               {c.name}
-              <span className="text-muted"> · {[c.admin, c.country].filter(Boolean).join(', ')}</span>
+              <span className="text-fg-2"> · {[c.admin, c.country].filter(Boolean).join(', ')}</span>
             </button>
           </li>
         ))}
@@ -202,7 +202,7 @@ export function WeatherSettings({ config, setConfig }: WidgetSettingsProps<Weath
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="mb-1 text-sm font-medium">{t('integrations.weatherSource')}</p>
+        <p className="mb-1 text-sm font-semibold">{t('integrations.weatherSource')}</p>
         <Segmented<WeatherSource>
           label={t('integrations.weatherSource')}
           value={config.source}
@@ -211,14 +211,14 @@ export function WeatherSettings({ config, setConfig }: WidgetSettingsProps<Weath
         />
       </div>
       <div>
-        <p className="mb-1 text-sm font-medium">{t('weather.city')}</p>
+        <p className="mb-1 text-sm font-semibold">{t('weather.city')}</p>
         {config.city ? (
           <div className="flex items-center gap-2 text-sm">
             <span className="flex-1 truncate">{config.city.name}</span>
             <Button onClick={() => setConfig({ city: null })}>{t('weather.change')}</Button>
           </div>
         ) : (
-          <p className="text-sm text-muted">{t('weather.chooseCity')}</p>
+          <p className="text-sm text-fg-2">{t('weather.chooseCity')}</p>
         )}
       </div>
       <label className="flex items-center justify-between gap-2 text-sm">
@@ -229,10 +229,10 @@ export function WeatherSettings({ config, setConfig }: WidgetSettingsProps<Weath
           max={180}
           value={config.refreshMinutes}
           onChange={(e) => setConfig({ refreshMinutes: num(Number(e.target.value), 15, 180, 30) })}
-          className="tabular w-20 text-right"
+          className="tabular-nums w-20 text-right"
         />
       </label>
-      <p className="text-xs text-faint">{t('weather.terms')}</p>
+      <p className="text-xs text-fg-3">{t('weather.terms')}</p>
     </div>
   );
 }

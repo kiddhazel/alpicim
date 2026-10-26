@@ -85,9 +85,9 @@ export function LibraryPanel() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line px-4 py-3">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-stroke px-4 py-3">
         <div className="relative min-w-40 flex-1">
-          <Search size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-faint" />
+          <Search size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-3" />
           <TextInput
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -167,9 +167,9 @@ function GameCard({
   }, [game.id, game.hasIcon]);
 
   return (
-    <li className="glass group relative flex flex-col overflow-hidden rounded-2xl">
+    <li className="group relative flex flex-col overflow-hidden rounded-xl border border-stroke bg-card">
       <button type="button" onClick={onLaunch} title={t('library.play', { name: game.name })} className="flex flex-1 flex-col text-left">
-        <div className="relative flex aspect-[460/215] w-full items-center justify-center bg-surface-2">
+        <div className="relative flex aspect-[460/215] w-full items-center justify-center bg-layer">
           {cover ? (
             <img
               src={cover}
@@ -182,9 +182,9 @@ function GameCard({
           ) : icon ? (
             <img src={icon} alt="" draggable={false} className="h-14 w-14 object-contain" />
           ) : (
-            <Gamepad2 size={30} strokeWidth={1.5} className="text-faint" />
+            <Gamepad2 size={30} strokeWidth={1.5} className="text-fg-3" />
           )}
-          <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+          <span className="absolute inset-0 flex items-center justify-center bg-black/35 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
             <Play size={28} className="text-white" fill="currentColor" />
           </span>
         </div>
@@ -193,7 +193,7 @@ function GameCard({
           <span className="flex items-center gap-2">
             <Badge tone="neutral">{t(`library.store.${game.store}`)}</Badge>
             {lastPlayed !== undefined && (
-              <span className="truncate text-xs text-faint">{new Date(lastPlayed).toLocaleDateString('tr-TR')}</span>
+              <span className="truncate text-xs text-fg-3">{new Date(lastPlayed).toLocaleDateString('tr-TR')}</span>
             )}
           </span>
         </div>
@@ -204,7 +204,7 @@ function GameCard({
         label={favorite ? t('library.unfavorite') : t('library.favorite')}
         active={favorite}
         onClick={onFavorite}
-        className={cx('absolute top-2 right-2 bg-black/40 backdrop-blur-sm', favorite ? '!text-warn' : '!text-white')}
+        className={cx('absolute top-2 right-2 bg-black/40', favorite ? '!text-warn' : '!text-white')}
       />
     </li>
   );

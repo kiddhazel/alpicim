@@ -13,9 +13,9 @@ import {
 } from './wordle';
 
 const CELL: Record<LetterState, string> = {
-  correct: 'bg-up text-white',
-  present: 'bg-warn text-white',
-  absent: 'bg-surface-3 text-muted',
+  correct: 'bg-up text-on-accent',
+  present: 'bg-warn text-on-accent',
+  absent: 'bg-control text-fg-2',
 };
 
 export function WordleGame() {
@@ -116,8 +116,8 @@ export function WordleGame() {
                 <div
                   key={i}
                   className={cx(
-                    'flex aspect-square items-center justify-center rounded-lg font-mono text-xl font-bold',
-                    c.state ? CELL[c.state] : c.ch ? 'bg-surface-3 text-fg shadow-[inset_0_0_0_2px_var(--accent)]' : 'bg-surface-2 text-fg',
+                    'flex aspect-square items-center justify-center rounded-lg text-lg font-semibold',
+                    c.state ? CELL[c.state] : c.ch ? 'bg-control text-fg shadow-[inset_0_0_0_2px_var(--accent)]' : 'bg-layer text-fg',
                   )}
                 >
                   {c.ch}
@@ -127,15 +127,15 @@ export function WordleGame() {
           ))}
         </div>
         {msg && (
-          <div className="glass absolute left-1/2 top-2 -translate-x-1/2 rounded-full px-3 py-1 text-sm text-fg">{msg}</div>
+          <div className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-raised ring-1 ring-stroke-strong px-3 py-1 text-sm text-fg">{msg}</div>
         )}
       </div>
       {loaded && day.status !== 'playing' && (
         <div className="flex flex-col items-center gap-2">
-          <p className="text-gradient font-mono text-lg font-bold">
+          <p className="text-lg font-semibold">
             {day.status === 'won' ? t('games.wordleWon') : t('games.wordleLost', { word: answer })}
           </p>
-          <p className="text-sm text-muted">{t('games.wordleTomorrow')}</p>
+          <p className="text-sm text-fg-2">{t('games.wordleTomorrow')}</p>
           <Button icon={Share2} variant="primary" onClick={share}>{t('games.share')}</Button>
         </div>
       )}
@@ -143,7 +143,7 @@ export function WordleGame() {
         {KEY_ROWS.map((row, ri) => (
           <div key={row} className="flex gap-1">
             {ri === 2 && (
-              <button type="button" onClick={submit} className="h-10 rounded-lg bg-accent-gradient px-2 text-sm font-semibold text-white">
+              <button type="button" onClick={submit} className="h-10 rounded-lg bg-accent text-on-accent px-2 text-sm font-semibold">
                 {t('games.enter')}
               </button>
             )}
@@ -156,7 +156,7 @@ export function WordleGame() {
                   onClick={() => type(l)}
                   className={cx(
                     'h-10 w-7 rounded-lg text-sm font-semibold transition-colors sm:w-8',
-                    s ? CELL[s] : 'bg-surface-2 text-fg hover:bg-surface-3',
+                    s ? CELL[s] : 'bg-layer text-fg hover:bg-control-hover',
                   )}
                 >
                   {l}
@@ -164,14 +164,14 @@ export function WordleGame() {
               );
             })}
             {ri === 2 && (
-              <button type="button" onClick={erase} aria-label={t('games.backspace')} className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-2 text-fg hover:bg-surface-3">
+              <button type="button" onClick={erase} aria-label={t('games.backspace')} className="flex h-10 w-10 items-center justify-center rounded-lg bg-layer text-fg hover:bg-control-hover">
                 <Delete size={18} strokeWidth={1.75} />
               </button>
             )}
           </div>
         ))}
       </div>
-      <p className="text-center text-sm text-muted">{t('games.hintWordle')}</p>
+      <p className="text-center text-sm text-fg-2">{t('games.hintWordle')}</p>
     </div>
   );
 }

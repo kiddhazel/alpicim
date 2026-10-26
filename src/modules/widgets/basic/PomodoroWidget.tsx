@@ -74,8 +74,8 @@ export function PomodoroWidget({ config, setConfig, size }: WidgetProps<Pomodoro
       <p className={cx('text-xs font-semibold uppercase tracking-wider', config.state.phase === 'work' ? 'text-accent' : 'text-up')}>
         {config.state.phase === 'work' ? t('widgets.pomodoro.work') : t('widgets.pomodoro.break')}
       </p>
-      <p className={cx('font-display tabular leading-none font-semibold', big ? 'text-5xl' : 'text-4xl')}>{formatClock(left)}</p>
-      <div className="h-2 w-full max-w-48 overflow-hidden rounded-full bg-surface-3">
+      <p className={cx('font-display tabular-nums leading-none font-semibold', big ? 'text-5xl' : 'text-4xl')}>{formatClock(left)}</p>
+      <div className="h-2 w-full max-w-48 overflow-hidden rounded-full bg-control">
         <div className="h-full bg-accent" style={{ width: `${Math.round(progress * 100)}%` }} />
       </div>
       <div className="flex gap-2">
@@ -90,7 +90,7 @@ export function PomodoroWidget({ config, setConfig, size }: WidgetProps<Pomodoro
           {t('widgets.pomodoro.reset')}
         </Button>
       </div>
-      {big && <p className="text-xs text-faint">{t('widgets.pomodoro.completed', { n: config.state.completed })}</p>}
+      {big && <p className="text-xs text-fg-3">{t('widgets.pomodoro.completed', { n: config.state.completed })}</p>}
     </div>
   );
 }
@@ -106,7 +106,7 @@ export function PomodoroSettings({ config, setConfig }: WidgetSettingsProps<Pomo
           max={120}
           value={config.workMin}
           onChange={(e) => setConfig({ workMin: num(Number(e.target.value), 5, 120, 25) })}
-          className="tabular w-20 text-right"
+          className="tabular-nums w-20 text-right"
         />
       </label>
       <label className="flex items-center justify-between">
@@ -117,7 +117,7 @@ export function PomodoroSettings({ config, setConfig }: WidgetSettingsProps<Pomo
           max={60}
           value={config.breakMin}
           onChange={(e) => setConfig({ breakMin: num(Number(e.target.value), 1, 60, 5) })}
-          className="tabular w-20 text-right"
+          className="tabular-nums w-20 text-right"
         />
       </label>
     </div>

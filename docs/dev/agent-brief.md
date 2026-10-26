@@ -9,4 +9,10 @@
 - Başarım sayaçları: `src/shared/lib/track.ts` → `track('todo.done')`, `trackMax('games.snake.score', n)`. Yeni sayaç gerekirse TrackCounter birleşimine ekle.
 - Dış ağ: yalnız ücretsiz + anahtarsız kaynak, `netGet()` üzerinden, `integrations/registry.ts` kaydı + `assertIntegrationEnabled`.
 - Saf mantık ayrı dosyada + Vitest testi. Bitirince: `npm.cmd run typecheck`, `lint`, `test` (Rust değiştirdiysen `check:rust`). Başka ajanın yarım dosyasındaki hatayı düzeltme, raporla.
+- **Yeniden tasarım turu (v1.0)**: `docs/dev/redesign-v1.md` §1–5 bağlayıcı; galeri `src/modules/design/DesignGallery.tsx`
+  örnek alınır (aynı kart/liste/başlık düzeni). Yeni bileşenleri kullan (`Card`, `CardHeader`, `List`, `ListItem`,
+  `EmptyState`, `Toolbar`, `Tabs`, overlays.tsx); `glass`, `bg-accent-gradient`, `text-gradient`, widget başına renk
+  (HUES), emoji, süs animasyonu kaldır; yeni sınıf adları (`bg-card`, `bg-layer`, `border-stroke`, `text-fg-2/3`).
+  Davranış, veri ve testler değişmez — yalnız görünüm/düzen. Shell, TitleBar, SettingsPanel, CommandPalette, QuickSettings,
+  `src/core/modules/*` ve `*/manifest.ts` dosyalarına dokunma (ayrı adım).
 - Rapor ≤8 satır: dosyalar, yapılmayanlar, uygulamada denenmedi notu.

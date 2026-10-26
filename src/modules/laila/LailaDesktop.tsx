@@ -326,7 +326,7 @@ export function LailaDesktop() {
     >
       {bubble && (
         <div
-          className="absolute overflow-hidden rounded-2xl border border-border bg-surface px-3 py-2 text-sm text-fg shadow-lg"
+          className="absolute overflow-hidden rounded-2xl border border-stroke bg-card px-3 py-2 text-sm text-fg shadow-pop"
           style={{ left: 8, right: 8, bottom: SPRITE_LH + 4, maxHeight: BIG_LH - SPRITE_LH - 8 }}
         >
           {bubble}

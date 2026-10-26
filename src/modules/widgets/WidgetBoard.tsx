@@ -11,6 +11,7 @@ import type { PanelId } from '../window-manager/panels';
 import { activeWorkspace, defaultWorkspaces, updateActive, useWorkspaces } from '../workspaces/workspaces';
 import { AddWidgetDialog } from './AddWidgetDialog';
 import { findSpot, GRID_COLS, gridHeight, moveItem, resizeItem } from './grid';
+import { useEnabledWidgetTypes, useModuleEnabled } from '../../core/modules/useModules';
 import { widgetDef } from './registry';
 import type { WidgetInstance, WidgetType } from './types';
 import { HomeHero } from './HomeHero';
@@ -166,15 +167,18 @@ export function WidgetBoard({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void
     }),
     [onOpenPanel],
   );
+  const enabledTypes = useEnabledWidgetTypes();
+  const ambientOn = useModuleEnabled('ambient');
   const animate = !settings.performanceMode && !draft;
-  const sorted = useMemo(() => [...shown].sort((a, b) => a.y - b.y || a.x - b.x), [shown]);
+  const visible = useMemo(() => shown.filter((w) => enabledTypes.has(w.type)), [shown, enabledTypes]);
+  const sorted = useMemo(() => [...visible].sort((a, b) => a.y - b.y || a.x - b.x), [visible]);
 
   return (
     <WidgetHostContext.Provider value={host}>
       <div className="h-full overflow-y-auto">
         <HomeHero widgets={widgets} performanceMode={settings.performanceMode} active={pageVisible} />
         <div className="mx-auto flex w-full max-w-[1600px] items-center justify-end gap-2 px-6 pb-3">
-          <p className="min-w-0 flex-1 truncate text-right text-sm text-faint">
+          <p className="min-w-0 flex-1 truncate text-right text-sm text-fg-3">
             {editing ? t('widgets.editHint') : t('widgets.workspaceLabel', { name: ws.name, n: widgets.length })}
           </p>
           {editing && (
@@ -219,7 +223,7 @@ export function WidgetBoard({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void
             />
           ) : stacked ? (
             <div className="relative flex flex-col gap-3">
-              <FxDecor />
+              {ambientOn && <FxDecor />}
               {sorted.map((w) => (
                 <div key={w.id} className="relative" style={{ height: w.h * ROW + (w.h - 1) * GAP }}>
                   <WidgetFrame
@@ -239,11 +243,11 @@ export function WidgetBoard({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void
           ) : (
             width > 0 && (
               <div
-                className={cx('relative', editing && 'rounded-xl bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:16px_16px]')}
-                style={{ height: (gridHeight(shown) + (editing ? 2 : 0)) * (ROW + GAP) }}
+                className={cx('relative', editing && 'rounded-xl bg-[radial-gradient(var(--stroke)_1px,transparent_1px)] [background-size:16px_16px]')}
+                style={{ height: (gridHeight(visible) + (editing ? 2 : 0)) * (ROW + GAP) }}
               >
-                <FxDecor />
-                {shown.map((w) => (
+                {ambientOn && <FxDecor />}
+                {visible.map((w) => (
                   <WidgetFrame
                     key={w.id}
                     widget={w}

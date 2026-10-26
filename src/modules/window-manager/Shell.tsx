@@ -1,14 +1,16 @@
 import {
   ArrowLeftRight,
-  Command,
   EyeOff,
   ExternalLink,
-  LayoutGrid,
+  LayoutDashboard,
   Maximize,
   Minimize,
+  PanelLeftClose,
+  PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
   Plus,
+  Search,
   SlidersHorizontal,
   X,
 } from 'lucide-react';
@@ -23,10 +25,17 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { t } from '../../i18n';
+import { MODULES } from '../../core/modules';
+import { ModuleServices } from '../../core/modules/ModuleServices';
+import { groupByCategory, moduleOfPanel } from '../../core/modules/registry';
+import type { ModuleCategory } from '../../core/modules/types';
+import { useEnabledPanels, useModuleEnabled } from '../../core/modules/useModules';
 import { PanelVisibleContext } from '../../shared/lib/hooks';
 import { setOverlay } from '../../shared/lib/overlay';
 import { writeKey } from '../../shared/lib/store';
-import { cx, IconButton } from '../../shared/ui/primitives';
+import { usePersistentState } from '../../shared/lib/usePersistentState';
+import { Tooltip } from '../../shared/ui/overlays';
+import { Button, cx, EmptyState, IconButton } from '../../shared/ui/primitives';
 import { TitleBar } from '../../shared/ui/TitleBar';
 import { useToast } from '../../shared/ui/Toast';
 import { describeError } from '../../shared/ui/StateView';
@@ -37,20 +46,17 @@ import { useSettings } from '../settings/settings';
 import { findSpot } from '../widgets/grid';
 import { widgetDef } from '../widgets/registry';
 import type { WidgetType } from '../widgets/types';
-import { activeWorkspace, updateActive, useWorkspaces, type MainLayout } from '../workspaces/workspaces';
-import { Laila } from '../laila/Laila';
-import { useAchievementTracker } from '../achievements/useAchievements';
+import { activeWorkspace, updateActive, useWorkspaces, type MainLayout, type Workspace } from '../workspaces/workspaces';
 import { MiniPlayer } from '../music/MiniPlayer';
-import { WeatherFx } from '../fx/WeatherFx';
 import { TickerBar } from '../ticker/TickerBar';
 import { FocusChip } from '../focus/FocusChip';
-import { useQuickRequests } from '../quick/quickService';
+import { HolidayMark } from '../fx/HolidayMark';
 import { dockPanel, promote, setSecondary, swapPanels, togglePanel, undockPanel } from './mainLayout';
 import { usePanelDrag, type PanelDragState } from './usePanelDrag';
 import { PanelHost } from './PanelHost';
-import { PANELS, panelMeta, type PanelId } from './panels';
+import { panelMeta, type PanelId, type PanelMeta } from './panels';
 import { QuickSettings } from './QuickSettings';
-import { MiniClock, WorkspaceTabs } from './StatusItems';
+import { MiniClock, WorkspaceSwitcher } from './StatusItems';
 import { useWindowChrome } from './useWindowChrome';
 import { windowService } from './windowService';
 
@@ -62,7 +68,6 @@ export function Shell() {
   const [settings, setSettings] = useSettings();
   const [store, setStore, storeLoaded] = useWorkspaces();
   const toast = useToast();
-  useAchievementTracker();
   const { snapshot: display, setSnapshot: setDisplay } = useDisplay();
   const [quickOpen, setQuickOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -85,12 +90,27 @@ export function Shell() {
   }, [storeLoaded, store.startup, store.activeId, setStore]);
 
   const detached = chrome.layout.detached;
-  const visibleDocked = useMemo(() => layout.docked.filter((p) => !detached.includes(p)), [layout.docked, detached]);
+  const panelList = useEnabledPanels();
+  const focusEnabled = useModuleEnabled('focus');
+  const [sidebarCollapsed, setSidebarCollapsed] = usePersistentState<boolean>('shell.sidebarCollapsed', false, (raw) => raw === true);
+  const navGroups = useMemo<NavGroup[]>(() => {
+    const nav = panelList.filter((p) => p.id !== 'settings');
+    const cat = (p: PanelMeta): ModuleCategory => moduleOfPanel(MODULES, p.id)?.category ?? 'core';
+    return groupByCategory(MODULES)
+      .map(({ category }) => ({ category, panels: nav.filter((p) => cat(p) === category) }))
+      .filter((g) => g.panels.length > 0);
+  }, [panelList]);
+  const settingsPanel = panelList.find((p) => p.id === 'settings');
+  const enabledPanelIds = useMemo(() => new Set<PanelId>(panelList.map((p) => p.id)), [panelList]);
+  const visibleDocked = useMemo(
+    () => layout.docked.filter((p) => !detached.includes(p) && enabledPanelIds.has(p)),
+    [layout.docked, detached, enabledPanelIds],
+  );
   const primary: PanelId | undefined = visibleDocked.includes(layout.focused) ? layout.focused : visibleDocked[0];
   const secondary: PanelId | null =
     layout.secondary && layout.secondary !== primary && visibleDocked.includes(layout.secondary) ? layout.secondary : null;
-  /** Bağlama sırası sabit (PANELS sırası): sekme sırası/rol değişince DOM düğümleri taşınmaz, yalnız CSS order değişir. */
-  const mounted = useMemo(() => PANELS.filter((p) => visibleDocked.includes(p.id)).map((p) => p.id), [visibleDocked]);
+  /** Bağlama sırası sabit (panel listesi sırası): sekme sırası/rol değişince DOM düğümleri taşınmaz, yalnız CSS order değişir. */
+  const mounted = useMemo(() => panelList.filter((p) => visibleDocked.includes(p.id)).map((p) => p.id), [panelList, visibleDocked]);
   const fullscreen = display.fullscreen;
   const stageRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
@@ -209,7 +229,6 @@ export function Shell() {
   }, [toggleFullscreen, switchWorkspace, store.items, cycleTab, closeCurrentTab, toggleSplit, secondary, visibleDocked.length]);
   // Sistem çapındaki palet kısayolu (Rust → olay).
   useEffect(() => subscribe<null>(PALETTE_EVENT, () => setPaletteOpen(true)), []);
-  useQuickRequests(openPanel);
 
   const paletteCommands = useMemo<PaletteCommands>(
     () => ({
@@ -288,194 +307,308 @@ export function Shell() {
     window.addEventListener('pointerup', up);
   };
 
-  return (
-    <div className={cx('relative isolate flex h-full flex-col', drag && 'cursor-grabbing')}>
-      <WeatherFx />
-      {drag && <DragGhost drag={drag} />}
-      <TitleBar
-        title="Alpicim"
-        icon={LayoutGrid}
-        windowed={!fullscreen}
-        pinned={chrome.pinned}
-        maximized={chrome.maximized}
-        onTogglePin={chrome.togglePin}
-        onMinimize={() => void windowService.minimize()}
-        onToggleMaximize={() => void windowService.toggleMaximize()}
-        onClose={() => void windowService.closeCurrent()}
-        closeLabel={settings.closeToTray ? t('window.closeToTray') : t('window.close')}
-        trailing={
-          <>
-            <button
-              type="button"
-              onClick={() => setPaletteOpen(true)}
-              title={t('palette.title')}
-              className="glass hidden h-9 items-center gap-2 rounded-xl px-3 text-sm text-muted transition-colors hover:text-fg md:inline-flex"
-            >
-              <Command size={16} />
-              {t('palette.short')}
-              <kbd className="text-xs text-faint">Ctrl K</kbd>
-            </button>
-            <div className="relative">
-              <IconButton
-                icon={SlidersHorizontal}
-                label={t('quick.title')}
-                active={quickOpen}
-                data-quick-settings-toggle
-                onClick={() => setQuickOpen((o) => !o)}
-              />
-              {quickOpen && (
-                <QuickSettings
-                  display={display}
-                  onDisplay={setDisplay}
-                  docked={layout.docked}
-                  onTogglePanel={(p) => setLayout((l) => togglePanel(l, p))}
-                  onOpenSettings={() => openPanel('settings')}
-                  onClose={() => setQuickOpen(false)}
-                  split={secondary !== null}
-                  canSplit={visibleDocked.length > 1}
-                  onToggleSplit={(on) =>
-                    setLayout((l) => {
-                      if (!on) return setSecondary(l, null);
-                      const next = visibleDocked.find((p) => p !== primary);
-                      return setSecondary(l, next ?? null);
-                    })
-                  }
-                />
-              )}
-            </div>
-            <IconButton
-              icon={fullscreen ? Minimize : Maximize}
-              label={fullscreen ? t('display.exitFullscreen') : t('display.enterFullscreen')}
-              onClick={toggleFullscreen}
-            />
-            {fullscreen && (
-              <IconButton icon={EyeOff} label={t('display.hide')} onClick={() => void displayService.hideMain().catch(() => {})} />
-            )}
-          </>
-        }
-      >
-        <WorkspaceTabs items={store.items} activeId={store.activeId} onSwitch={switchWorkspace} />
-        <div className="flex-1" />
-        <MiniClock />
-        <div className="flex-1" />
-      </TitleBar>
+  const pageTitle = primary ? t(panelMeta(primary).titleKey) : 'Alpicim';
 
-      <div className="flex min-h-0 flex-1">
-        <div className="relative z-20 shrink-0 py-3 pl-3">
-          <nav aria-label={t('shell.nav')} className="glass flex h-full w-16 flex-col items-center gap-1.5 rounded-3xl py-3">
-            {PANELS.filter((p) => p.id !== 'settings').map(({ id, titleKey, icon: Icon }) => (
-              <SidebarButton
-                key={id}
-                id={id}
-                label={t(titleKey)}
-                icon={Icon}
-                detached={detached.includes(id)}
-                active={id === primary || id === secondary}
-                onOpen={openPanel}
-              />
-            ))}
-            <div className="flex-1" />
-            {PANELS.filter((p) => p.id === 'settings').map(({ id, titleKey, icon: Icon }) => (
-              <SidebarButton
-                key={id}
-                id={id}
-                label={t(titleKey)}
-                icon={Icon}
-                detached={detached.includes(id)}
-                active={id === primary || id === secondary}
-                onOpen={openPanel}
-              />
-            ))}
-          </nav>
-        </div>
-        <main ref={mainRef} className="relative flex min-w-0 flex-1 flex-col gap-3 overflow-hidden p-3 pl-3">
-          <div className="flex min-h-0 flex-1 flex-col gap-3">
-            {!storeLoaded ? null : visibleDocked.length === 0 ? (
-              <EmptyLayout onOpen={openPanel} />
-            ) : (
-              <>
-                <TabStrip
-                  tabs={visibleDocked}
-                  primary={primary}
-                  secondary={secondary}
-                  drag={drag}
-                  onDragStart={startDrag}
-                  onSelect={(p) => setLayout((l) => promote(l, p))}
-                  onClose={closeTab}
-                  onPinRight={pinRight}
-                  onDetach={detach}
-                  onMakePrimary={makePrimary}
-                  onOpen={openPanel}
-                  openMenuSignal={addMenuSignal}
+  return (
+    <div className={cx('relative isolate flex h-full', drag && 'cursor-grabbing')}>
+      <ModuleServices host="shell-background" />
+      <ModuleServices host="shell-logic" openPanel={openPanel} />
+      {drag && <DragGhost drag={drag} />}
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        windowed={!fullscreen}
+        groups={navGroups}
+        settingsPanel={settingsPanel}
+        detached={detached}
+        primary={primary}
+        secondary={secondary}
+        onOpen={openPanel}
+        workspaces={store.items}
+        activeWorkspaceId={store.activeId}
+        onSwitchWorkspace={switchWorkspace}
+      />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TitleBar
+          title={pageTitle}
+          leading={
+            <IconButton
+              icon={sidebarCollapsed ? PanelLeftOpen : PanelLeftClose}
+              label={sidebarCollapsed ? t('shell.sidebarExpand') : t('shell.sidebarCollapse')}
+              size="sm"
+              onClick={() => setSidebarCollapsed((c) => !c)}
+            />
+          }
+          windowed={!fullscreen}
+          pinned={chrome.pinned}
+          maximized={chrome.maximized}
+          onTogglePin={chrome.togglePin}
+          onMinimize={() => void windowService.minimize()}
+          onToggleMaximize={() => void windowService.toggleMaximize()}
+          onClose={() => void windowService.closeCurrent()}
+          closeLabel={settings.closeToTray ? t('window.closeToTray') : t('window.close')}
+          trailing={
+            <>
+              <button
+                type="button"
+                onClick={() => setPaletteOpen(true)}
+                title={t('palette.title')}
+                className="hidden h-8 w-56 items-center gap-2 rounded-lg bg-control px-2.5 text-sm text-fg-3 shadow-[inset_0_0_0_1px_var(--stroke)] transition-colors duration-150 hover:bg-control-hover md:flex"
+              >
+                <Search size={14} strokeWidth={1.75} />
+                <span className="flex-1 truncate text-left">{t('shell.searchPlaceholder')}</span>
+                <kbd className="rounded bg-control px-1.5 text-xs text-fg-2">Ctrl K</kbd>
+              </button>
+              <IconButton icon={Search} label={t('palette.title')} size="sm" className="md:hidden" onClick={() => setPaletteOpen(true)} />
+              <div className="relative">
+                <IconButton
+                  icon={SlidersHorizontal}
+                  label={t('quick.title')}
+                  size="sm"
+                  active={quickOpen}
+                  data-quick-settings-toggle
+                  onClick={() => setQuickOpen((o) => !o)}
                 />
-                {/* Tüm açık paneller tek sabit listede bağlı kalır; roller yalnızca CSS ile değişir. */}
-                <div ref={stageRef} className="flex min-h-0 flex-1">
-                  {mounted.map((id) => {
-                    const role: StageRole = id === primary ? 'primary' : id === secondary ? 'secondary' : 'hidden';
-                    const split = secondary !== null;
-                    return (
-                      <div
-                        key={id}
-                        data-stage-role={role}
-                        className={cx('min-w-0', role === 'hidden' ? 'hidden' : 'flex')}
-                        style={
-                          role === 'primary'
-                            ? { order: 0, flex: split ? `${weightOf(id)} 1 0` : '1 1 0' }
-                            : role === 'secondary'
-                              ? { order: 2, flex: `${weightOf(id)} 1 0` }
-                              : undefined
-                        }
-                      >
-                        <PanelVisibleContext.Provider value={role !== 'hidden'}>
-                          <PanelFrame panel={id} onOpenPanel={openPanel} drag={drag} />
-                        </PanelVisibleContext.Provider>
-                      </div>
-                    );
-                  })}
-                  {primary && secondary && (
+                {quickOpen && (
+                  <QuickSettings
+                    display={display}
+                    onDisplay={setDisplay}
+                    docked={layout.docked}
+                    onTogglePanel={(p) => setLayout((l) => togglePanel(l, p))}
+                    onOpenSettings={() => openPanel('settings')}
+                    onClose={() => setQuickOpen(false)}
+                    split={secondary !== null}
+                    canSplit={visibleDocked.length > 1}
+                    onToggleSplit={(on) =>
+                      setLayout((l) => {
+                        if (!on) return setSecondary(l, null);
+                        const next = visibleDocked.find((p) => p !== primary);
+                        return setSecondary(l, next ?? null);
+                      })
+                    }
+                  />
+                )}
+              </div>
+              <IconButton
+                icon={fullscreen ? Minimize : Maximize}
+                label={fullscreen ? t('display.exitFullscreen') : t('display.enterFullscreen')}
+                size="sm"
+                onClick={toggleFullscreen}
+              />
+              {fullscreen && (
+                <IconButton icon={EyeOff} size="sm" label={t('display.hide')} onClick={() => void displayService.hideMain().catch(() => {})} />
+              )}
+            </>
+          }
+        />
+
+        <main ref={mainRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-4 pb-3">
+          {!storeLoaded ? null : visibleDocked.length === 0 ? (
+            <EmptyLayout onOpen={openPanel} />
+          ) : (
+            <>
+              <TabStrip
+                tabs={visibleDocked}
+                primary={primary}
+                secondary={secondary}
+                drag={drag}
+                onDragStart={startDrag}
+                onSelect={(p) => setLayout((l) => promote(l, p))}
+                onClose={closeTab}
+                onPinRight={pinRight}
+                onDetach={detach}
+                onMakePrimary={makePrimary}
+                onOpen={openPanel}
+                openMenuSignal={addMenuSignal}
+              />
+              {/* Tüm açık paneller tek sabit listede bağlı kalır; roller yalnızca CSS ile değişir. */}
+              <div ref={stageRef} className="flex min-h-0 flex-1">
+                {mounted.map((id) => {
+                  const role: StageRole = id === primary ? 'primary' : id === secondary ? 'secondary' : 'hidden';
+                  const split = secondary !== null;
+                  return (
                     <div
-                      role="separator"
-                      aria-orientation="vertical"
-                      aria-label={t('shell.resizePanels')}
-                      title={t('shell.resizePanels')}
-                      style={{ order: 1 }}
-                      onPointerDown={(e) => startResize(primary, secondary, e)}
-                      onDoubleClick={() => setWeights({ [primary]: 1, [secondary]: 1 })}
-                      className="group flex w-3 shrink-0 cursor-col-resize items-center justify-center"
+                      key={id}
+                      data-stage-role={role}
+                      className={cx('min-w-0', role === 'hidden' ? 'hidden' : 'flex')}
+                      style={
+                        role === 'primary'
+                          ? { order: 0, flex: split ? `${weightOf(id)} 1 0` : '1 1 0' }
+                          : role === 'secondary'
+                            ? { order: 2, flex: `${weightOf(id)} 1 0` }
+                            : undefined
+                      }
                     >
-                      <span className="bg-accent-gradient h-8 w-1 rounded-full opacity-0 transition-opacity group-hover:opacity-100" />
+                      <PanelVisibleContext.Provider value={role !== 'hidden'}>
+                        <PanelFrame panel={id} onOpenPanel={openPanel} drag={drag} />
+                      </PanelVisibleContext.Provider>
                     </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-          {(settings.barTicker || settings.barPlayer) && (
-            <footer aria-label={t('stage.bottomBar')} className="glass flex h-14 shrink-0 items-center gap-3 rounded-2xl px-3">
-              {settings.barTicker ? (
-                <div className="min-w-0 flex-1">
-                  <TickerBar onOpenPanel={openPanel} />
-                </div>
-              ) : (
-                <div className="flex-1" />
-              )}
-              <FocusChip />
-              {settings.barPlayer && (
-                <div className="shrink-0">
-                  <MiniPlayer onOpenPanel={openPanel} musicTabOpen={visibleDocked.includes('music')} />
-                </div>
-              )}
-            </footer>
+                  );
+                })}
+                {primary && secondary && (
+                  <div
+                    role="separator"
+                    aria-orientation="vertical"
+                    aria-label={t('shell.resizePanels')}
+                    title={t('shell.resizePanels')}
+                    style={{ order: 1 }}
+                    onPointerDown={(e) => startResize(primary, secondary, e)}
+                    onDoubleClick={() => setWeights({ [primary]: 1, [secondary]: 1 })}
+                    className="group flex w-3 shrink-0 cursor-col-resize justify-center"
+                  >
+                    <span className="h-full w-px bg-stroke transition-colors group-hover:bg-accent" />
+                  </div>
+                )}
+              </div>
+            </>
           )}
-          {settings.lailaEnabled && <Laila hostRef={mainRef} panel={primary} />}
+          <ModuleServices host="shell-overlay" hostRef={mainRef} panel={primary} />
         </main>
+
+        <footer
+          aria-label={t('stage.bottomBar')}
+          className="flex h-8 shrink-0 items-center gap-4 border-t border-stroke bg-layer px-4 text-xs text-fg-2"
+        >
+          {settings.barTicker ? (
+            <div className="min-w-0 flex-1">
+              <TickerBar onOpenPanel={openPanel} />
+            </div>
+          ) : (
+            <div className="flex-1" />
+          )}
+          <HolidayMark iconOnly />
+          {focusEnabled && <FocusChip />}
+          {settings.barPlayer && (
+            <div className="shrink-0">
+              <MiniPlayer onOpenPanel={openPanel} musicTabOpen={visibleDocked.includes('music')} />
+            </div>
+          )}
+          <MiniClock />
+        </footer>
       </div>
       {paletteOpen && <CommandPalette commands={paletteCommands} onClose={() => setPaletteOpen(false)} />}
     </div>
   );
 }
 
-/** Sahnenin sekme şeridi: açık görünümler, sürükleyerek sıralama, sağa sabitleme ve "+" menüsü. */
+const POP = 'bg-card shadow-[inset_0_0_0_1px_var(--stroke-strong),var(--shadow-pop)]';
+
+interface NavGroup {
+  category: ModuleCategory;
+  panels: PanelMeta[];
+}
+
+/** Sol kenar çubuğu: uygulama adı, çalışma alanı seçici, kategoriye göre gruplu panel listesi, altta Ayarlar. */
+function Sidebar({
+  collapsed,
+  windowed,
+  groups,
+  settingsPanel,
+  detached,
+  primary,
+  secondary,
+  onOpen,
+  workspaces,
+  activeWorkspaceId,
+  onSwitchWorkspace,
+}: {
+  collapsed: boolean;
+  windowed: boolean;
+  groups: NavGroup[];
+  settingsPanel: PanelMeta | undefined;
+  detached: PanelId[];
+  primary: PanelId | undefined;
+  secondary: PanelId | null;
+  onOpen: (p: PanelId) => void;
+  workspaces: Workspace[];
+  activeWorkspaceId: string;
+  onSwitchWorkspace: (id: string) => void;
+}) {
+  const drag = windowed ? { 'data-tauri-drag-region': true } : {};
+  const item = (p: PanelMeta) => (
+    <NavItem
+      key={p.id}
+      id={p.id}
+      label={t(p.titleKey)}
+      icon={p.icon}
+      collapsed={collapsed}
+      detached={detached.includes(p.id)}
+      active={p.id === primary || p.id === secondary}
+      onOpen={onOpen}
+    />
+  );
+  return (
+    <aside
+      style={{ width: collapsed ? 56 : 232 }}
+      className="relative z-20 flex shrink-0 flex-col border-r border-stroke bg-layer transition-[width] duration-150 ease-[cubic-bezier(.2,0,0,1)]"
+    >
+      <div {...drag} className={cx('flex h-12 shrink-0 items-center gap-2.5', collapsed ? 'justify-center' : 'px-4')}>
+        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent font-display text-sm font-semibold text-on-accent">A</span>
+        {!collapsed && <span className="font-display text-base font-semibold">Alpicim</span>}
+      </div>
+      <div className="flex flex-col px-2 pb-2">
+        <WorkspaceSwitcher items={workspaces} activeId={activeWorkspaceId} onSwitch={onSwitchWorkspace} collapsed={collapsed} />
+      </div>
+      <nav aria-label={t('shell.nav')} className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 py-2">
+        {groups.map((g, gi) => (
+          <div key={g.category} className="flex flex-col gap-0.5">
+            {g.category !== 'core' && !collapsed && <p className="px-3 pb-1 text-xs font-semibold text-fg-3">{t(`modules.categories.${g.category}`)}</p>}
+            {g.category !== 'core' && collapsed && gi > 0 && <div className="mx-3 mb-1 h-px bg-stroke" />}
+            {g.panels.map(item)}
+          </div>
+        ))}
+      </nav>
+      {settingsPanel && <div className="border-t border-stroke px-2 py-2">{item(settingsPanel)}</div>}
+    </aside>
+  );
+}
+
+function NavItem({
+  id,
+  label,
+  icon: Icon,
+  collapsed,
+  detached,
+  active,
+  onOpen,
+}: {
+  id: PanelId;
+  label: string;
+  icon: LucideIcon;
+  collapsed: boolean;
+  detached: boolean;
+  active: boolean;
+  onOpen: (p: PanelId) => void;
+}) {
+  const full = detached ? `${label} — ${t('shell.inWindow')}` : label;
+  const btn = (
+    <button
+      type="button"
+      onClick={() => onOpen(id)}
+      aria-label={full}
+      aria-current={active ? 'page' : undefined}
+      className={cx(
+        'relative flex h-9 items-center gap-3 rounded-lg text-sm transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-accent',
+        collapsed ? 'w-10 justify-center self-center' : 'w-full px-3',
+        active ? 'bg-accent-soft font-semibold text-fg' : 'text-fg-2 hover:bg-card-hover hover:text-fg',
+      )}
+    >
+      {active && !collapsed && <span aria-hidden className="absolute inset-y-2 left-0 w-[3px] rounded-full bg-accent" />}
+      <Icon size={20} strokeWidth={1.75} className={cx('shrink-0', active && 'text-accent')} />
+      {!collapsed && <span className="min-w-0 flex-1 truncate text-left">{label}</span>}
+      {detached && <span aria-hidden className={cx('h-1.5 w-1.5 shrink-0 rounded-full bg-accent', collapsed && 'absolute right-1.5 top-1.5')} />}
+    </button>
+  );
+  return collapsed ? (
+    <Tooltip text={full} side="bottom">
+      {btn}
+    </Tooltip>
+  ) : (
+    btn
+  );
+}
+
+/** Sahnenin sekme satırı (en az iki panel açıkken): sürükleyerek sıralama, sağa sabitleme, ayırma ve "+" menüsü. */
 function TabStrip({
   tabs,
   primary,
@@ -505,7 +638,7 @@ function TabStrip({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const closed = PANELS.filter((p) => !tabs.includes(p.id));
+  const closed = useEnabledPanels().filter((p) => !tabs.includes(p.id));
 
   // Ctrl+T: "+" menüsünü aç.
   useEffect(() => {
@@ -529,9 +662,12 @@ function TabStrip({
     };
   }, [menuOpen]);
 
+  if (tabs.length < 2) return null;
+
+  const mini = 'flex h-6 w-6 items-center justify-center rounded-md hover:bg-control-hover';
   return (
-    <div className="glass relative z-20 flex max-w-full shrink-0 items-center gap-1 self-start rounded-2xl p-1">
-      <div role="tablist" aria-label={t('stage.tabs')} className="flex min-w-0 items-center gap-1 overflow-x-auto">
+    <div className="relative z-20 mb-3 flex shrink-0 items-end gap-1 border-b border-stroke">
+      <div role="tablist" aria-label={t('stage.tabs')} className="flex min-w-0 items-end gap-1 overflow-x-auto">
         {tabs.map((id) => {
           const meta = panelMeta(id);
           const Icon = meta.icon;
@@ -550,10 +686,9 @@ function TabStrip({
               onClick={act}
               onKeyDown={(e) => e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ') && act()}
               className={cx(
-                'group/tab flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-xl pl-3 pr-2 text-sm transition-colors select-none',
-                selected ? 'bg-surface-3 text-fg shadow-[0_0_20px_-8px_var(--accent)]' : 'text-muted hover:bg-surface-2 hover:text-fg',
-                pinned && !selected && 'bg-accent-soft text-accent',
-                drag?.over === id && drag.panel !== id && 'ring-2 ring-accent',
+                'group/tab relative flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-t-lg pl-3 pr-2 text-sm transition-colors duration-150 select-none',
+                selected ? 'font-semibold text-fg' : pinned ? 'text-accent' : 'text-fg-2 hover:text-fg',
+                drag?.over === id && drag.panel !== id && 'bg-accent-soft',
                 drag?.panel === id && 'opacity-50',
               )}
             >
@@ -569,7 +704,7 @@ function TabStrip({
                       e.stopPropagation();
                       onMakePrimary(id);
                     }}
-                    className="flex h-6 w-6 items-center justify-center rounded-lg hover:bg-surface-3"
+                    className={mini}
                   >
                     <ArrowLeftRight size={14} />
                   </button>
@@ -582,7 +717,7 @@ function TabStrip({
                     e.stopPropagation();
                     onDetach(id);
                   }}
-                  className="flex h-6 w-6 items-center justify-center rounded-lg hover:bg-surface-3"
+                  className={mini}
                 >
                   <ExternalLink size={14} />
                 </button>
@@ -595,7 +730,7 @@ function TabStrip({
                       e.stopPropagation();
                       onPinRight(id);
                     }}
-                    className="flex h-6 w-6 items-center justify-center rounded-lg hover:bg-surface-3"
+                    className={mini}
                   >
                     {pinned ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
                   </button>
@@ -608,21 +743,22 @@ function TabStrip({
                     e.stopPropagation();
                     onClose(id);
                   }}
-                  className="flex h-6 w-6 items-center justify-center rounded-lg hover:bg-surface-3"
+                  className={mini}
                 >
                   <X size={14} />
                 </button>
               </span>
+              {selected && <span aria-hidden className="absolute inset-x-3 -bottom-px h-0.5 rounded-full bg-accent" />}
             </div>
           );
         })}
       </div>
-      <div ref={menuRef} className="relative shrink-0">
-        <IconButton icon={Plus} label={t('stage.addTab')} active={menuOpen} onClick={() => setMenuOpen((o) => !o)} />
+      <div ref={menuRef} className="relative mb-0.5 shrink-0">
+        <IconButton icon={Plus} size="sm" label={t('stage.addTab')} active={menuOpen} onClick={() => setMenuOpen((o) => !o)} />
         {menuOpen && (
-          <div role="menu" className="glass absolute left-0 top-full z-40 mt-2 flex min-w-52 flex-col gap-0.5 rounded-2xl p-1.5">
+          <div role="menu" className={cx('absolute left-0 top-full z-40 mt-1 flex min-w-52 flex-col gap-0.5 rounded-xl p-1', POP)}>
             {closed.length === 0 ? (
-              <p className="px-3 py-2 text-sm text-muted">{t('stage.allOpen')}</p>
+              <p className="px-2.5 py-2 text-sm text-fg-2">{t('stage.allOpen')}</p>
             ) : (
               closed.map(({ id, titleKey, icon: Icon }) => (
                 <button
@@ -633,9 +769,9 @@ function TabStrip({
                     setMenuOpen(false);
                     onOpen(id);
                   }}
-                  className="flex h-9 items-center gap-2 rounded-xl px-3 text-left text-sm text-muted hover:bg-surface-3 hover:text-fg"
+                  className="flex h-8 items-center gap-2.5 rounded-md px-2.5 text-left text-sm text-fg outline-none transition-colors hover:bg-control-hover focus:bg-control-hover"
                 >
-                  <Icon size={16} strokeWidth={1.75} />
+                  <Icon size={16} strokeWidth={1.75} className="text-fg-2" />
                   {t(titleKey)}
                 </button>
               ))
@@ -652,7 +788,7 @@ function DragGhost({ drag }: { drag: PanelDragState }) {
   const Icon = meta.icon;
   return (
     <div
-      className="glass pointer-events-none fixed z-50 flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium ring-1 ring-accent"
+      className={cx('pointer-events-none fixed z-50 flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold', POP)}
       style={{ left: drag.x + 12, top: drag.y + 12 }}
     >
       <Icon size={16} className="text-accent" />
@@ -679,8 +815,8 @@ const PanelFrame = memo(function PanelFrame({
       aria-label={t(meta.titleKey)}
       data-panel-drop={panel}
       className={cx(
-        'glass group/panel relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-3xl transition-shadow',
-        isTarget && 'ring-2 ring-accent',
+        'relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl',
+        isTarget && 'shadow-[inset_0_0_0_2px_var(--accent)]',
         isSource && 'opacity-50',
       )}
     >
@@ -696,64 +832,22 @@ const PanelFrame = memo(function PanelFrame({
   );
 });
 
-function SidebarButton({
-  id,
-  label,
-  icon: Icon,
-  detached,
-  active,
-  onOpen,
-}: {
-  id: PanelId;
-  label: string;
-  icon: LucideIcon;
-  detached: boolean;
-  active: boolean;
-  onOpen: (p: PanelId) => void;
-}) {
-  return (
-    <button
-      type="button"
-      title={detached ? `${label} — ${t('shell.inWindow')}` : label}
-      aria-label={label}
-      aria-current={active ? 'page' : undefined}
-      onClick={() => onOpen(id)}
-      className={cx(
-        'group relative flex h-11 w-11 items-center justify-center rounded-2xl transition-all',
-        active ? 'bg-accent-soft text-accent shadow-[0_0_24px_-6px_var(--accent)]' : 'text-muted hover:bg-surface-3 hover:text-fg',
-      )}
-    >
-      <Icon size={20} strokeWidth={1.75} />
-      {detached && <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-accent" />}
-      <span
-        aria-hidden
-        className="glass pointer-events-none absolute left-full top-1/2 z-50 ml-3 -translate-y-1/2 rounded-lg px-2.5 py-1 text-sm whitespace-nowrap text-fg opacity-0 transition-opacity group-hover:opacity-100"
-      >
-        {label}
-      </span>
-    </button>
-  );
-}
-
 function EmptyLayout({ onOpen }: { onOpen: (p: PanelId) => void }) {
+  const panelList = useEnabledPanels();
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-      <p className="text-base font-medium">{t('shell.emptyTitle')}</p>
-      <p className="max-w-sm text-sm text-muted">{t('shell.emptyBody')}</p>
-      <div className="flex flex-wrap justify-center gap-2">
-        {PANELS.map(({ id, titleKey, icon: Icon }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onOpen(id)}
-            className="flex h-9 items-center gap-2 rounded-lg bg-surface-2 px-3.5 text-sm hover:bg-surface-3"
-          >
-            <Icon size={16} />
-            {t(titleKey)}
-          </button>
-        ))}
-      </div>
-    </div>
+    <EmptyState
+      icon={LayoutDashboard}
+      title={t('shell.emptyTitle')}
+      description={t('shell.emptyBody')}
+      action={
+        <div className="flex flex-wrap justify-center gap-2">
+          {panelList.map(({ id, titleKey, icon }) => (
+            <Button key={id} icon={icon} onClick={() => onOpen(id)}>
+              {t(titleKey)}
+            </Button>
+          ))}
+        </div>
+      }
+    />
   );
 }
-

@@ -2,8 +2,8 @@ import { Bookmark, BookmarkCheck, Check, ExternalLink, Newspaper } from 'lucide-
 import { useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { t } from '../../i18n';
 import { formatDateTime, formatRelative } from '../../shared/lib/time';
-import { Button } from '../../shared/ui/primitives';
-import type { NewsCategory, NewsItem } from './types';
+import { Badge, Button } from '../../shared/ui/primitives';
+import type { NewsItem } from './types';
 
 /** Bir öğenin içerik genişliğini (px) izler; görünüm medya sorgusuyla değil kapsayıcı genişliğiyle seçilir. */
 export function useElementWidth<T extends HTMLElement>(): [RefObject<T | null>, number] {
@@ -23,30 +23,6 @@ export function useElementWidth<T extends HTMLElement>(): [RefObject<T | null>, 
   return [ref, width];
 }
 
-/** Kategori renk tonu (okunabilir her iki temada). */
-export const CATEGORY_HUE: Record<NewsCategory, string> = {
-  turkiye: '#ef4444',
-  dunya: '#38bdf8',
-  ekonomi: '#10b981',
-  teknoloji: '#8b5cf6',
-  bilim: '#06b6d4',
-  oyun: '#ec4899',
-  spor: '#f97316',
-};
-
-export function CategoryBadge({ category }: { category: NewsCategory }) {
-  const hue = CATEGORY_HUE[category];
-  return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs leading-4 font-semibold"
-      style={{ color: hue, backgroundColor: `color-mix(in srgb, ${hue} 16%, transparent)` }}
-    >
-      <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: hue }} />
-      {t(`news.category.${category}`)}
-    </span>
-  );
-}
-
 interface Props {
   item: NewsItem | null;
   now: number;
@@ -60,37 +36,37 @@ interface Props {
 export function NewsReader({ item, now, read, bookmarked, onOpen, onToggleRead, onToggleBookmark }: Props) {
   if (!item) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-muted" aria-label={t('wide.readerPane')}>
-        <Newspaper size={40} strokeWidth={1.5} className="text-faint" aria-hidden />
+      <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-fg-2" aria-label={t('wide.readerPane')}>
+        <Newspaper size={40} strokeWidth={1.5} className="text-fg-3" aria-hidden />
         <p className="text-base">{t('wide.readerEmpty')}</p>
       </div>
     );
   }
   return (
     <article
-      className="glass relative flex h-full flex-col overflow-y-auto rounded-2xl p-10"
-      style={{ backgroundImage: `linear-gradient(160deg, color-mix(in srgb, ${CATEGORY_HUE[item.category]} 14%, transparent), transparent 40%)` }}
+      className="relative flex h-full flex-col overflow-y-auto rounded-xl border border-stroke bg-card p-10"
       aria-label={t('wide.readerPane')}
     >
-      <div className="mx-auto flex w-full max-w-[720px] flex-1 flex-col">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted">
-          <CategoryBadge category={item.category} />
-          <span className="font-medium text-fg">{item.source}</span>
+      <div className="mx-auto flex w-full max-w-[680px] flex-1 flex-col">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-xs text-fg-3">
+          <span className="font-semibold text-fg-2">{item.source}</span>
+          <span aria-hidden>·</span>
           <span title={item.publishedAt ? formatDateTime(item.publishedAt) : undefined}>{formatRelative(item.publishedAt, now)}</span>
+          <Badge>{t(`news.category.${item.category}`)}</Badge>
         </div>
-        <h2 className="selectable mt-5 font-display text-3xl leading-tight font-semibold tracking-tight">{item.title}</h2>
+        <h2 className="selectable mt-4 text-xl leading-tight font-semibold">{item.title}</h2>
         {item.summary ? (
-          <p className="selectable mt-6 text-md leading-relaxed whitespace-pre-line text-fg/90">{item.summary}</p>
+          <p className="selectable mt-5 text-base leading-relaxed whitespace-pre-line text-fg-2">{item.summary}</p>
         ) : (
-          <p className="mt-6 text-md text-faint">{t('wide.readerNoSummary')}</p>
+          <p className="mt-5 text-base text-fg-3">{t('wide.readerNoSummary')}</p>
         )}
         {item.alsoIn && item.alsoIn.length > 0 && (
           <div className="mt-8">
-            <p className="mb-2 text-sm font-medium text-muted">{t('wide.readerAlsoIn', { n: item.alsoIn.length })}</p>
+            <p className="mb-2 text-sm font-semibold text-fg-2">{t('wide.readerAlsoIn', { n: item.alsoIn.length })}</p>
             <ul className="flex flex-wrap gap-2" aria-label={t('look.readerSources')}>
               {item.alsoIn.map((s) => (
                 <li key={s}>
-                  <span className="inline-flex items-center rounded-full bg-surface-3 px-3 py-1 text-sm text-fg">{s}</span>
+                  <span className="inline-flex items-center rounded-full bg-control px-3 py-1 text-sm text-fg">{s}</span>
                 </li>
               ))}
             </ul>
@@ -107,7 +83,7 @@ export function NewsReader({ item, now, read, bookmarked, onOpen, onToggleRead, 
             {read ? t('news.markUnread') : t('news.markRead')}
           </Button>
         </div>
-        <p className="mt-auto pt-10 text-xs text-faint">{t('wide.readerNote')}</p>
+        <p className="mt-auto pt-10 text-xs text-fg-3">{t('wide.readerNote')}</p>
       </div>
     </article>
   );

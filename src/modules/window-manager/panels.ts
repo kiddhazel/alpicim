@@ -1,21 +1,6 @@
-import {
-  AppWindow,
-  ClipboardList,
-  Gamepad2,
-  Library,
-  Sofa,
-  Globe,
-  LayoutDashboard,
-  Music2,
-  Newspaper,
-  Podcast,
-  Radio,
-  NotebookPen,
-  PictureInPicture2,
-  Settings as SettingsIcon,
-  TrendingUp,
-  type LucideIcon,
-} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { MODULES } from '../../core/modules';
+import { panelsOf } from '../../core/modules/registry';
 import type { MessageKey } from '../../i18n';
 
 export type PanelId =
@@ -42,26 +27,11 @@ export interface PanelMeta {
 }
 
 /**
- * Panel kaydı. Yeni modül eklemek için buraya bir kayıt, PanelHost'a bir bileşen,
- * src-tauri/src/windows.rs → PANELS'e bir satır ve tr.ts'e başlık eklenir.
+ * Kayıtlı TÜM paneller (modül bildirimlerinden türetilir; kapalı modüller dahil).
+ * Yalnız etkin olanlar için `useEnabledPanels()` (core/modules/useModules.ts) kullanılır.
+ * Yeni panel: modülün manifest.ts'ine panel + windows.rs → PANELS satırı + tr.ts başlığı + buradaki PanelId.
  */
-export const PANELS: readonly PanelMeta[] = [
-  { id: 'home', titleKey: 'panels.home', icon: LayoutDashboard },
-  { id: 'news', titleKey: 'panels.news', icon: Newspaper },
-  { id: 'markets', titleKey: 'panels.markets', icon: TrendingUp },
-  { id: 'launcher', titleKey: 'panels.launcher', icon: AppWindow },
-  { id: 'browser', titleKey: 'panels.browser', icon: Globe },
-  { id: 'music', titleKey: 'panels.music', icon: Music2 },
-  { id: 'apps', titleKey: 'panels.apps', icon: PictureInPicture2 },
-  { id: 'notes', titleKey: 'panels.notes', icon: NotebookPen },
-  { id: 'clipboard', titleKey: 'panels.clipboard', icon: ClipboardList },
-  { id: 'games', titleKey: 'panels.games', icon: Gamepad2 },
-  { id: 'library', titleKey: 'panels.library', icon: Library },
-  { id: 'room', titleKey: 'panels.room', icon: Sofa },
-  { id: 'radio', titleKey: 'panels.radio', icon: Radio },
-  { id: 'podcasts', titleKey: 'panels.podcasts', icon: Podcast },
-  { id: 'settings', titleKey: 'panels.settings', icon: SettingsIcon },
-];
+export const PANELS: readonly PanelMeta[] = panelsOf(MODULES).map(({ id, titleKey, icon }) => ({ id, titleKey, icon }));
 
 export function isPanelId(value: unknown): value is PanelId {
   return PANELS.some((p) => p.id === value);

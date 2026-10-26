@@ -7,7 +7,7 @@ export type FaceMood = 'look' | 'happy' | 'blink';
 export function LailaFace({ mood, line }: { mood: FaceMood; line: string }) {
   const urls = useMemo(() => frameUrls(), []);
   return (
-    <div className="glass flex items-center gap-3 rounded-2xl p-2.5">
+    <div className="flex items-center gap-3 rounded-lg bg-control p-2.5">
       <img
         src={urls[mood]}
         alt=""

@@ -1,23 +1,21 @@
-import { AppWindow, Info, Keyboard, KeyRound, LayoutGrid, LogOut, Monitor, Palette, PanelBottom, RefreshCw, ShieldCheck, Sparkles, type LucideIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AppWindow, Info, Keyboard, KeyRound, LayoutGrid, LogOut, Monitor, Palette, PanelBottom, Puzzle, RefreshCw, Sparkles, type LucideIcon } from 'lucide-react';
+import { lazy, Suspense, useEffect, useMemo, useState, type ComponentType } from 'react';
+import { settingsOf } from '../../core/modules/registry';
+import { useModules } from '../../core/modules/useModules';
 import { t, type MessageKey } from '../../i18n';
 import { isTauri } from '../../shared/lib/tauri';
-import type { Chattiness } from '../laila/brain';
-import { Button, cx, Segmented, Select, TextInput, Toggle } from '../../shared/ui/primitives';
-import { setFxPreview, useFxPreview, type FxPreview } from '../fx/preview';
-
-const PREVIEW_IDS = ['dawn', 'day', 'sunset', 'night', 'halloween', 'republic', 'newYear', 'christmas', 'valentine', 'children', 'ramadan', 'kurban'] as const;
-import { AdblockSettings } from '../browser/AdblockSettings';
+import { Button, cx, Segmented, TextInput, Toggle } from '../../shared/ui/primitives';
 import { IntegrationsSettings } from '../integrations/IntegrationsSettings';
 import { windowService } from '../window-manager/windowService';
-import { FocusSettings } from '../focus/FocusSettings';
 import { BarSettings } from './BarSettings';
 import { ScreenSettings, ScreensaverSettings, ShortcutSettings, StartupSettings } from './DisplaySettings';
+import { ModulesSettings } from './ModulesSettings';
 import { LIMITS, useSettings, type ThemeMode } from './settings';
 import { Group, Row, SectionTitleContext } from './SettingsLayout';
 import { WorkspaceSettings } from './WorkspaceSettings';
 
-type SectionId =
+/** Çekirdek bölüm kimlikleri; modüller kendi bölümlerini manifestlerinde bildirir (core/modules). */
+type CoreSectionId =
   | 'appearance'
   | 'updates'
   | 'display'
@@ -25,12 +23,19 @@ type SectionId =
   | 'workspaces'
   | 'shortcuts'
   | 'features'
-  | 'adblock'
   | 'windows'
   | 'providers'
+  | 'modules'
   | 'about';
 
-const SECTIONS: { id: SectionId; icon: LucideIcon; title: MessageKey; desc: MessageKey }[] = [
+interface SectionDef {
+  id: string;
+  icon: LucideIcon;
+  title: MessageKey;
+  desc?: MessageKey;
+}
+
+const CORE_SECTIONS: (SectionDef & { id: CoreSectionId })[] = [
   { id: 'appearance', icon: Palette, title: 'settings.appearance', desc: 'redesign.sectionAppearance' },
   { id: 'updates', icon: RefreshCw, title: 'settings.updates', desc: 'redesign.sectionUpdates' },
   { id: 'display', icon: Monitor, title: 'display.title', desc: 'redesign.sectionDisplay' },
@@ -38,25 +43,46 @@ const SECTIONS: { id: SectionId; icon: LucideIcon; title: MessageKey; desc: Mess
   { id: 'workspaces', icon: LayoutGrid, title: 'workspaces.title', desc: 'redesign.sectionWorkspaces' },
   { id: 'shortcuts', icon: Keyboard, title: 'shortcuts.title', desc: 'redesign.sectionShortcuts' },
   { id: 'features', icon: Sparkles, title: 'settings.features', desc: 'redesign.sectionFeatures' },
-  { id: 'adblock', icon: ShieldCheck, title: 'adblock.title', desc: 'redesign.sectionAdblock' },
   { id: 'windows', icon: AppWindow, title: 'settings.windows', desc: 'redesign.sectionWindows' },
   { id: 'providers', icon: KeyRound, title: 'settings.providers', desc: 'redesign.sectionProviders' },
+  { id: 'modules', icon: Puzzle, title: 'modules.title', desc: 'modules.hint' },
   { id: 'about', icon: Info, title: 'settings.about', desc: 'redesign.sectionAbout' },
 ];
 
+const MODULE_SECTION_COMPONENTS = new Map<string, ComponentType>();
+function moduleSectionComponent(id: string, load: () => Promise<{ default: ComponentType }>): ComponentType {
+  let c = MODULE_SECTION_COMPONENTS.get(id);
+  if (!c) {
+    c = lazy(load);
+    MODULE_SECTION_COMPONENTS.set(id, c);
+  }
+  return c;
+}
+
 export function SettingsPanel() {
   const [settings, setSettings] = useSettings();
-  const preview = useFxPreview();
-  const [section, setSection] = useState<SectionId>('appearance');
+  const { active, isEnabled } = useModules();
+  const [sectionId, setSection] = useState<string>('appearance');
   const set = <K extends keyof typeof settings>(key: K, value: (typeof settings)[K]) =>
     setSettings((s) => ({ ...s, [key]: value }));
-  const current = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0]!;
+
+  // Etkin modüllerin ayar bölümleri, "Modüller" sayfasından sonra ve "Hakkında"dan önce.
+  const moduleSections = useMemo(() => settingsOf(active), [active]);
+  const sections = useMemo<SectionDef[]>(() => {
+    const extra = moduleSections.map(({ section: c }) => ({ id: c.id, icon: c.icon, title: c.titleKey, desc: c.descriptionKey }));
+    const aboutAt = CORE_SECTIONS.findIndex((x) => x.id === 'about');
+    return [...CORE_SECTIONS.slice(0, aboutAt), ...extra, ...CORE_SECTIONS.slice(aboutAt)];
+  }, [moduleSections]);
+  const current = sections.find((s) => s.id === sectionId) ?? sections[0]!;
+  const section = current.id;
+  const extraSection = moduleSections.find(({ section: c }) => c.id === current.id)?.section;
+  const ExtraBody = extraSection ? moduleSectionComponent(extraSection.id, extraSection.load) : null;
 
   return (
     <SectionTitleContext.Provider value={t(current.title)}>
-    <div className="flex h-full gap-4 p-4">
-      <nav aria-label={t('redesign.navLabel')} className="flex w-60 shrink-0 flex-col gap-1 overflow-y-auto rounded-2xl bg-surface-2 p-2">
-        {SECTIONS.map((s) => {
+    <div className="flex h-full gap-6">
+      <nav aria-label={t('redesign.navLabel')} className="flex w-56 shrink-0 flex-col gap-0.5 overflow-y-auto pr-1">
+        {sections.map((s) => {
           const active = s.id === section;
           return (
             <button
@@ -65,11 +91,11 @@ export function SettingsPanel() {
               aria-current={active ? 'page' : undefined}
               onClick={() => setSection(s.id)}
               className={cx(
-                'flex h-11 items-center gap-3 rounded-xl px-3 text-left text-base transition-colors',
-                active ? 'bg-accent-soft font-medium text-accent' : 'text-muted hover:bg-surface-3 hover:text-fg',
+                'relative flex h-9 items-center gap-3 rounded-lg px-3 text-left text-sm transition-colors duration-150',
+                active ? 'bg-accent-soft font-semibold text-fg' : 'text-fg-2 hover:bg-card-hover hover:text-fg',
               )}
             >
-              <s.icon size={18} className="shrink-0" />
+              <s.icon size={18} strokeWidth={1.75} className={cx('shrink-0', active && 'text-accent')} />
               <span className="truncate">{t(s.title)}</span>
             </button>
           );
@@ -77,9 +103,10 @@ export function SettingsPanel() {
       </nav>
 
       <div className="min-w-0 flex-1 overflow-y-auto">
-        <div className="max-w-3xl px-2 pb-6">
-          <h2 className="font-display text-2xl font-semibold tracking-tight">{t(current.title)}</h2>
-          <p className="mt-1 mb-6 text-sm text-muted">{t(current.desc)}</p>
+        <div className="max-w-3xl pr-2 pb-6">
+          <h2 className="font-display text-xl font-semibold">{t(current.title)}</h2>
+          {current.desc && <p className="mt-1 mb-6 text-sm text-fg-2">{t(current.desc)}</p>}
+          {!current.desc && <div className="mb-6" />}
 
           {section === 'appearance' && (
             <Group title={t('settings.appearance')}>
@@ -125,13 +152,23 @@ export function SettingsPanel() {
             <>
               <ScreenSettings />
               <StartupSettings />
-              <ScreensaverSettings />
+              {isEnabled('screensaver') && <ScreensaverSettings />}
             </>
           )}
           {section === 'bar' && <BarSettings />}
           {section === 'workspaces' && <WorkspaceSettings />}
           {section === 'shortcuts' && <ShortcutSettings />}
-          {section === 'adblock' && <AdblockSettings />}
+          {section === 'modules' && (
+            <ModulesSettings
+              sectionOf={(id) => settingsOf(active).find((x) => x.module.id === id)?.section.id ?? null}
+              onOpenSection={setSection}
+            />
+          )}
+          {ExtraBody && (
+            <Suspense fallback={null}>
+              <ExtraBody />
+            </Suspense>
+          )}
 
           {section === 'features' && (
             <>
@@ -152,84 +189,7 @@ export function SettingsPanel() {
                 <Toggle checked={settings.launcherFocusExisting} label={t('settings.focusExisting')} onChange={(v) => set('launcherFocusExisting', v)} />
               </Row>
             </Group>
-            <Group title={t('fx.title')}>
-              <Row label={t('fx.weather')} hint={t('fx.weatherHint')}>
-                <Toggle checked={settings.fxWeather} label={t('fx.weather')} onChange={(v) => set('fxWeather', v)} />
-              </Row>
-              <Row label={t('fx.confetti')} hint={t('fx.confettiHint')}>
-                <Toggle checked={settings.fxConfetti} label={t('fx.confetti')} onChange={(v) => set('fxConfetti', v)} />
-              </Row>
-              <Row label={t('fx.ambient')} hint={t('fx.ambientHint')}>
-                <Toggle checked={settings.fxAmbient} label={t('fx.ambient')} onChange={(v) => set('fxAmbient', v)} />
-              </Row>
-              <Row label={t('fx.holidays')} hint={t('fx.holidaysHint')}>
-                <Toggle checked={settings.fxHolidays} label={t('fx.holidays')} onChange={(v) => set('fxHolidays', v)} />
-              </Row>
-              <Row label={t('fx.preview')} hint={t('fx.previewHint')}>
-                <Select value={preview} aria-label={t('fx.preview')} onChange={(e) => setFxPreview(e.target.value as FxPreview)}>
-                  <option value="none">{t('fx.previewNone')}</option>
-                  {PREVIEW_IDS.map((id) => (
-                    <option key={id} value={id}>
-                      {t(`fx.names.${id}` as MessageKey)}
-                    </option>
-                  ))}
-                </Select>
-              </Row>
-            </Group>
             </>
-          )}
-
-          {section === 'features' && (
-            <Group title={t('laila.settingsTitle')}>
-              <Row label={t('laila.enabled')} hint={t('laila.enabledHint')}>
-                <Toggle checked={settings.lailaEnabled} label={t('laila.enabled')} onChange={(v) => set('lailaEnabled', v)} />
-              </Row>
-              <Row label={t('laila.desktop')} hint={t('laila.desktopHint')}>
-                <Toggle checked={settings.lailaDesktop} label={t('laila.desktop')} onChange={(v) => set('lailaDesktop', v)} />
-              </Row>
-              <Row label={t('laila.chatty')}>
-                <Segmented<Chattiness>
-                  label={t('laila.chatty')}
-                  value={settings.lailaChat}
-                  options={[
-                    { value: 'quiet', label: t('laila.chattyQuiet') },
-                    { value: 'normal', label: t('laila.chattyNormal') },
-                    { value: 'chatty', label: t('laila.chattyChatty') },
-                  ]}
-                  onChange={(v) => set('lailaChat', v)}
-                />
-              </Row>
-              <Row label={t('laila.reminders')} hint={t('laila.remindersHint')}>
-                <Toggle checked={settings.lailaReminders} label={t('laila.reminders')} onChange={(v) => set('lailaReminders', v)} />
-              </Row>
-              {settings.lailaReminders && (
-                <>
-                  <Row label={t('laila.eyeEvery')}>
-                    <Segmented<'20' | '40' | '60'>
-                      label={t('laila.eyeEvery')}
-                      value={String(settings.lailaEyeMin) as '20' | '40' | '60'}
-                      options={[
-                        { value: '20', label: t('laila.minutes', { n: 20 }) },
-                        { value: '40', label: t('laila.minutes', { n: 40 }) },
-                        { value: '60', label: t('laila.minutes', { n: 60 }) },
-                      ]}
-                      onChange={(v) => set('lailaEyeMin', v === '20' ? 20 : v === '60' ? 60 : 40)}
-                    />
-                  </Row>
-                  <Row label={t('laila.waterEvery')}>
-                    <Segmented<'60' | '90'>
-                      label={t('laila.waterEvery')}
-                      value={settings.lailaWaterMin === 60 ? '60' : '90'}
-                      options={[
-                        { value: '60', label: t('laila.minutes', { n: 60 }) },
-                        { value: '90', label: t('laila.minutes', { n: 90 }) },
-                      ]}
-                      onChange={(v) => set('lailaWaterMin', v === '60' ? 60 : 90)}
-                    />
-                  </Row>
-                </>
-              )}
-            </Group>
           )}
 
           {section === 'windows' && (
@@ -240,15 +200,11 @@ export function SettingsPanel() {
             </Group>
           )}
 
-          {section === 'windows' && (
-            <FocusSettings />
-          )}
-
           {section === 'providers' && (
             <>
               <IntegrationsSettings
                 onOpenSection={(id) => {
-                  const target = SECTIONS.find((s) => s.id === id);
+                  const target = sections.find((s) => s.id === id);
                   if (target) setSection(target.id);
                 }}
               />
@@ -263,7 +219,7 @@ export function SettingsPanel() {
           {section === 'about' && (
             <Group title={t('settings.about')}>
               <div className="py-4">
-                <p className="mb-3 text-sm text-muted">{t('settings.aboutBody')}</p>
+                <p className="mb-3 text-sm text-fg-2">{t('settings.aboutBody')}</p>
                 <Button variant="danger" icon={LogOut} onClick={() => void windowService.quitApp().catch(() => {})} disabled={!isTauri()}>
                   {t('settings.quit')}
                 </Button>
@@ -310,7 +266,7 @@ function NumberField({
         className="tabular w-20 text-right"
         aria-label={suffix}
       />
-      <span className="text-sm text-muted">{suffix}</span>
+      <span className="text-sm text-fg-2">{suffix}</span>
     </span>
   );
 }

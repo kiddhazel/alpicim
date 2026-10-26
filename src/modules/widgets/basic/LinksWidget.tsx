@@ -15,9 +15,9 @@ export function LinksWidget({ config }: WidgetProps<LinksConfig>) {
   if (config.links.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 px-4 text-center">
-        <Link2 size={20} className="text-faint" />
-        <p className="text-sm text-muted">{t('widgets.links.empty')}</p>
-        <p className="text-xs text-faint">{t('widgets.links.emptyBody')}</p>
+        <Link2 size={20} className="text-fg-3" />
+        <p className="text-sm text-fg-2">{t('widgets.links.empty')}</p>
+        <p className="text-xs text-fg-3">{t('widgets.links.emptyBody')}</p>
       </div>
     );
   }
@@ -29,7 +29,7 @@ export function LinksWidget({ config }: WidgetProps<LinksConfig>) {
             type="button"
             title={l.url}
             onClick={() => host.openUrl(l.url)}
-            className="flex h-[76px] w-full flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2 transition-colors hover:bg-surface-3"
+            className="flex h-[76px] w-full flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2 transition-colors hover:bg-control-hover"
           >
             <SiteIcon url={l.url} size={28} lazy className="rounded-md" />
             <span className="w-full truncate text-center text-xs">{linkTitle(l)}</span>

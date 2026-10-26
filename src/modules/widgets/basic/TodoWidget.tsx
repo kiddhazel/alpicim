@@ -55,9 +55,9 @@ export function TodoWidget({ config, setConfig }: WidgetProps<TodoConfig>) {
         <IconButton size="sm" icon={Plus} label={t('common.add')} type="submit" disabled={!text.trim()} />
       </form>
       <ul className="min-h-0 flex-1 overflow-y-auto px-3 py-1">
-        {items.length === 0 && <li className="px-1 py-3 text-center text-sm text-faint">{t('widgets.todo.empty')}</li>}
+        {items.length === 0 && <li className="px-1 py-3 text-center text-sm text-fg-3">{t('widgets.todo.empty')}</li>}
         {items.map((item) => (
-          <li key={item.id} className="group flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 hover:bg-surface-3">
+          <li key={item.id} className="group flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 hover:bg-control-hover">
             <input
               type="checkbox"
               checked={item.done}
@@ -72,21 +72,21 @@ export function TodoWidget({ config, setConfig }: WidgetProps<TodoConfig>) {
               }}
               className="h-4 w-4 accent-[var(--accent)]"
             />
-            <span className={cx('selectable min-w-0 flex-1 truncate text-sm', item.done && 'text-faint line-through')} title={item.text}>
+            <span className={cx('selectable min-w-0 flex-1 truncate text-sm', item.done && 'text-fg-3 line-through')} title={item.text}>
               {item.text}
             </span>
             <button
               type="button"
               aria-label={t('common.remove')}
               onClick={() => set(items.filter((i) => i.id !== item.id))}
-              className="rounded p-1 text-faint opacity-0 group-hover:opacity-100 hover:text-down focus:opacity-100"
+              className="rounded p-1 text-fg-3 opacity-0 group-hover:opacity-100 hover:text-down focus:opacity-100"
             >
               <X size={14} />
             </button>
           </li>
         ))}
       </ul>
-      <div className="flex items-center justify-between border-t border-line px-4 py-1.5 text-xs text-faint">
+      <div className="flex items-center justify-between border-t border-stroke px-4 py-1.5 text-xs text-fg-3">
         <span>{t('widgets.todo.remaining', { n: remaining })}</span>
         {items.some((i) => i.done) && (
           <button type="button" className="inline-flex items-center gap-1 hover:text-down" onClick={() => set(items.filter((i) => !i.done))}>

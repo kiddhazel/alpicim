@@ -1,7 +1,7 @@
 import { Brain, Grid2x2, Hand, Hash, Skull, SpellCheck, Worm } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { t } from '../../i18n';
-import { Segmented } from '../../shared/ui/primitives';
+import { Badge, Card, Segmented } from '../../shared/ui/primitives';
 import { Game2048 } from './Game2048';
 import { HangmanGame } from './HangmanGame';
 import { MemoryGame } from './MemoryGame';
@@ -92,10 +92,9 @@ export function GamesPanel() {
         />
       </div>
       {autoplay && (
-        <div className="glass pointer-events-none absolute left-1/2 top-16 z-10 -translate-x-1/2 rounded-full px-3 py-1 text-sm font-medium text-fg">
-          <span className="text-gradient">{t('games.lailaPlaying')}</span>
-        </div>
+        <Badge tone="accent">{t('games.lailaPlaying')}</Badge>
       )}
+      <Card className="mx-auto w-full max-w-md p-4">
       {game === 'g2048' && <Game2048 {...props} />}
       {game === 'snake' && <SnakeGame {...props} />}
       {game === 'memory' && <MemoryGame {...props} />}
@@ -103,6 +102,7 @@ export function GamesPanel() {
       {game === 'rps' && <RpsGame />}
       {game === 'xox' && <XoxGame />}
       {game === 'hangman' && <HangmanGame />}
+      </Card>
     </div>
   );
 }

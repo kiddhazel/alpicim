@@ -46,7 +46,7 @@ export function StateView({ kind, title, description, action, compact }: Props) 
         <Icon size={compact ? 22 : 26} strokeWidth={1.5} className={cx(tone, kind === 'loading' && 'animate-spin')} />
       </div>
       <p className="text-base font-medium text-fg">{title}</p>
-      {description && <div className="max-w-sm text-sm text-muted">{description}</div>}
+      {description && <div className="max-w-sm text-sm text-fg-2">{description}</div>}
       {action && <div className="mt-2">{action}</div>}
     </div>
   );
@@ -83,8 +83,8 @@ export function SkeletonRows({ rows = 6 }: { rows?: number }) {
     <div className="flex flex-col gap-3 p-3" aria-hidden>
       {Array.from({ length: rows }, (_, i) => (
         <div key={i} className="flex flex-col gap-1.5">
-          <div className="h-3.5 w-11/12 animate-pulse rounded bg-surface-3" />
-          <div className="h-3 w-1/3 animate-pulse rounded bg-surface-2" />
+          <div className="h-3.5 w-11/12 animate-pulse rounded bg-control" />
+          <div className="h-3 w-1/3 animate-pulse rounded bg-control" />
         </div>
       ))}
     </div>

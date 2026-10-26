@@ -28,9 +28,9 @@ const SNACK_ICONS: Record<SnackId, LucideIcon> = { strawberry: Cherry, cookie: C
 
 function NeedBar({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: number }) {
   return (
-    <span className="flex min-w-0 flex-1 items-center gap-1 text-muted" title={`${label}: ${Math.round(value)}`}>
+    <span className="flex min-w-0 flex-1 items-center gap-1 text-fg-2" title={`${label}: ${Math.round(value)}`}>
       <Icon size={12} strokeWidth={1.75} aria-hidden />
-      <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-3" role="meter" aria-label={label} aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100}>
+      <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-control" role="meter" aria-label={label} aria-valuenow={Math.round(value)} aria-valuemin={0} aria-valuemax={100}>
         <span className={cx('block h-full rounded-full', value < 25 ? 'bg-down' : 'bg-accent')} style={{ width: `${Math.round(value)}%` }} />
       </span>
     </span>
@@ -69,7 +69,7 @@ export function LailaChat({ messages, bottom, bond, needs, onFeed, onSend, onPic
       role="dialog"
       aria-label={t('laila.chatTitle')}
       style={{ bottom, width: 320, height: 380 }}
-      className="glass pointer-events-auto absolute right-3 flex max-h-[calc(100%-24px)] max-w-[calc(100%-24px)] flex-col overflow-hidden rounded-2xl shadow-panel"
+      className="pointer-events-auto absolute right-3 flex max-h-[calc(100%-24px)] max-w-[calc(100%-24px)] flex-col overflow-hidden rounded-xl bg-card ring-1 ring-stroke-strong shadow-[var(--shadow-pop)]"
       onKeyDown={(e) => {
         if (e.key === 'Escape') onClose();
       }}
@@ -82,12 +82,12 @@ export function LailaChat({ messages, bottom, bond, needs, onFeed, onSend, onPic
         </div>
       </div>
       <div
-        className="flex shrink-0 items-center gap-2 px-4 pb-2 text-xs text-muted"
+        className="flex shrink-0 items-center gap-2 px-4 pb-2 text-xs text-fg-2"
         title={level.next !== null ? t('laila.bondNext', { next: level.next }) : undefined}
       >
         <span className="flex items-center gap-0.5" aria-hidden>
           {LEVEL_THRESHOLDS.map((_, i) => (
-            <Heart key={i} size={14} strokeWidth={1.75} className={i <= level.index ? 'fill-current text-accent' : 'text-faint'} />
+            <Heart key={i} size={14} strokeWidth={1.75} className={i <= level.index ? 'fill-current text-accent' : 'text-fg-3'} />
           ))}
         </span>
         <span className="font-medium text-fg">{t(levelKey)}</span>
@@ -112,17 +112,17 @@ export function LailaChat({ messages, bottom, bond, needs, onFeed, onSend, onPic
                   aria-pressed={selected}
                   onClick={() => onPickOutfit(o.id)}
                   className={cx(
-                    'flex flex-col items-center gap-1.5 rounded-xl bg-surface-2 p-2.5 text-sm transition-colors',
-                    selected ? 'ring-2 ring-accent' : 'shadow-[inset_0_0_0_1px_var(--glass-edge)]',
-                    locked ? 'cursor-not-allowed opacity-50' : 'hover:bg-surface-3',
+                    'flex flex-col items-center gap-1.5 rounded-lg bg-layer p-2.5 text-sm transition-colors',
+                    selected ? 'ring-2 ring-accent' : 'ring-1 ring-stroke',
+                    locked ? 'cursor-not-allowed opacity-50' : 'hover:bg-control-hover',
                   )}
                 >
-                  <span className="flex h-8 w-8 overflow-hidden rounded-full shadow-[inset_0_0_0_1px_var(--glass-edge)]" aria-hidden>
+                  <span className="flex h-8 w-8 overflow-hidden rounded-full ring-1 ring-stroke" aria-hidden>
                     <span className="h-full w-1/2" style={{ background: outfitDef(o.id).colors.c ?? PALETTE.c }} />
                     <span className="h-full w-1/2" style={{ background: outfitDef(o.id).colors.h ?? PALETTE.h }} />
                   </span>
                   <span className="font-medium">{t(`laila.outfit.${o.id}`)}</span>
-                  {locked && <span className="text-xs text-muted">{t('laila.outfitLocked', { points: o.points })}</span>}
+                  {locked && <span className="text-xs text-fg-2">{t('laila.outfitLocked', { points: o.points })}</span>}
                 </button>
               );
             })}
@@ -132,8 +132,8 @@ export function LailaChat({ messages, bottom, bond, needs, onFeed, onSend, onPic
             <div
               key={m.id}
               className={cx(
-                'max-w-[85%] rounded-2xl px-3 py-2 text-sm',
-                m.from === 'laila' ? 'self-start rounded-bl-md bg-surface-3' : 'bg-accent-gradient self-end rounded-br-md text-white',
+                'max-w-[85%] rounded-lg px-3 py-2 text-sm',
+                m.from === 'laila' ? 'self-start bg-control text-fg' : 'bg-accent text-on-accent self-end',
               )}
             >
               {m.text}
@@ -152,7 +152,7 @@ export function LailaChat({ messages, bottom, bond, needs, onFeed, onSend, onPic
               disabled={wait > 0}
               onClick={() => onFeed(s.id)}
               title={wait > 0 ? `${t(`laila.snack.${s.id}`)} (${Math.ceil(wait / 1000)}s)` : t(`laila.snack.${s.id}`)}
-              className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-surface-2 text-xs font-medium shadow-[inset_0_0_0_1px_var(--glass-edge)] transition-colors hover:bg-surface-3 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-8 flex-1 items-center justify-center gap-1 rounded-lg bg-layer text-xs font-medium ring-1 ring-stroke transition-colors hover:bg-control-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Icon size={14} strokeWidth={1.75} />
               {t(`laila.snack.${s.id}`)}

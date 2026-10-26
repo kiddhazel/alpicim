@@ -1,9 +1,9 @@
-import { ArrowLeft, Pause, Play, Plus, Rewind, FastForward, Search, Trash2 } from 'lucide-react';
+import { ArrowLeft, Mic, Pause, Play, Plus, Rewind, FastForward, Search, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { t } from '../../i18n';
 import { formatDateTime } from '../../shared/lib/time';
 import { usePersistentState } from '../../shared/lib/usePersistentState';
-import { Button, cx, IconButton, TextInput } from '../../shared/ui/primitives';
+import { Button, Card, EmptyState, IconButton, List, ListItem, TextInput } from '../../shared/ui/primitives';
 import { describeError, SkeletonRows, StateView } from '../../shared/ui/StateView';
 import { useToast } from '../../shared/ui/Toast';
 import { formatTrackTime } from '../system/systemService';
@@ -99,7 +99,7 @@ export function PodcastsPanel() {
             void submit();
           }}
         >
-          <Search size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
+          <Search size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
           <TextInput
             className="w-full pl-9"
             value={input}
@@ -124,50 +124,49 @@ export function PodcastsPanel() {
               {t('podcasts.backToList')}
             </button>
             {hits.length === 0 && <StateView kind="empty" title={t('podcasts.noResults')} />}
-            <ul className="flex flex-col gap-1">
-              {hits.map((h) => {
-                const done = subs.some((s) => s.url === h.feedUrl);
-                return (
-                  <li key={h.feedUrl} className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-surface-2">
-                    <Cover src={h.image} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{h.title}</p>
-                      <p className="truncate text-xs text-faint">{h.author}</p>
-                    </div>
-                    <Button disabled={done} onClick={() => subscribe(h.feedUrl, h.title, h.image)}>
-                      {done ? t('podcasts.subscribedShort') : t('podcasts.subscribe')}
-                    </Button>
-                  </li>
-                );
-              })}
-            </ul>
+            <Card className="p-1">
+              <List>
+                {hits.map((h) => {
+                  const done = subs.some((s) => s.url === h.feedUrl);
+                  return (
+                    <ListItem
+                      key={h.feedUrl}
+                      leading={<Cover src={h.image} />}
+                      title={h.title}
+                      subtitle={h.author}
+                      trailing={
+                        <Button disabled={done} onClick={() => subscribe(h.feedUrl, h.title, h.image)}>
+                          {done ? t('podcasts.subscribedShort') : t('podcasts.subscribe')}
+                        </Button>
+                      }
+                    />
+                  );
+                })}
+              </List>
+            </Card>
           </>
         ) : subs.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 py-8 text-center">
-            <p className="text-sm text-muted">{t('podcasts.empty')}</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {SUGGESTED_TERMS.map((term) => (
-                <Button key={term} onClick={() => void runSearch(term)}>
-                  {term}
-                </Button>
-              ))}
-            </div>
-          </div>
+          <EmptyState
+            icon={Mic}
+            title={t('podcasts.empty')}
+            action={
+              <div className="flex flex-wrap justify-center gap-2">
+                {SUGGESTED_TERMS.map((term) => (
+                  <Button key={term} onClick={() => void runSearch(term)}>
+                    {term}
+                  </Button>
+                ))}
+              </div>
+            }
+          />
         ) : (
-          <ul className="flex flex-col gap-1">
-            {subs.map((s) => (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  onClick={() => setOpenId(s.id)}
-                  className="flex w-full items-center gap-3 rounded-xl px-2 py-1.5 text-left hover:bg-surface-2"
-                >
-                  <Cover src={s.image} />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium">{s.title}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <Card className="p-1">
+            <List>
+              {subs.map((s) => (
+                <ListItem key={s.id} leading={<Cover src={s.image} />} title={s.title} onClick={() => setOpenId(s.id)} />
+              ))}
+            </List>
+          </Card>
         )}
       </div>
 
@@ -178,9 +177,9 @@ export function PodcastsPanel() {
 
 function Cover({ src }: { src: string }) {
   return src ? (
-    <img src={src} alt="" loading="lazy" className="h-10 w-10 shrink-0 rounded-lg bg-surface-3 object-cover" />
+    <img src={src} alt="" loading="lazy" className="h-10 w-10 shrink-0 rounded-md bg-control object-cover" />
   ) : (
-    <span className="h-10 w-10 shrink-0 rounded-lg bg-surface-3" aria-hidden />
+    <span className="h-10 w-10 shrink-0 rounded-md bg-control" aria-hidden />
   );
 }
 
@@ -228,26 +227,24 @@ function EpisodeList({
         ) : feed.episodes.length === 0 ? (
           <StateView kind="empty" title={t('podcasts.noEpisodes')} />
         ) : (
-          <ul className="flex flex-col gap-1">
+          <Card className="p-1">
+            <List>
             {feed.episodes.map((ep) => {
               const current = playingId === ep.id;
               const pos = resumeAt(positions, ep.id);
               return (
-                <li key={ep.id} className={cx('flex items-center gap-3 rounded-xl px-2 py-1.5', current ? 'bg-accent-soft' : 'hover:bg-surface-2')}>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium" title={ep.title}>
-                      {ep.title}
-                    </p>
-                    <p className="truncate text-xs text-faint">
-                      {[
-                        ep.publishedAt ? formatDateTime(ep.publishedAt) : '',
-                        ep.durationSec ? formatTrackTime(ep.durationSec * 1000) : '',
-                        pos > 0 ? t('podcasts.resumeAt', { time: formatTrackTime(pos * 1000) }) : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </p>
-                  </div>
+                <ListItem
+                  key={ep.id}
+                  selected={current}
+                  title={ep.title}
+                  subtitle={[
+                    ep.publishedAt ? formatDateTime(ep.publishedAt) : '',
+                    ep.durationSec ? formatTrackTime(ep.durationSec * 1000) : '',
+                    pos > 0 ? t('podcasts.resumeAt', { time: formatTrackTime(pos * 1000) }) : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  trailing={
                   <IconButton
                     icon={current && audio.playing ? Pause : Play}
                     label={current && audio.playing ? t('media.pause') : t('media.play')}
@@ -258,10 +255,12 @@ function EpisodeList({
                       )
                     }
                   />
-                </li>
+                  }
+                />
               );
             })}
-          </ul>
+            </List>
+          </Card>
         )}
       </div>
       {audio.source?.kind === 'podcast' && <PodcastBar />}
@@ -274,11 +273,11 @@ function PodcastBar() {
   if (!a.source) return null;
   const pct = a.durationSec ? Math.min(100, (a.positionSec / a.durationSec) * 100) : 0;
   return (
-    <div className="glass flex flex-col gap-1 px-4 py-2">
+    <Card className="m-3 mt-0 flex flex-col gap-1 px-4 py-3">
       <div className="flex items-center gap-2">
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{a.source.title}</p>
-          <p className="truncate text-xs text-faint">{a.error ? t('podcasts.playError') : a.source.subtitle}</p>
+          <p className="truncate text-xs text-fg-3">{a.error ? t('podcasts.playError') : a.source.subtitle}</p>
         </div>
         <IconButton icon={Rewind} label={t('podcasts.back10')} onClick={() => audioService.skip(-10)} />
         <IconButton icon={a.playing ? Pause : Play} label={a.playing ? t('media.pause') : t('media.play')} onClick={() => audioService.toggle()} />
@@ -287,7 +286,7 @@ function PodcastBar() {
           {a.rate}x
         </Button>
       </div>
-      <div className="flex items-center gap-2 text-xs text-faint">
+      <div className="flex items-center gap-2 text-xs text-fg-3">
         <span className="tabular">{formatTrackTime(a.positionSec * 1000)}</span>
         <input
           type="range"
@@ -303,6 +302,6 @@ function PodcastBar() {
         />
         <span className="tabular">{a.durationSec ? formatTrackTime(a.durationSec * 1000) : '--:--'}</span>
       </div>
-    </div>
+    </Card>
   );
 }

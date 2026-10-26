@@ -32,6 +32,8 @@ export interface Settings {
   fxAmbient: boolean;
   /** Özel gün temaları. */
   fxHolidays: boolean;
+  /** Özel gün süsleri (yarasa, bayrak, kalp…) ana ekran kartlarının arkasında çizilir. */
+  fxHolidayDecor: boolean;
   /** Müzik paneli gizlenince/kapatılınca çalmaya devam etsin mi? (false → ses durur) */
   musicKeepPlaying: boolean;
   /** Açık Windows pencerelerini panellere alma özelliği (deneysel). */
@@ -40,6 +42,8 @@ export interface Settings {
   launcherFocusExisting: boolean;
   /** Alt çubukta haber/piyasa şeridi gösterilsin mi? */
   barTicker: boolean;
+  /** Kullanıcı şeridi kendisi açıp kapattı mı? (1.0.0'daki yanlış varsayılan kapalıyı bir kez aşar) */
+  barTickerSet: boolean;
   /** Alt çubukta mini oynatıcı gösterilsin mi? */
   barPlayer: boolean;
   /** Kayan yazı hızı. */
@@ -77,14 +81,16 @@ export const DEFAULT_SETTINGS: Settings = {
   startHidden: false,
   performanceMode: false,
   gameModeAuto: true,
-  fxWeather: true,
+  fxWeather: false,
   fxConfetti: true,
   fxAmbient: true,
   fxHolidays: true,
+  fxHolidayDecor: true,
   musicKeepPlaying: true,
   embedEnabled: true,
   launcherFocusExisting: true,
   barTicker: true,
+  barTickerSet: false,
   barPlayer: true,
   tickerSpeed: 'normal',
   tickerCategory: 'all',
@@ -149,11 +155,13 @@ export function sanitizeSettings(raw: unknown): Settings {
     fxConfetti: typeof r.fxConfetti === 'boolean' ? r.fxConfetti : d.fxConfetti,
     fxAmbient: typeof r.fxAmbient === 'boolean' ? r.fxAmbient : d.fxAmbient,
     fxHolidays: typeof r.fxHolidays === 'boolean' ? r.fxHolidays : d.fxHolidays,
+    fxHolidayDecor: typeof r.fxHolidayDecor === 'boolean' ? r.fxHolidayDecor : d.fxHolidayDecor,
     musicKeepPlaying: typeof r.musicKeepPlaying === 'boolean' ? r.musicKeepPlaying : d.musicKeepPlaying,
     embedEnabled: typeof r.embedEnabled === 'boolean' ? r.embedEnabled : d.embedEnabled,
     launcherFocusExisting:
       typeof r.launcherFocusExisting === 'boolean' ? r.launcherFocusExisting : d.launcherFocusExisting,
-    barTicker: typeof r.barTicker === 'boolean' ? r.barTicker : d.barTicker,
+    barTicker: r.barTickerSet === true && typeof r.barTicker === 'boolean' ? r.barTicker : d.barTicker,
+    barTickerSet: r.barTickerSet === true && typeof r.barTicker === 'boolean',
     barPlayer: typeof r.barPlayer === 'boolean' ? r.barPlayer : d.barPlayer,
     tickerSpeed: oneOf(r.tickerSpeed, ['slow', 'normal', 'fast'] as const, d.tickerSpeed),
     tickerCategory: r.tickerCategory === 'all' || isNewsCategory(r.tickerCategory) ? r.tickerCategory : d.tickerCategory,

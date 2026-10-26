@@ -196,6 +196,19 @@ pub async fn music_search<R: Runtime>(app: AppHandle<R>, window: Window<R>, quer
     wv.navigate(url).map_err(|e| e.to_string())
 }
 
+/// Ses düzeyi betiği: YouTube Music sayfasındaki <video> öğesinin `volume` özelliği (0..1).
+pub fn volume_script(volume: f64) -> String {
+    let v = if volume.is_finite() { volume.clamp(0.0, 1.0) } else { 1.0 };
+    format!("document.querySelectorAll('video').forEach(function(e){{e.volume={v:.3};}});")
+}
+
+/// Çalan videonun ses düzeyini ayarlar (0..1); sessize alma ayrıdır.
+#[tauri::command]
+pub async fn music_set_volume<R: Runtime>(app: AppHandle<R>, volume: f64) -> Result<(), String> {
+    let wv = app.get_webview(MUSIC_LABEL).ok_or("YouTube Music açık değil")?;
+    wv.eval(volume_script(volume)).map_err(|e| e.to_string())
+}
+
 /// WebView2'nin resmî sessize alma özelliği (ICoreWebView2_8::IsMuted).
 #[tauri::command]
 pub async fn music_set_muted<R: Runtime>(app: AppHandle<R>, muted: bool) -> Result<(), String> {
@@ -239,6 +252,14 @@ mod tests {
         assert_eq!(u.path(), "/search");
         assert_eq!(u.query_pairs().next().map(|(_, v)| v.into_owned()), Some("Sezen Aksu & Tarkan".into()));
         assert!(search_url("   ").is_err());
+    }
+
+    #[test]
+    fn volume_script_clamps() {
+        assert!(volume_script(2.0).contains("volume=1.000"));
+        assert!(volume_script(-1.0).contains("volume=0.000"));
+        assert!(volume_script(f64::NAN).contains("volume=1.000"));
+        assert!(volume_script(0.5).contains("volume=0.500"));
     }
 
     #[test]

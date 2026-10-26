@@ -5,7 +5,6 @@ import { Badge, Button, IconButton, Select, TextInput, Toggle } from '../../shar
 import { describeError } from '../../shared/ui/StateView';
 import { useToast } from '../../shared/ui/Toast';
 import { DEFAULT_FEEDS } from './defaultFeeds';
-import { CATEGORY_HUE } from './NewsReader';
 import { createFeed, probeFeed, validateFeedUrl } from './newsService';
 import { NEWS_CATEGORIES, type Feed, type NewsCategory } from './types';
 
@@ -69,7 +68,7 @@ export function FeedManager({ feeds, onChange, onClose }: Props) {
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         <form
-          className="glass mb-5 rounded-2xl p-5"
+          className="mb-5 rounded-xl border border-stroke bg-card p-4"
           onSubmit={(e) => {
             e.preventDefault();
             void add();
@@ -98,7 +97,7 @@ export function FeedManager({ feeds, onChange, onClose }: Props) {
             </Button>
           </div>
           {formError && <p role="alert" className="mt-2 text-sm text-down">{formError}</p>}
-          <p className="mt-2 text-xs text-faint">{t('feeds.hint')}</p>
+          <p className="mt-2 text-xs text-fg-3">{t('feeds.hint')}</p>
         </form>
 
         {NEWS_CATEGORIES.map((c) => {
@@ -106,18 +105,17 @@ export function FeedManager({ feeds, onChange, onClose }: Props) {
           if (group.length === 0) return null;
           return (
             <section key={c} className="mb-4">
-              <h4 className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide uppercase" style={{ color: CATEGORY_HUE[c] }}>
-                <span aria-hidden className="h-2 w-2 rounded-full" style={{ backgroundColor: CATEGORY_HUE[c] }} />
+              <h4 className="mb-2 text-xs font-semibold tracking-wide text-fg-3 uppercase">
                 {t(`news.category.${c}`)}
               </h4>
-              <ul className="glass divide-y divide-line overflow-hidden rounded-2xl">
+              <ul className="divide-y divide-stroke overflow-hidden rounded-xl border border-stroke bg-card">
                 {group.map((feed) => (
                   <li key={feed.id} className="flex items-center gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-base font-medium">
+                      <p className="truncate text-base font-semibold">
                         {feed.name} {feed.builtin && <Badge>{t('feeds.builtin')}</Badge>}
                       </p>
-                      <p className="selectable truncate text-xs text-faint" title={feed.url}>
+                      <p className="selectable truncate text-xs text-fg-3" title={feed.url}>
                         {feed.url}
                       </p>
                     </div>

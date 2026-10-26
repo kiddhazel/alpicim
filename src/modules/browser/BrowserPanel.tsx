@@ -183,7 +183,7 @@ function BrowserView() {
             {rt.loading && !home ? (
               <Loader2 size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 animate-spin text-accent" />
             ) : (
-              <Globe size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-faint" />
+              <Globe size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-3" />
             )}
             <TextInput
               value={input}
@@ -209,7 +209,7 @@ function BrowserView() {
               onClick={() => void shield.toggleSite()}
               className={cx(
                 'inline-flex h-9 shrink-0 items-center gap-1 rounded-xl px-2 text-xs transition-colors disabled:cursor-not-allowed disabled:opacity-40',
-                shield.state === 'active' ? 'text-accent hover:bg-surface-3' : 'text-muted hover:bg-surface-3 hover:text-fg',
+                shield.state === 'active' ? 'text-accent hover:bg-control' : 'text-fg-2 hover:bg-control hover:text-fg',
               )}
             >
               <ShieldIcon size={18} strokeWidth={1.75} />
@@ -268,7 +268,7 @@ function BrowserView() {
               >
                 <span
                   className={cx(
-                    'rounded-full bg-line-strong opacity-0 transition-opacity group-hover:opacity-100',
+                    'rounded-full bg-stroke-strong opacity-0 transition-opacity group-hover:opacity-100',
                     dragRatio !== null && 'bg-accent opacity-100',
                     vertical ? 'h-1 w-8' : 'h-8 w-1',
                   )}

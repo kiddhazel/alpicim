@@ -30,7 +30,7 @@ export function IntegrationsSettings({ onOpenSection }: { onOpenSection: (sectio
   const integrations = useIntegrations();
   return (
     <>
-      <p className="mb-6 max-w-2xl text-sm text-muted">{t('integrations.intro')}</p>
+      <p className="mb-6 max-w-2xl text-sm text-fg-2">{t('integrations.intro')}</p>
       {groupByCategory().map(([category, defs]) => (
         <Group key={category} title={t(`integrations.category.${category}`)}>
           {defs.map((def) => (
@@ -90,8 +90,8 @@ function IntegrationRow({
             {def.control === 'toggle' && status && <Badge tone={STATUS_TONE[status]}>{t(`integrations.status.${status}`)}</Badge>}
             {def.control !== 'toggle' && !def.key && <Badge tone="accent">{t('integrations.status.keyless')}</Badge>}
           </div>
-          <p className="mt-0.5 text-sm text-muted">{t(def.description)}</p>
-          <p className="mt-1 text-xs text-faint">{t('integrations.powers', { list: t(def.powers) })}</p>
+          <p className="mt-0.5 text-sm text-fg-2">{t(def.description)}</p>
+          <p className="mt-1 text-xs text-fg-3">{t('integrations.powers', { list: t(def.powers) })}</p>
         </div>
         {def.control === 'toggle' && (
           <Toggle checked={enabled} label={t('integrations.enable', { name })} onChange={onToggle} />
@@ -108,7 +108,7 @@ function IntegrationRow({
             <KeyRound size={14} /> {t('integrations.getKey')} <ExternalLink size={13} />
           </button>
         )}
-        <button type="button" onClick={() => openExternal(def.homepage)} className="inline-flex items-center gap-1 text-muted hover:text-fg hover:underline">
+        <button type="button" onClick={() => openExternal(def.homepage)} className="inline-flex items-center gap-1 text-fg-2 hover:text-fg hover:underline">
           {t('integrations.website')} <ExternalLink size={13} />
         </button>
         {def.control === 'settings' && def.settingsSection && (
@@ -125,7 +125,7 @@ function IntegrationRow({
             type="button"
             disabled={testing}
             onClick={() => void runTest()}
-            className="inline-flex items-center gap-1 text-muted hover:text-fg hover:underline disabled:opacity-60"
+            className="inline-flex items-center gap-1 text-fg-2 hover:text-fg hover:underline disabled:opacity-60"
           >
             {testing ? <Loader2 size={14} className="animate-spin" /> : <FlaskConical size={14} />}
             {testing ? t('integrations.testing') : t('integrations.test')}
@@ -133,8 +133,8 @@ function IntegrationRow({
         )}
       </div>
 
-      {def.control === 'settings' && <p className="mt-1 text-xs text-faint">{t('integrations.managedElsewhere')}</p>}
-      {def.control === 'info' && <p className="mt-1 text-xs text-faint">{t('integrations.infoOnly')}</p>}
+      {def.control === 'settings' && <p className="mt-1 text-xs text-fg-3">{t('integrations.managedElsewhere')}</p>}
+      {def.control === 'info' && <p className="mt-1 text-xs text-fg-3">{t('integrations.infoOnly')}</p>}
       {def.key && enabled && <KeyEditor def={def} name={name} hasKey={hasKey} />}
       {def.id === 'ics' && enabled && <IcsUrlEditor />}
     </div>
@@ -195,7 +195,7 @@ function IcsUrlEditor() {
           </Button>
         )}
       </form>
-      {saved && <p className="selectable mt-1 truncate text-xs text-faint">{saved.replace(/\?.*$/, '?…')}</p>}
+      {saved && <p className="selectable mt-1 truncate text-xs text-fg-3">{saved.replace(/\?.*$/, '?…')}</p>}
     </div>
   );
 }
@@ -260,7 +260,7 @@ function KeyEditor({ def, name, hasKey }: { def: IntegrationDef; name: string; h
           </Button>
         )}
       </form>
-      <p className="mt-2 text-xs text-faint">{desktop ? t('settings.keyHelp') : t('integrations.desktopOnly')}</p>
+      <p className="mt-2 text-xs text-fg-3">{desktop ? t('settings.keyHelp') : t('integrations.desktopOnly')}</p>
     </div>
   );
 }

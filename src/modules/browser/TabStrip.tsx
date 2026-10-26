@@ -13,7 +13,7 @@ export function tabLabel(tab: BrowserTab): string {
 
 export function TabIcon({ tab, loading }: { tab: BrowserTab; loading: boolean }) {
   if (loading) return <Loader2 size={14} className="shrink-0 animate-spin text-accent" />;
-  if (!tab.url) return <Globe size={14} className="shrink-0 text-faint" />;
+  if (!tab.url) return <Globe size={14} className="shrink-0 text-fg-3" />;
   return <SiteIcon url={tab.url} size={16} className="rounded-sm" />;
 }
 
@@ -82,7 +82,7 @@ export function TabStrip({
             }}
             className={cx(
               'group relative flex h-8 max-w-[200px] min-w-[96px] flex-1 cursor-default items-center gap-1.5 rounded-lg pr-1 pl-2 text-sm transition-colors select-none',
-              focused ? 'bg-surface-3 text-fg' : shown ? 'bg-surface-2 text-fg' : 'text-muted hover:bg-surface-2 hover:text-fg',
+              focused ? 'bg-control text-fg' : shown ? 'bg-control text-fg' : 'text-fg-2 hover:bg-control hover:text-fg',
               dragId === tab.id && 'opacity-50',
             )}
           >
@@ -97,13 +97,13 @@ export function TabStrip({
                 onClose(tab.id);
               }}
               className={cx(
-                'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-faint hover:bg-surface-3 hover:text-fg',
+                'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-fg-3 hover:bg-control hover:text-fg',
                 !focused && 'opacity-0 group-hover:opacity-100 focus:opacity-100',
               )}
             >
               <X size={14} />
             </button>
-            {focused && <span className="absolute right-2 bottom-0 left-2 h-0.5 rounded-full bg-accent-gradient" />}
+            {focused && <span className="absolute right-2 bottom-0 left-2 h-0.5 rounded-full bg-accent" />}
           </div>
         );
       })}

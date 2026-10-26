@@ -28,7 +28,7 @@ export function AdblockSettings() {
   if (!desktop) {
     return (
       <Group title={t('adblock.title')}>
-        <p className="py-4 text-sm text-muted">{t('adblock.desktopOnly')}</p>
+        <p className="py-4 text-sm text-fg-2">{t('adblock.desktopOnly')}</p>
       </Group>
     );
   }
@@ -36,7 +36,7 @@ export function AdblockSettings() {
   if (!status) {
     return (
       <Group title={t('adblock.title')}>
-        <p className="py-4 text-sm text-muted">{loadError ? describeError(loadError).description : t('adblock.loading')}</p>
+        <p className="py-4 text-sm text-fg-2">{loadError ? describeError(loadError).description : t('adblock.loading')}</p>
       </Group>
     );
   }
@@ -83,7 +83,7 @@ export function AdblockSettings() {
             {status.lists.map((list) => (
               <li key={list.id} className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
                 <span className="truncate">{list.title}</span>
-                <span className="tabular text-xs text-faint">
+                <span className="tabular text-xs text-fg-3">
                   {list.updatedAt
                     ? t('adblock.listMeta', { n: fmt(list.rules), when: formatRelative(list.updatedAt) })
                     : t('adblock.listMissing')}
@@ -91,13 +91,13 @@ export function AdblockSettings() {
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-faint">{t('adblock.listsHint')}</p>
+          <p className="mt-3 text-xs text-fg-3">{t('adblock.listsHint')}</p>
         </div>
       </Group>
 
       <Group title={t('adblock.allowlist')}>
         <div className="py-4">
-          <p className="mb-2 text-sm text-muted">{t('adblock.allowlistHint')}</p>
+          <p className="mb-2 text-sm text-fg-2">{t('adblock.allowlistHint')}</p>
           <form
             className="flex flex-wrap gap-2"
             onSubmit={(e) => {
@@ -121,9 +121,9 @@ export function AdblockSettings() {
             </Button>
           </form>
           {status.allowlist.length === 0 ? (
-            <p className="mt-3 text-sm text-faint">{t('adblock.allowEmpty')}</p>
+            <p className="mt-3 text-sm text-fg-3">{t('adblock.allowEmpty')}</p>
           ) : (
-            <ul className="mt-3 flex flex-col divide-y divide-line">
+            <ul className="mt-3 flex flex-col divide-y divide-stroke">
               {status.allowlist.map((h) => (
                 <li key={h} className="flex items-center justify-between gap-2 py-1.5">
                   <span className="truncate text-sm">{h}</span>

@@ -15,7 +15,7 @@ export function FocusChip() {
       type="button"
       onClick={toggle}
       title={t('focus.chipHint')}
-      className="bg-accent-soft text-accent hover:bg-surface-3 flex h-9 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors"
+      className="bg-accent-soft text-accent hover:bg-control flex h-9 shrink-0 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors"
     >
       <Target size={16} />
       <span>{t('focus.chip')}</span>

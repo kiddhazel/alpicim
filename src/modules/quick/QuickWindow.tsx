@@ -12,7 +12,7 @@ import { MARKET_KEYS } from '../markets/marketService';
 import type { Quote } from '../markets/types';
 import { NOTEBOOK_KEY, noteTitle, notePreview, sanitizeNotebook, sortNotes, type Note } from '../notebook/notebook';
 import { useSettings } from '../settings/settings';
-import { PANELS } from '../window-manager/panels';
+import { useEnabledPanels, useModules } from '../../core/modules/useModules';
 import { answerQuery, rankQuick, ratesFromReference, recentClips, type QuickEntry, type QuickKind } from './quickLogic';
 import { parseMode, QUICK_EVENT, QUICK_REQUEST_KEY, quickService, type QuickMode, type QuickRequest } from './quickService';
 
@@ -35,6 +35,8 @@ interface Row {
 /** "quick" penceresi: Spotlight (arama/hesap/çevirme) ve hızlı pano. Kenarlıksız, saydam, odak kaybında Rust gizler. */
 export function QuickWindow() {
   const [settings] = useSettings();
+  const panels = useEnabledPanels();
+  const { isEnabled } = useModules();
   const [mode, setMode] = useState<QuickMode>('search');
   const [query, setQuery] = useState('');
   const [index, setIndex] = useState(0);
@@ -90,9 +92,9 @@ export function QuickWindow() {
 
   const entries = useMemo<QuickEntry[]>(
     () => [
-      ...PANELS.map<QuickEntry>((p) => ({ id: `panel:${p.id}`, kind: 'panel', title: t(p.titleKey), ref: p.id, keywords: 'panel aç' })),
-      ...apps.map<QuickEntry>((a) => ({ id: `app:${a.id}`, kind: 'app', title: a.name, subtitle: a.category, keywords: a.path, ref: a.id })),
-      ...notes.map<QuickEntry>((n) => ({
+      ...panels.map<QuickEntry>((p) => ({ id: `panel:${p.id}`, kind: 'panel', title: t(p.titleKey), ref: p.id, keywords: 'panel aç' })),
+      ...(isEnabled('launcher') ? apps : []).map<QuickEntry>((a) => ({ id: `app:${a.id}`, kind: 'app', title: a.name, subtitle: a.category, keywords: a.path, ref: a.id })),
+      ...(isEnabled('notes') ? notes : []).map<QuickEntry>((n) => ({
         id: `note:${n.id}`,
         kind: 'note',
         title: noteTitle(n) || t('spotlight.noteUntitled'),
@@ -101,7 +103,7 @@ export function QuickWindow() {
         ref: n.id,
       })),
     ],
-    [apps, notes],
+    [panels, isEnabled, apps, notes],
   );
 
   const rows = useMemo<Row[]>(() => {
@@ -170,9 +172,9 @@ export function QuickWindow() {
 
   return (
     <div className="flex h-screen w-screen items-start justify-center p-3" onKeyDown={(e) => e.key === 'Escape' && hide()}>
-      <div role="dialog" aria-label={t('spotlight.placeholder')} className="glass flex max-h-full w-full flex-col overflow-hidden rounded-3xl">
-        <div className="flex shrink-0 items-center gap-3 border-b border-line px-5">
-          {clipMode ? <ClipboardList size={20} className="text-faint" /> : <Search size={20} className="text-faint" />}
+      <div role="dialog" aria-label={t('spotlight.placeholder')} className="flex max-h-full w-full flex-col overflow-hidden rounded-xl bg-card ring-1 ring-stroke-strong shadow-[var(--shadow-pop)]">
+        <div className="flex shrink-0 items-center gap-3 border-b border-stroke px-5">
+          {clipMode ? <ClipboardList size={20} className="text-fg-3" /> : <Search size={20} className="text-fg-3" />}
           <input
             ref={inputRef}
             autoFocus
@@ -192,12 +194,12 @@ export function QuickWindow() {
             }}
             placeholder={clipMode ? t('spotlight.clipPlaceholder') : t('spotlight.placeholder')}
             aria-label={clipMode ? t('spotlight.clipPlaceholder') : t('spotlight.placeholder')}
-            className="h-14 flex-1 bg-transparent text-md text-fg placeholder:text-faint focus:outline-none"
+            className="h-14 flex-1 bg-transparent text-md text-fg placeholder:text-fg-3 focus:outline-none"
           />
-          <kbd className="rounded-md bg-surface-3 px-1.5 text-xs text-faint">Esc</kbd>
+          <kbd className="rounded-md bg-control px-1.5 text-xs text-fg-3">Esc</kbd>
         </div>
         <ul ref={listRef} role="listbox" className="min-h-0 flex-1 overflow-y-auto p-2">
-          {rows.length === 0 && emptyText && <li className="px-3 py-8 text-center text-sm text-faint">{emptyText}</li>}
+          {rows.length === 0 && emptyText && <li className="px-3 py-8 text-center text-sm text-fg-3">{emptyText}</li>}
           {rows.map((row, i) => {
             const Icon = row.icon;
             return (
@@ -206,21 +208,20 @@ export function QuickWindow() {
                   type="button"
                   onMouseMove={() => setIndex(i)}
                   onClick={() => run(row)}
-                  className={cx('relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left', i === index ? 'bg-accent-soft' : 'hover:bg-surface-2')}
+                  className={cx('relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left', i === index ? 'bg-accent-soft' : 'hover:bg-card-hover')}
                 >
-                  {i === index && <span aria-hidden className="bg-accent-gradient absolute top-2 bottom-2 left-0 w-[3px] rounded-full" />}
-                  <Icon size={18} className={i === index ? 'text-accent' : 'text-muted'} />
+                  <Icon size={18} className={i === index ? 'text-accent' : 'text-fg-2'} />
                   <span className="min-w-0 flex-1">
                     <span className={cx('block truncate', row.id === 'answer' ? 'text-lg font-semibold' : 'text-base')}>{row.title}</span>
-                    {row.subtitle && <span className="block truncate text-xs text-faint">{row.subtitle}</span>}
+                    {row.subtitle && <span className="block truncate text-xs text-fg-3">{row.subtitle}</span>}
                   </span>
-                  {row.tag && <span className="shrink-0 text-xs text-faint">{row.tag}</span>}
+                  {row.tag && <span className="shrink-0 text-xs text-fg-3">{row.tag}</span>}
                 </button>
               </li>
             );
           })}
         </ul>
-        <p className={cx('shrink-0 border-t border-line px-5 py-2.5 text-xs', copied ? 'text-up' : 'text-faint')}>
+        <p className={cx('shrink-0 border-t border-stroke px-5 py-2.5 text-xs', copied ? 'text-up' : 'text-fg-3')}>
           {copied ? t('spotlight.copied') : clipMode ? `${t('spotlight.footer')} · ${t('spotlight.clipHint')}` : t('spotlight.footer')}
         </p>
       </div>

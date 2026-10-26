@@ -52,7 +52,7 @@ export function NotesWidget({ config, setConfig }: WidgetProps<NotesConfig>) {
           dirty.current = false;
         }, 600);
       }}
-      className="selectable h-full w-full resize-none bg-transparent px-4 py-2 text-sm leading-relaxed text-fg placeholder:text-faint focus:outline-none"
+      className="selectable h-full w-full resize-none bg-transparent px-4 py-2 text-sm leading-relaxed text-fg placeholder:text-fg-3 focus:outline-none"
     />
   );
 }

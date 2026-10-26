@@ -36,3 +36,6 @@ adblock.json
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Yerel notlar
+*.local.md

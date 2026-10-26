@@ -17,12 +17,10 @@ const KEYS: Record<string, Dir> = {
 
 function tileStyle(v: number): React.CSSProperties {
   if (v === 0) return {};
-  const step = Math.log2(v);
-  const hue = (250 + step * 22) % 360;
+  const pct = Math.min(100, 14 + Math.log2(v) * 8);
   return {
-    background: `linear-gradient(135deg, hsl(${hue} 80% 58%), hsl(${(hue + 40) % 360} 85% 52%))`,
-    color: '#fff',
-    boxShadow: `0 3px 0 hsl(${hue} 60% 30%), 0 0 ${Math.min(24, step * 2)}px -4px hsl(${hue} 90% 60%)`,
+    background: `color-mix(in srgb, var(--accent) ${pct}%, var(--card))`,
+    color: pct > 55 ? 'var(--on-accent)' : 'var(--text)',
   };
 }
 
@@ -125,25 +123,25 @@ export function Game2048({ autoplay, scoreRef, onEnd }: AutoplayProps) {
         role="grid"
         aria-label={t('games.board')}
         {...swipe}
-        className="glass relative grid touch-none select-none grid-cols-4 gap-2 rounded-2xl p-2"
+        className="relative grid touch-none select-none grid-cols-4 gap-2 rounded-xl bg-layer p-2"
       >
         {board.flat().map((v, i) => (
           <div
             key={i}
             style={tileStyle(v)}
-            className="flex aspect-square items-center justify-center rounded-xl bg-surface-2 font-mono text-xl font-bold transition-colors"
+            className="flex aspect-square items-center justify-center rounded-lg bg-control font-mono text-xl font-semibold tabular-nums transition-colors"
           >
             {v || ''}
           </div>
         ))}
         {(over || won) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-bg/70 backdrop-blur-sm">
-            <p className="text-gradient font-mono text-xl font-bold">{over ? t('games.lost') : t('games.win')}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-xl bg-bg/80">
+            <p className="text-lg font-semibold">{over ? t('games.lost') : t('games.win')}</p>
             <Button variant="primary" onClick={reset}>{t('games.again')}</Button>
           </div>
         )}
       </div>
-      <p className="text-center text-sm text-muted">{t('games.hint2048')}</p>
+      <p className="text-center text-sm text-fg-2">{t('games.hint2048')}</p>
     </div>
   );
 }

@@ -28,8 +28,8 @@ export function ClockWidget({ config, size }: WidgetProps<ClockConfig>) {
   const big = size.h >= 3 || size.w >= 6;
   return (
     <div className="flex h-full flex-col items-center justify-center px-4 text-center">
-      <p className={big ? 'text-gradient font-display tabular text-6xl leading-none font-semibold tracking-tight' : 'text-gradient font-display tabular text-5xl leading-none font-semibold'}>{time}</p>
-      {config.showDate && <p className="mt-2 truncate text-sm text-muted">{DATE.format(d)}</p>}
+      <p className={big ? 'text-fg font-display tabular-nums text-6xl leading-none font-semibold tracking-tight' : 'text-fg font-display tabular-nums text-5xl leading-none font-semibold'}>{time}</p>
+      {config.showDate && <p className="mt-2 truncate text-sm text-fg-2">{DATE.format(d)}</p>}
     </div>
   );
 }

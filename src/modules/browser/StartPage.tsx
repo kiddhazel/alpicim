@@ -44,7 +44,7 @@ export function StartPage({
               type="button"
               onClick={() => onOpen(b.url)}
               title={b.url}
-              className="flex w-full flex-col items-center gap-2 rounded-xl bg-surface-2 p-3 transition-colors hover:bg-surface-3"
+              className="flex w-full flex-col items-center gap-2 rounded-xl bg-layer p-3 transition-colors hover:bg-control"
             >
               <SiteIcon url={b.url} size={28} className="rounded" />
               <span className="w-full truncate text-center text-sm">{b.title}</span>
@@ -53,14 +53,14 @@ export function StartPage({
               type="button"
               aria-label={t('common.remove')}
               onClick={() => onRemove(b.url)}
-              className={cx('absolute top-1 right-1 rounded p-1 text-faint opacity-0 hover:text-down group-hover:opacity-100 focus:opacity-100')}
+              className={cx('absolute top-1 right-1 rounded p-1 text-fg-3 opacity-0 hover:text-down group-hover:opacity-100 focus:opacity-100')}
             >
               <X size={14} />
             </button>
           </li>
         ))}
       </ul>
-      <p className="mt-6 max-w-md text-center text-xs text-faint">{t('browser.engineNote')}</p>
+      <p className="mt-6 max-w-md text-center text-xs text-fg-3">{t('browser.engineNote')}</p>
     </div>
   );
 }

@@ -22,11 +22,25 @@ export interface AudioSnapshot {
   /** Canlı yayında null. */
   durationSec: number | null;
   rate: number;
+  /** 0..1 */
+  volume: number;
+  muted: boolean;
 }
 
 type ProgressListener = (source: AudioSource, positionSec: number, durationSec: number | null) => void;
 
-const IDLE: AudioSnapshot = { source: null, playing: false, loading: false, error: null, positionSec: 0, durationSec: null, rate: 1 };
+const VOLUME_KEY = 'alpicim.volume.internal';
+
+const IDLE: AudioSnapshot = { source: null, playing: false, loading: false, error: null, positionSec: 0, durationSec: null, rate: 1, volume: loadVolume(), muted: false };
+
+function loadVolume(): number {
+  try {
+    const v = Number(localStorage.getItem(VOLUME_KEY));
+    return localStorage.getItem(VOLUME_KEY) !== null && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
+  } catch {
+    return 1;
+  }
+}
 
 let audio: HTMLAudioElement | null = null;
 let snap: AudioSnapshot = IDLE;
@@ -52,6 +66,8 @@ function el(): HTMLAudioElement {
   if (audio) return audio;
   const a = new Audio();
   a.preload = 'none';
+  a.volume = snap.volume;
+  a.muted = snap.muted;
   a.addEventListener('playing', () => set({ playing: true, loading: false, error: null }));
   a.addEventListener('pause', () => {
     set({ playing: false });
@@ -129,6 +145,20 @@ export const audioService = {
   skip(deltaSec: number): void {
     audioService.seek(snap.positionSec + deltaSec);
   },
+  setVolume(volume: number): void {
+    const v = Math.min(1, Math.max(0, volume));
+    el().volume = v;
+    try {
+      localStorage.setItem(VOLUME_KEY, String(v));
+    } catch {
+      /* kalıcılık yoksa yalnız bu oturumda */
+    }
+    set({ volume: v });
+  },
+  setMuted(muted: boolean): void {
+    el().muted = muted;
+    set({ muted });
+  },
   setRate(rate: number): void {
     el().playbackRate = rate;
     set({ rate });
@@ -139,7 +169,7 @@ export const audioService = {
     audio.pause();
     audio.removeAttribute('src');
     audio.load();
-    set({ ...IDLE, rate: snap.rate });
+    set({ ...IDLE, rate: snap.rate, volume: snap.volume, muted: snap.muted });
   },
 };
 

@@ -28,7 +28,7 @@ function Row({ id, name, exe, volume, muted, active, master, onVolume, onMute }:
       ) : icon ? (
         <img src={icon} alt="" width={18} height={18} className="shrink-0" draggable={false} />
       ) : (
-        <AppWindow size={18} className="shrink-0 text-faint" />
+        <AppWindow size={18} className="shrink-0 text-fg-3" />
       )}
       <span className="w-24 shrink-0 truncate text-sm" title={name}>
         {name}
@@ -43,13 +43,13 @@ function Row({ id, name, exe, volume, muted, active, master, onVolume, onMute }:
         onChange={(e) => onVolume(id, fromPercent(Number(e.target.value)))}
         className="h-1 min-w-0 flex-1 accent-[var(--accent)]"
       />
-      <span className="w-9 shrink-0 text-right text-xs text-muted tabular-nums">{pct}%</span>
+      <span className="w-9 shrink-0 text-right text-xs text-fg-2 tabular-nums-nums">{pct}%</span>
       <button
         type="button"
         aria-label={t(muted ? 'widgets.mixer.unmute' : 'widgets.mixer.mute', { name })}
         aria-pressed={muted}
         onClick={() => onMute(id, !muted)}
-        className={cx('shrink-0 rounded-lg p-1 hover:bg-surface-3', muted ? 'text-down' : 'text-muted hover:text-fg')}
+        className={cx('shrink-0 rounded-lg p-1 hover:bg-control-hover', muted ? 'text-down' : 'text-fg-2 hover:text-fg')}
       >
         {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
       </button>
@@ -80,7 +80,7 @@ export function MixerWidget({ active }: WidgetProps<Record<string, never>>) {
         onVolume={setVolume}
         onMute={setMute}
       />
-      {state.sessions.length === 0 && <li className="px-1 py-2 text-sm text-faint">{t('widgets.mixer.empty')}</li>}
+      {state.sessions.length === 0 && <li className="px-1 py-2 text-sm text-fg-3">{t('widgets.mixer.empty')}</li>}
       {state.sessions.map((s) => (
         <Row
           key={s.id}

@@ -152,13 +152,13 @@ export function NotesPanel({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void 
       }}
     >
       {/* Araç çubuğu */}
-      <div className="flex shrink-0 flex-wrap items-center gap-2 px-4 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-stroke bg-layer px-4 py-2">
         {!wide && !listVisible && (
           <IconButton icon={ArrowLeft} label={t('notebook.back')} onClick={() => setShowList(true)} />
         )}
         {listVisible && (
           <div className="relative min-w-40 flex-1">
-            <Search size={16} className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-faint" />
+            <Search size={16} className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-fg-3" />
             <TextInput
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -171,7 +171,7 @@ export function NotesPanel({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void 
                 type="button"
                 aria-label={t('common.clear')}
                 onClick={() => setSearch('')}
-                className="absolute top-1/2 right-2 -translate-y-1/2 text-faint hover:text-fg"
+                className="absolute top-1/2 right-2 -translate-y-1/2 text-fg-3 hover:text-fg"
               >
                 <X size={14} />
               </button>
@@ -212,9 +212,9 @@ export function NotesPanel({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void 
         </Button>
       </div>
 
-      <div className={cx('flex min-h-0 flex-1 border-t border-line', wide && 'gap-0')}>
+      <div className="flex min-h-0 flex-1">
         {listVisible && (
-          <div className={cx('min-h-0 overflow-y-auto', wide ? 'w-80 shrink-0 border-r border-line' : 'flex-1')}>
+          <div className={cx('min-h-0 overflow-y-auto', wide ? 'w-80 shrink-0 border-r border-stroke bg-layer' : 'flex-1 bg-layer')}>
             {!loaded ? null : notebook.notes.length === 0 ? (
               <StateView
                 kind="empty"
@@ -252,7 +252,7 @@ export function NotesPanel({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void 
         )}
       </div>
 
-      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-line px-4 py-2 text-xs text-faint">
+      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-stroke px-4 py-2 text-xs text-fg-3">
         {selected && editorVisible ? (
           <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
             <div role="radiogroup" aria-label={t('notebook.color')} className="flex items-center gap-1">
@@ -268,12 +268,12 @@ export function NotesPanel({ onOpenPanel }: { onOpenPanel: (p: PanelId) => void 
                     aria-label={t(`notebook.colors.${c}`)}
                     onClick={() => setNotebook((nb) => setColor(nb, selected.id, c))}
                     className={cx(
-                      'flex h-6 w-6 items-center justify-center rounded-full transition-colors hover:bg-surface-3',
-                      selected.color === c && 'bg-surface-3',
+                      'flex h-6 w-6 items-center justify-center rounded-full transition-colors hover:bg-control',
+                      selected.color === c && 'bg-control',
                     )}
                   >
                     <span
-                      className={cx('h-3 w-3 rounded-full', !hue && 'border border-line-strong')}
+                      className={cx('h-3 w-3 rounded-full', !hue && 'border border-stroke-strong')}
                       style={hue ? { backgroundColor: hue } : undefined}
                     />
                   </button>
@@ -326,16 +326,16 @@ const NoteList = memo(function NoteList({
               className={cx(
                 'w-full rounded-xl border-l-[3px] px-3 py-2.5 text-left transition-colors',
                 hue ? '' : 'border-l-transparent',
-                active ? 'bg-accent-soft' : 'hover:bg-surface-2',
+                active ? 'bg-accent-soft' : 'hover:bg-control',
               )}
             >
               <span className="flex items-center gap-1.5">
                 {n.pinned && <Pin size={12} className="shrink-0 text-accent" />}
-                <span className={cx('truncate text-base font-medium', !title && 'text-faint italic')}>
+                <span className={cx('truncate text-base font-medium', !title && 'text-fg-3 italic')}>
                   {title || t('notebook.untitled')}
                 </span>
               </span>
-              <span className="mt-0.5 flex gap-2 text-xs text-faint">
+              <span className="mt-0.5 flex gap-2 text-xs text-fg-3">
                 <span className="shrink-0">{formatRelative(n.updatedAt, now)}</span>
                 <span className="truncate">{preview || (title ? '' : t('notebook.empty'))}</span>
               </span>
@@ -348,7 +348,7 @@ const NoteList = memo(function NoteList({
 });
 
 function SectionLabel({ children }: { children: string }) {
-  return <p className="px-3 pt-2 pb-1 text-xs font-semibold tracking-wide text-faint uppercase">{children}</p>;
+  return <p className="px-3 pt-2 pb-1 text-xs font-semibold tracking-wide text-fg-3 uppercase">{children}</p>;
 }
 
 /** Tek notun düzenleyicisi. Taslak yerel tutulur, 400 ms gecikmeyle (ve ayrılırken hemen) kaydedilir. */
@@ -443,7 +443,7 @@ function NoteEditor({
         pendingCaret.current = start + insert.length;
         change(draft.slice(0, start) + insert + draft.slice(start));
       }}
-      className="selectable h-full w-full resize-none bg-transparent px-5 py-4 font-mono text-base leading-relaxed text-fg placeholder:text-faint focus:outline-none"
+      className="selectable h-full w-full resize-none bg-transparent px-5 py-4 font-mono text-base leading-relaxed text-fg placeholder:text-fg-3 focus:outline-none"
     />
   );
 
@@ -457,7 +457,7 @@ function NoteEditor({
   if (mode === 'preview') return preview;
   return (
     <div className="grid h-full min-h-0 grid-cols-2">
-      <div className="min-h-0 border-r border-line">{editor}</div>
+      <div className="min-h-0 border-r border-stroke">{editor}</div>
       <div className="min-h-0">{preview}</div>
     </div>
   );

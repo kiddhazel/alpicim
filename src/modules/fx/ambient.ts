@@ -67,3 +67,13 @@ export function fireworksLive(holiday: HolidayId | null, date: Date, preview: bo
   const h = date.getHours();
   return (m === 11 && d === 31 && h >= 23) || (m === 0 && d === 1 && h < 1);
 }
+
+export type Tone = 'dawn' | 'sunset' | 'night' | 'gray';
+
+/** Gün dilimi + hava → ton. Gündüz sakin havada nötr (null); bulutlu/yağışlı/sisli ise hafif gri. */
+export function toneFor(daypart: Daypart, group: WeatherGroup | null): Tone | null {
+  if (daypart === 'night') return 'night';
+  if (daypart === 'dawn') return 'dawn';
+  if (daypart === 'sunset') return 'sunset';
+  return group && group !== 'sunny' ? 'gray' : null;
+}

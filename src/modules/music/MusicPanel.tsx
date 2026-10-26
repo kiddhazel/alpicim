@@ -91,7 +91,7 @@ export function MusicPanel() {
         <IconButton icon={Home} label={t('music.home')} disabled={!opened} onClick={() => void musicService.action('home')} />
         <IconButton icon={ArrowLeft} label={t('browser.back')} disabled={!opened} onClick={() => void musicService.action('back')} />
         <IconButton icon={RotateCw} spin={loading && opened} label={t('browser.reload')} disabled={!opened} onClick={() => void musicService.action('reload')} />
-        <div className="mx-1 h-5 w-px bg-line" />
+        <div className="mx-1 h-5 w-px bg-stroke-strong" />
         <MediaControls compact preferOwn />
         <div className="ml-auto flex items-center gap-1.5">
           <IconButton
@@ -105,7 +105,7 @@ export function MusicPanel() {
         </div>
       </div>
       {showHint && (
-        <div className="flex shrink-0 items-start gap-2 bg-surface-2 px-4 py-2 text-sm text-muted">
+        <div className="flex shrink-0 items-start gap-2 border-y border-stroke bg-layer px-4 py-2 text-sm text-fg-2">
           <Info size={15} className="mt-0.5 shrink-0 text-accent" />
           <p className="flex-1">{t('music.loginHint')}</p>
           <button type="button" className="text-accent hover:underline" onClick={() => setShowHint(false)}>
@@ -114,7 +114,7 @@ export function MusicPanel() {
         </div>
       )}
       {/* Yerel webview bu alanın üstüne yerleştirilir. */}
-      <div ref={contentRef} className="relative min-h-0 flex-1 bg-surface">
+      <div ref={contentRef} className="relative min-h-0 flex-1 bg-card">
         {error ? (
           <StateView
             kind="error"
@@ -130,7 +130,7 @@ export function MusicPanel() {
             }
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-faint">
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-fg-3">
             <Music2 size={28} strokeWidth={1.5} />
             <p className="text-sm">{overlay ? t('music.hiddenWhileMenu') : t('common.loading')}</p>
           </div>

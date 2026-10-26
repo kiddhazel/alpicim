@@ -13,8 +13,8 @@ const LABEL = { rock: 'games.rock', paper: 'games.paper', scissors: 'games.sciss
 function Pic({ m }: { m: Rps | null }) {
   const Icon = m ? ICON[m] : null;
   return (
-    <div className="glass flex h-20 w-20 items-center justify-center rounded-2xl text-accent">
-      {Icon ? <Icon size={36} strokeWidth={1.75} /> : <span className="font-mono text-xl text-muted">?</span>}
+    <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-layer text-accent">
+      {Icon ? <Icon size={36} strokeWidth={1.75} /> : <span className="font-mono text-xl text-fg-2">?</span>}
     </div>
   );
 }
@@ -73,7 +73,7 @@ export function RpsGame() {
       <LailaFace mood={mood} line={line} />
       <div className="flex items-center justify-center gap-6 py-2">
         <Pic m={last?.user ?? null} />
-        <span className="font-mono text-lg text-muted">vs</span>
+        <span className="font-mono text-lg text-fg-2">vs</span>
         <Pic m={last?.laila ?? null} />
       </div>
       <div className="flex flex-wrap justify-center gap-2">
@@ -81,7 +81,7 @@ export function RpsGame() {
           <Button key={m} icon={ICON[m]} variant="primary" onClick={() => play(m)}>{t(LABEL[m])}</Button>
         ))}
       </div>
-      <p className="text-center text-sm text-muted">{t('games.hintRps')}</p>
+      <p className="text-center text-sm text-fg-2">{t('games.hintRps')}</p>
     </div>
   );
 }

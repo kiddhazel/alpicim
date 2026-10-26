@@ -57,22 +57,22 @@ export function HangmanGame() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-3">
       <div className="flex items-center gap-2">
-        <div className="glass flex items-center gap-1 rounded-xl px-3 py-2" aria-label={t('games.lives', { n: left })}>
+        <div className="flex items-center gap-1 rounded-lg bg-control px-3 py-2" aria-label={t('games.lives', { n: left })}>
           {Array.from({ length: HANGMAN_MAX_MISS }, (_, i) => (
-            <Heart key={i} size={18} className={i < left ? 'fill-down text-down' : 'text-faint'} />
+            <Heart key={i} size={18} className={i < left ? 'fill-down text-down' : 'text-fg-3'} />
           ))}
         </div>
         <Button icon={RotateCcw} className="ml-auto" onClick={reset}>{status === 'playing' ? t('games.newGame') : t('games.again')}</Button>
       </div>
       <LailaFace mood={mood} line={line} />
-      <div className="flex justify-center gap-2 py-3 font-mono text-2xl font-bold">
+      <div className="flex justify-center gap-2 py-3 text-2xl font-semibold">
         {masked(h).map((c, i) => (
-          <span key={i} className="flex h-12 w-10 items-center justify-center rounded-lg bg-surface-2 text-fg shadow-[inset_0_-3px_0_var(--accent)]">
+          <span key={i} className="flex h-12 w-10 items-center justify-center rounded-lg bg-layer text-fg border-b-2 border-accent">
             {c === '_' ? '' : c}
           </span>
         ))}
       </div>
-      {status === 'lost' && <p className="text-center text-sm text-muted">{t('games.wordWas', { word: h.word })}</p>}
+      {status === 'lost' && <p className="text-center text-sm text-fg-2">{t('games.wordWas', { word: h.word })}</p>}
       <div className="flex flex-col items-center gap-1.5">
         {KEY_ROWS.map((row) => (
           <div key={row} className="flex gap-1.5">
@@ -87,7 +87,7 @@ export function HangmanGame() {
                   onClick={() => guess(l)}
                   className={cx(
                     'h-10 w-8 rounded-lg text-sm font-semibold transition-colors',
-                    used ? (hit ? 'bg-up/30 text-fg' : 'bg-down/20 text-faint') : 'bg-surface-2 text-fg hover:bg-surface-3',
+                    used ? (hit ? 'bg-up/30 text-fg' : 'bg-down/20 text-fg-3') : 'bg-layer text-fg hover:bg-control-hover',
                   )}
                 >
                   {l}
@@ -97,7 +97,7 @@ export function HangmanGame() {
           </div>
         ))}
       </div>
-      <p className="text-center text-sm text-muted">{t('games.hintHangman')}</p>
+      <p className="text-center text-sm text-fg-2">{t('games.hintHangman')}</p>
     </div>
   );
 }

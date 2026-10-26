@@ -50,11 +50,11 @@ function DailyCard({ day, big }: { day: string; big: boolean }) {
   if (!entry) return null;
   return (
     <div className="flex min-h-full flex-col items-center justify-center gap-2.5 text-center">
-      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">{kindLabel(entry)}</span>
-      <p className={cx('font-semibold leading-snug', big ? 'text-md' : 'text-sm')}>{entry.text}</p>
+      <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">{kindLabel(entry)}</span>
+      <p className={cx('font-semibold leading-snug', big ? 'text-base' : 'text-sm')}>{entry.text}</p>
       {revealed ? (
-        <p className="text-sm leading-relaxed text-muted" aria-live="polite">
-          <span className="font-medium text-fg">{t('widgets.proverb.meaningLabel')}: </span>
+        <p className="text-sm leading-relaxed text-fg-2" aria-live="polite">
+          <span className="font-semibold text-fg">{t('widgets.proverb.meaningLabel')}: </span>
           {entry.meaning}
         </p>
       ) : null}
@@ -87,10 +87,10 @@ function QuizCard({ big }: { big: boolean }) {
 
   return (
     <div className="flex min-h-full flex-col gap-2.5">
-      <p className="text-center text-xs text-faint">
+      <p className="text-center text-xs text-fg-3">
         {kindLabel(question.entry)} · {t('widgets.proverb.quizQuestion')}
       </p>
-      <p className={cx('text-center font-semibold leading-snug', big ? 'text-md' : 'text-sm')}>{question.entry.text}</p>
+      <p className={cx('text-center font-semibold leading-snug', big ? 'text-base' : 'text-sm')}>{question.entry.text}</p>
       <ul className="flex flex-col gap-1.5">
         {question.choices.map((choice, i) => {
           const isAnswer = i === question.answer;
@@ -102,10 +102,10 @@ function QuizCard({ big }: { big: boolean }) {
                 disabled={answered && !isAnswer && !isPicked}
                 onClick={() => choose(i)}
                 className={cx(
-                  'w-full rounded-xl px-3 py-2 text-left text-sm leading-snug shadow-[inset_0_0_0_1px_var(--glass-edge)] transition-colors',
+                  'w-full rounded-xl px-3 py-2 text-left text-sm leading-snug shadow-[inset_0_0_0_1px_var(--stroke)] transition-colors',
                   !answered && 'hover:bg-accent-soft',
                   answered && isAnswer && 'bg-accent-soft text-fg',
-                  answered && isPicked && !isAnswer && 'bg-surface-3 text-warn',
+                  answered && isPicked && !isAnswer && 'bg-control text-warn',
                 )}
               >
                 {choice}
@@ -115,12 +115,12 @@ function QuizCard({ big }: { big: boolean }) {
         })}
       </ul>
       {answered && (
-        <p className={cx('text-sm font-medium', isRight ? 'text-up' : 'text-warn')} aria-live="polite">
+        <p className={cx('text-sm font-semibold', isRight ? 'text-up' : 'text-warn')} aria-live="polite">
           {isRight ? t('widgets.proverb.correct') : t('widgets.proverb.wrong', { meaning: question.entry.meaning })}
         </p>
       )}
       <div className="mt-auto flex items-center justify-between gap-2 pt-1">
-        <span className="text-xs text-faint">{t('widgets.proverb.score', { correct: stored.correct, answered: stored.answered })}</span>
+        <span className="text-xs text-fg-3">{t('widgets.proverb.score', { correct: stored.correct, answered: stored.answered })}</span>
         <div className="flex gap-1.5">
           <Button variant="ghost" onClick={() => setStored(EMPTY_QUIZ)} disabled={stored.answered === 0}>
             {t('widgets.proverb.resetScore')}

@@ -1,20 +1,20 @@
-import { CalendarClock, Cpu, MemoryStick, Thermometer } from 'lucide-react';
+import { CalendarClock, Cpu, MemoryStick, Thermometer, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { t } from '../../i18n';
+import { Badge } from '../../shared/ui/primitives';
 import type { WidgetInstance } from './types';
 import { useHomeHero } from './useHomeHero';
 
-function Chip({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+function Chip({ icon: Icon, label, children }: { icon: LucideIcon; label: string; children: ReactNode }) {
   return (
-    <div className="glass flex h-10 items-center gap-2 rounded-2xl px-3.5 text-sm" title={label}>
-      <span className="text-accent">{icon}</span>
-      <span className="text-muted">{label}</span>
-      <span className="max-w-64 truncate font-medium text-fg">{children}</span>
-    </div>
+    <Badge title={label}>
+      <Icon size={12} strokeWidth={1.75} aria-hidden />
+      <span className="max-w-64 truncate tabular-nums">{children}</span>
+    </Badge>
   );
 }
 
-/** Ana ekranın üst bandı: selamlama, büyük saat ve kısa bilgi çipleri. */
+/** Ana ekranın üst bandı: selamlama, tarih satırı ve kısa bilgi rozetleri. */
 export function HomeHero({
   widgets,
   performanceMode,
@@ -25,49 +25,37 @@ export function HomeHero({
   active: boolean;
 }) {
   const h = useHomeHero(widgets, performanceMode, active);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const time = `${pad(h.now.getHours())}:${pad(h.now.getMinutes())}${performanceMode ? '' : `:${pad(h.now.getSeconds())}`}`;
 
   return (
     <section
       aria-label={t('home.hero')}
-      className="relative mx-auto flex min-h-[180px] w-full max-w-[1600px] shrink-0 flex-wrap items-center justify-between gap-x-10 gap-y-4 overflow-hidden px-6 py-5"
+      className="mx-auto flex w-full max-w-[1600px] shrink-0 flex-wrap items-end justify-between gap-x-6 gap-y-3 px-6 pt-6 pb-4"
     >
-      {!performanceMode && (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 right-[8%] h-56 w-[36rem] max-w-[70%] -translate-y-1/2 rounded-full opacity-25 blur-3xl"
-          style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-2))' }}
-        />
-      )}
-      <div className="relative min-w-0">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">{h.greeting}</h1>
-        <p className="mt-1 text-base text-muted">{h.dateText}</p>
-        <div className="mt-5 flex flex-wrap gap-2">
+      <div className="min-w-0">
+        <h1 className="font-display text-xl font-semibold">{h.greeting}</h1>
+        <p className="text-sm text-fg-2 first-letter:uppercase">{h.dateText}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
           {h.weather && (
-            <Chip icon={<Thermometer size={16} />} label={h.weather.city}>
+            <Chip icon={Thermometer} label={h.weather.city}>
               {h.weather.temp} · {h.weather.label}
             </Chip>
           )}
           {h.event && (
-            <Chip icon={<CalendarClock size={16} />} label={t('home.nextEvent')}>
+            <Chip icon={CalendarClock} label={t('home.nextEvent')}>
               {h.event.when} · {h.event.title}
             </Chip>
           )}
           {h.cpu !== null && (
-            <Chip icon={<Cpu size={16} />} label={t('home.cpu')}>
-              <span className="tabular">%{h.cpu}</span>
+            <Chip icon={Cpu} label={t('home.cpu')}>
+              {t('home.cpu')} %{h.cpu}
             </Chip>
           )}
           {h.ram !== null && (
-            <Chip icon={<MemoryStick size={16} />} label={t('home.ram')}>
-              <span className="tabular">%{h.ram}</span>
+            <Chip icon={MemoryStick} label={t('home.ram')}>
+              {t('home.ram')} %{h.ram}
             </Chip>
           )}
         </div>
-      </div>
-      <div className="relative font-display text-6xl font-semibold tracking-tight text-gradient tabular" aria-live="off">
-        {time}
       </div>
     </section>
   );

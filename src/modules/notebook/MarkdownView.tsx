@@ -12,7 +12,7 @@ interface Props {
 /** Markdown önizlemesi: ayrıştırılmış ağaçtan React öğeleri (ham HTML asla eklenmez). */
 export const MarkdownView = memo(function MarkdownView({ source, onToggleTask, onOpenLink }: Props) {
   const blocks = useMemo(() => parseMarkdown(source), [source]);
-  if (blocks.length === 0) return <p className="text-sm text-faint">{t('notebook.previewEmpty')}</p>;
+  if (blocks.length === 0) return <p className="text-sm text-fg-3">{t('notebook.previewEmpty')}</p>;
   return (
     <div className="selectable flex flex-col gap-3 text-base leading-relaxed text-fg">
       {blocks.map((b, i) => (
@@ -47,7 +47,7 @@ function BlockView({ block, onToggleTask, onOpenLink }: { block: Block } & Omit<
       );
     case 'quote':
       return (
-        <blockquote className="border-l-[3px] border-accent/60 pl-3 text-muted">
+        <blockquote className="border-l-[3px] border-accent/60 pl-3 text-fg-2">
           {block.lines.map((l, i) => (
             <Fragment key={i}>
               {i > 0 && <br />}
@@ -58,12 +58,12 @@ function BlockView({ block, onToggleTask, onOpenLink }: { block: Block } & Omit<
       );
     case 'code':
       return (
-        <pre className="overflow-x-auto rounded-xl bg-surface-2 px-3 py-2 font-mono text-sm shadow-[inset_0_0_0_1px_var(--glass-edge)]">
+        <pre className="overflow-x-auto rounded-xl bg-layer px-3 py-2 font-mono text-sm shadow-[inset_0_0_0_1px_var(--stroke)]">
           {block.text}
         </pre>
       );
     case 'hr':
-      return <hr className="border-line" />;
+      return <hr className="border-stroke" />;
     case 'list': {
       const items = block.items.map((item) => (
         <li
@@ -80,7 +80,7 @@ function BlockView({ block, onToggleTask, onOpenLink }: { block: Block } & Omit<
                 aria-label={item.content.map(plain).join('')}
                 className="mt-1.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
               />
-              <span className={cx(item.task && 'text-faint line-through')}>{inline(item.content)}</span>
+              <span className={cx(item.task && 'text-fg-3 line-through')}>{inline(item.content)}</span>
             </>
           ) : (
             inline(item.content)
@@ -88,7 +88,7 @@ function BlockView({ block, onToggleTask, onOpenLink }: { block: Block } & Omit<
         </li>
       ));
       return block.ordered ? (
-        <ol start={block.start} className="flex list-decimal flex-col gap-1 pl-6 marker:text-faint">
+        <ol start={block.start} className="flex list-decimal flex-col gap-1 pl-6 marker:text-fg-3">
           {items}
         </ol>
       ) : (
@@ -118,7 +118,7 @@ function InlineView({ nodes, onOpenLink }: { nodes: Inline[]; onOpenLink: (url: 
         return <Fragment key={i}>{n.text}</Fragment>;
       case 'code':
         return (
-          <code key={i} className="rounded-md bg-surface-3 px-1.5 py-0.5 font-mono text-sm">
+          <code key={i} className="rounded-md bg-control px-1.5 py-0.5 font-mono text-sm">
             {n.text}
           </code>
         );

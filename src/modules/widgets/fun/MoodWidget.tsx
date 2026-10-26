@@ -7,7 +7,7 @@ import { cx, IconButton } from '../../../shared/ui/primitives';
 import { toDateKey } from '../basic/calendar';
 import type { WidgetProps } from '../types';
 import {
-  MOOD_COLORS,
+  moodTint,
   MOOD_IDS,
   MOOD_KEY,
   MOOD_NOTE_MAX,
@@ -56,7 +56,7 @@ export function MoodWidget({ size }: WidgetProps<MoodConfig>) {
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 px-4 pb-3">
-      <p className="text-xs text-faint">{entry ? t('widgets.mood.today', { mood: moodLabel(entry.mood) }) : t('widgets.mood.ask')}</p>
+      <p className="text-xs text-fg-3">{entry ? t('widgets.mood.today', { mood: moodLabel(entry.mood) }) : t('widgets.mood.ask')}</p>
       <div className="flex gap-1.5" role="group" aria-label={t('widgets.mood.title')}>
         {MOOD_IDS.map((m) => {
           const Icon = ICONS[m];
@@ -69,9 +69,9 @@ export function MoodWidget({ size }: WidgetProps<MoodConfig>) {
               aria-label={moodLabel(m)}
               title={moodLabel(m)}
               onClick={() => pick(m)}
-              className={cx('flex flex-1 items-center justify-center rounded-lg py-1.5 transition hover:bg-surface-3', on && 'bg-surface-3 ring-1 ring-[var(--accent)]')}
+              className={cx('flex flex-1 items-center justify-center rounded-lg py-1.5 transition hover:bg-control-hover', on && 'bg-control ring-1 ring-[var(--accent)]')}
             >
-              <Icon size={compact ? 20 : 24} style={{ color: MOOD_COLORS[m] }} aria-hidden />
+              <Icon size={compact ? 20 : 24} className={on ? 'text-accent' : 'text-fg-2'} aria-hidden />
             </button>
           );
         })}
@@ -85,15 +85,15 @@ export function MoodWidget({ size }: WidgetProps<MoodConfig>) {
           onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
           placeholder={t('widgets.mood.notePlaceholder')}
           aria-label={t('widgets.mood.notePlaceholder')}
-          className="selectable w-full rounded-lg bg-surface-2 px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[var(--accent)]"
+          className="selectable w-full rounded-lg bg-control px-2.5 py-1.5 text-sm outline-none focus:ring-1 focus:ring-[var(--accent)]"
         />
       )}
       {!compact && (
         <div className="min-h-0 flex-1">
           <div className="mb-1 flex items-center justify-between">
             <IconButton size="sm" icon={ChevronLeft} label={t('widgets.mood.prev')} onClick={() => shift(-1)} />
-            <span className="text-xs font-medium capitalize">
-              {monthName} <span className="text-faint">· {monthCount(cursor.y, cursor.m, log)}</span>
+            <span className="text-xs font-semibold capitalize">
+              {monthName} <span className="text-fg-3">· {monthCount(cursor.y, cursor.m, log)}</span>
             </span>
             <IconButton size="sm" icon={ChevronRight} label={t('widgets.mood.next')} onClick={() => shift(1)} />
           </div>
@@ -105,8 +105,8 @@ export function MoodWidget({ size }: WidgetProps<MoodConfig>) {
                 <span
                   key={c.key}
                   title={c.mood ? `${c.key}: ${moodLabel(c.mood)}${log[c.key]?.note ? ` — ${log[c.key]?.note}` : ''}` : c.key}
-                  className={cx('flex aspect-square items-center justify-center rounded text-xs', c.mood ? 'font-semibold text-black/70' : 'bg-surface-2 text-faint', c.key === today && 'ring-1 ring-[var(--accent)]')}
-                  style={c.mood ? { backgroundColor: MOOD_COLORS[c.mood] } : undefined}
+                  className={cx('flex aspect-square items-center justify-center rounded text-xs', c.mood ? 'font-semibold text-fg' : 'bg-control text-fg-3', c.key === today && 'ring-1 ring-[var(--accent)]')}
+                  style={c.mood ? { backgroundColor: moodTint(c.mood) } : undefined}
                 >
                   {c.day}
                 </span>

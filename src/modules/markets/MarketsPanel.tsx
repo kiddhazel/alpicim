@@ -1,9 +1,9 @@
-import { ArrowDownRight, ArrowUpRight, Eye, KeyRound, Landmark, Loader2, Minus, Plus, RefreshCw, Trash2, TrendingUp, X } from 'lucide-react';
+import { KeyRound, Loader2, Plus, RefreshCw, Trash2, X } from 'lucide-react';
 import { Fragment, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { t } from '../../i18n';
 import { useNow } from '../../shared/lib/hooks';
 import { formatDateTime, formatNumber, formatPercent, formatRelative } from '../../shared/lib/time';
-import { Badge, Button, cx, IconButton, SectionTitle, Select, TextInput } from '../../shared/ui/primitives';
+import { Badge, Button, Card, cx, IconButton, Select, TextInput } from '../../shared/ui/primitives';
 import { describeError, StateView } from '../../shared/ui/StateView';
 import { useToast } from '../../shared/ui/Toast';
 import { useSettings } from '../settings/settings';
@@ -44,7 +44,7 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
     <>
         {/* 3. İzleme listesi */}
         <section className="mb-6">
-          <SectionHead icon={Eye}>{t('markets.watchTitle')}</SectionHead>
+          <SectionHead>{t('markets.watchTitle')}</SectionHead>
           <Watchlist
             hasKey={m.hasKey === true}
             items={m.config.watchlist}
@@ -60,7 +60,7 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
   return (
     <div ref={rootRef} className="flex h-full flex-col">
       <div className="flex shrink-0 items-center gap-2 px-4 py-2.5">
-        <p className="flex-1 text-sm text-muted">
+        <p className="flex-1 text-sm text-fg-2">
           {!m.online
             ? t('markets.offline')
             : lastUpdate
@@ -80,14 +80,14 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
       <div className={wide ? 'min-h-0 min-w-0 flex-1 overflow-y-auto pr-1' : undefined}>
         {/* 1. TCMB referans kurları */}
         <section className="mb-6">
-          <SectionHead icon={Landmark}>{t('markets.referenceTitle')}</SectionHead>
+          <SectionHead>{t('markets.referenceTitle')}</SectionHead>
           {!reference && m.refreshing ? (
             <StateView compact kind="loading" title={t('markets.loading')} />
           ) : reference && reference.data.length === 0 && reference.error ? (
             <SectionError section={reference} onRetry={() => void m.refresh(true)} />
           ) : (
             <>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
+              <QuoteTable>
                 {(reference?.data ?? []).map((q) => (
                   <QuoteCard
                     key={q.key}
@@ -98,25 +98,24 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
                     onSelect={wide ? () => setPick(q.symbol) : undefined}
                   />
                 ))}
-              </div>
+              </QuoteTable>
               {wide && chartQuote && (
-                <div className="glass mt-4 rounded-2xl p-5">
+                <Card className="mt-4 p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                      <h3 className="text-gradient font-display text-xl font-semibold">{chartQuote.symbol}</h3>
+                      <h3 className="text-md font-semibold">{chartQuote.symbol}</h3>
                       <span className="sr-only">{t('look.currentValue')}</span>
-                      <span className="selectable tabular font-display text-3xl font-semibold tracking-tight">
+                      <span className="selectable tabular text-xl font-semibold">
                         {formatNumber(chartQuote.price, chartQuote.price >= 1000 ? 2 : 4)}
                       </span>
                       {periodPct !== null && (
                         <span
                           title={t('look.periodChange')}
                           className={cx(
-                            'tabular inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium',
-                            periodPct > 0 ? 'bg-up/15 text-up' : periodPct < 0 ? 'bg-down/15 text-down' : 'bg-surface-3 text-muted',
+                            'tabular text-sm font-semibold',
+                            periodPct > 0 ? 'text-up' : periodPct < 0 ? 'text-down' : 'text-fg-3',
                           )}
                         >
-                          {periodPct > 0 ? <ArrowUpRight size={14} aria-hidden /> : periodPct < 0 ? <ArrowDownRight size={14} aria-hidden /> : <Minus size={14} aria-hidden />}
                           {formatPercent(periodPct)}
                         </span>
                       )}
@@ -124,7 +123,7 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
                         {t(KIND_BADGE[chartQuote.kind].key)}
                       </Badge>
                     </div>
-                    <span className="text-xs text-faint">
+                    <span className="text-xs text-fg-3">
                       {t('wide.chartTitle', { symbol: chartQuote.symbol })} · {t('markets.dailySeries')}
                       {chartSection?.fetchedAt ? ` · ${t('markets.fetched', { time: formatRelative(chartSection.fetchedAt, now) })}` : ''}
                     </span>
@@ -132,10 +131,10 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
                   {chartSection && chartSection.data.length > 1 ? (
                     <LineChart points={chartSection.data} detailed height={320} label={chartQuote.symbol} />
                   ) : (
-                    <p className="py-10 text-center text-sm text-faint">{t('wide.chartEmpty')}</p>
+                    <p className="py-10 text-center text-sm text-fg-3">{t('wide.chartEmpty')}</p>
                   )}
                   {chartSection?.error && chartSection.data.length > 1 && <StaleNote section={chartSection} now={now} />}
-                </div>
+                </Card>
               )}
               {reference?.error && <StaleNote section={reference} now={now} />}
             </>
@@ -144,14 +143,14 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
             currencies={m.config.currencies}
             onChange={(currencies) => m.setConfig((c) => ({ ...c, currencies }))}
           />
-          <p className="mt-3 text-xs text-faint">{t('markets.referenceNote')}</p>
+          <p className="mt-3 text-xs text-fg-3">{t('markets.referenceNote')}</p>
         </section>
 
         {/* 2. Piyasa fiyatları + altın */}
         <section className="mb-6">
-          <SectionHead icon={TrendingUp}>{t('markets.liveTitle')}</SectionHead>
+          <SectionHead>{t('markets.liveTitle')}</SectionHead>
           {m.hasKey === false ? (
-            <div className="rounded-xl bg-surface-2">
+            <Card>
               <StateView
                 compact
                 kind="setup"
@@ -163,14 +162,14 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
                   </Button>
                 }
               />
-            </div>
+            </Card>
           ) : (
             <>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
+              <QuoteTable>
                 {[...(m.cache.live?.data ?? []), ...(m.cache.gold?.data ?? [])].map((q) => (
                   <QuoteCard key={q.key} quote={q} now={now} />
                 ))}
-              </div>
+              </QuoteTable>
               {m.cache.live?.error && <SectionError section={m.cache.live} onRetry={() => void m.refresh(true)} inline />}
               {m.cache.gold?.error && <SectionError section={m.cache.gold} onRetry={() => void m.refresh(true)} inline />}
             </>
@@ -183,19 +182,17 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
         {/* 4. DEMO (yalnızca ayarlardan açıkça etkinleştirildiyse) */}
         {settings.showDemoData && (
           <section className="mb-6 rounded-xl border border-demo/40 p-3">
-            <SectionTitle>
-              <span className="text-demo">{t('markets.demoTitle')}</span>
-            </SectionTitle>
+            <h3 className="mb-2 text-xs font-semibold tracking-wide text-demo uppercase">{t('markets.demoTitle')}</h3>
             <p className="mb-3 text-xs text-demo">{t('markets.demoBody')}</p>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
+            <QuoteTable>
               {demoQuotes().map(({ quote, series }) => (
                 <QuoteCard key={quote.key} quote={quote} now={now} series={series} />
               ))}
-            </div>
+            </QuoteTable>
           </section>
         )}
 
-        <p className="text-xs text-faint">{t('markets.sources')}</p>
+        <p className="text-xs text-fg-3">{t('markets.sources')}</p>
       </div>
       {wide && <div className="min-h-0 w-[560px] max-w-[45%] shrink-0 overflow-y-auto pr-1">{watchSection}</div>}
       </div>
@@ -203,31 +200,25 @@ export function MarketsPanel({ onOpenSettings }: { onOpenSettings: () => void })
   );
 }
 
-function SectionHead({ icon: Icon, children }: { icon: typeof Eye; children: ReactNode }) {
+function SectionHead({ children }: { children: ReactNode }) {
+  return <h3 className="mb-2 text-md font-semibold">{children}</h3>;
+}
+
+function QuoteTable({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-3 flex items-center gap-2.5">
-      <span className="bg-accent-gradient flex h-8 w-8 items-center justify-center rounded-xl text-white" aria-hidden>
-        <Icon size={16} />
-      </span>
-      <h3 className="text-md font-semibold">{children}</h3>
-    </div>
+    <Card>
+      <div className="flex flex-col p-2">{children}</div>
+    </Card>
   );
 }
 
 function Change({ quote }: { quote: Quote }) {
   if (quote.change === null && quote.changePct === null) {
-    return <span className="text-sm text-faint">{t('markets.noChange')}</span>;
+    return <span className="text-sm text-fg-3">{t('markets.noChange')}</span>;
   }
   const v = quote.changePct ?? quote.change ?? 0;
-  const Icon = v > 0 ? ArrowUpRight : v < 0 ? ArrowDownRight : Minus;
   return (
-    <span
-      className={cx(
-        'tabular inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-medium',
-        v > 0 ? 'bg-up/15 text-up' : v < 0 ? 'bg-down/15 text-down' : 'bg-surface-3 text-muted',
-      )}
-    >
-      <Icon size={14} aria-hidden />
+    <span className={cx('tabular inline-flex items-center gap-1 text-sm font-semibold', v > 0 ? 'text-up' : v < 0 ? 'text-down' : 'text-fg-3')}>
       {quote.change !== null && <span>{formatNumber(quote.change, 4)}</span>}
       {quote.changePct !== null && <span>({formatPercent(quote.changePct)})</span>}
     </span>
@@ -250,7 +241,6 @@ function QuoteCard({
   const badge = KIND_BADGE[quote.kind];
   const digits = quote.price >= 1000 ? 2 : 4;
   return (
-    <div className={cx('rounded-[1.15rem] p-0.5', selected ? 'bg-accent-gradient' : 'bg-transparent')}>
     <article
       role={onSelect ? 'button' : undefined}
       tabIndex={onSelect ? 0 : undefined}
@@ -268,34 +258,36 @@ function QuoteCard({
           : undefined
       }
       className={cx(
-        'glass flex flex-col gap-2 rounded-2xl p-5 transition-transform',
+        'grid grid-cols-[minmax(0,1.4fr)_auto_minmax(0,1fr)_72px] items-center gap-x-4 rounded-lg px-4 py-2.5 transition-colors duration-150',
+        selected ? 'bg-accent-soft' : onSelect && 'hover:bg-card-hover',
         quote.kind === 'demo' && 'border border-demo/40',
-        onSelect && 'cursor-pointer hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
+        onSelect && 'cursor-pointer focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none',
       )}
     >
-      <div className="flex items-center justify-between gap-1">
-        <span className="truncate text-md font-semibold" title={quote.label}>
-          {quote.symbol}
-        </span>
-        <Badge tone={badge.tone} title={quote.note}>
-          {t(badge.key)}
-        </Badge>
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="truncate text-base font-semibold" title={quote.label}>
+            {quote.symbol}
+          </span>
+          <Badge tone={badge.tone} title={quote.note}>
+            {t(badge.key)}
+          </Badge>
+        </div>
+        <p className="truncate text-xs text-fg-3" title={`${quote.sourceName}${quote.note ? ` · ${quote.note}` : ''}`}>
+          {quote.sourceName}
+          {quote.asOf ? ` · ${formatDateTime(quote.asOf)}` : ''}
+          {quote.kind !== 'demo' && ` · ${t('markets.fetched', { time: formatRelative(quote.fetchedAt, now) })}`}
+        </p>
       </div>
-      <div className="flex items-baseline gap-1.5">
-        <span className="selectable tabular font-display text-4xl font-semibold tracking-tight">{formatNumber(quote.price, digits)}</span>
-        <span className="text-xs text-faint">{quote.currency}</span>
+      <div className="text-right">
+        <span className="selectable tabular text-base font-semibold">{formatNumber(quote.price, digits)}</span>{' '}
+        <span className="text-xs text-fg-3">{quote.currency}</span>
       </div>
-      <div>
+      <div className="text-right">
         <Change quote={quote} />
       </div>
-      {series && series.length > 1 && <LineChart points={series} label={quote.symbol} height={56} rich />}
-      <p className="truncate text-xs text-faint" title={`${quote.sourceName}${quote.note ? ` · ${quote.note}` : ''}`}>
-        {quote.sourceName}
-        {quote.asOf ? ` · ${formatDateTime(quote.asOf)}` : ''}
-        {quote.kind !== 'demo' && ` · ${t('markets.fetched', { time: formatRelative(quote.fetchedAt, now) })}`}
-      </p>
+      <div>{series && series.length > 1 ? <LineChart points={series} label={quote.symbol} height={28} /> : null}</div>
     </article>
-    </div>
   );
 }
 
@@ -303,7 +295,7 @@ function SectionError({ section, onRetry, inline }: { section: Section<unknown>;
   const text = errorText(section.error);
   if (section.error === 'DISABLED') {
     return inline ? (
-      <p className="mt-2 text-sm text-muted">{text}</p>
+      <p className="mt-2 text-sm text-fg-2">{text}</p>
     ) : (
       <StateView compact kind="setup" title={t('errors.disabledTitle')} description={text} />
     );
@@ -378,14 +370,14 @@ function CurrencyEditor({ currencies, onChange }: { currencies: string[]; onChan
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2">
       {currencies.map((c) => (
-        <span key={c} className="inline-flex items-center gap-1 rounded-lg bg-surface-2 py-1 pr-1.5 pl-2.5 text-sm">
+        <span key={c} className="inline-flex items-center gap-1 rounded-lg bg-control py-1 pr-1.5 pl-2.5 text-sm">
           {c}/TRY
           <button
             type="button"
             aria-label={t('markets.removeCurrency', { code: c })}
             disabled={currencies.length <= 1}
             onClick={() => onChange(currencies.filter((x) => x !== c))}
-            className="text-faint hover:text-down disabled:opacity-30"
+            className="text-fg-3 hover:text-down disabled:opacity-30"
           >
             <X size={12} />
           </button>
@@ -503,15 +495,15 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
         </Button>
       </form>
       {error && <p role="alert" className="mb-2 text-sm text-down">{error}</p>}
-      <p className="mb-3 text-xs text-faint">{hasKey ? t('markets.watchHint') : t('markets.watchNeedsKey')}</p>
+      <p className="mb-3 text-xs text-fg-3">{hasKey ? t('markets.watchHint') : t('markets.watchNeedsKey')}</p>
 
       {items.length === 0 ? (
-        <p className="rounded-xl bg-surface-2 px-4 py-5 text-center text-sm text-muted">{t('markets.watchEmpty')}</p>
+        <p className="rounded-xl border border-stroke bg-card px-4 py-5 text-center text-sm text-fg-2">{t('markets.watchEmpty')}</p>
       ) : wide ? (
-        <div className="overflow-x-auto rounded-2xl bg-surface-2">
+        <div className="overflow-x-auto rounded-xl border border-stroke bg-card">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="text-xs text-faint">
+              <tr className="text-xs text-fg-3">
                 <th className="px-3 py-2 font-medium">{t('wide.colSymbol')}</th>
                 <th className="px-3 py-2 font-medium">{t('wide.colName')}</th>
                 <th className="px-3 py-2 text-right font-medium">{t('wide.colPrice')}</th>
@@ -521,7 +513,7 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
                 <th className="w-10" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="divide-y divide-stroke">
               {items.map((item) => {
                 const key = watchKey(item);
                 const section = sections[key];
@@ -530,22 +522,22 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
                 return (
                   <Fragment key={key}>
                   <tr
-                    className="cursor-pointer hover:bg-surface-3"
+                    className="cursor-pointer hover:bg-card-hover"
                     aria-expanded={selected === key}
                     onClick={() => setSelected((s) => (s === key ? null : key))}
                   >
                     <td className="px-3 py-2.5 font-semibold">
                       {item.symbol}
-                      {item.exchange && <span className="ml-1 text-xs font-normal text-faint">{item.exchange}</span>}
+                      {item.exchange && <span className="ml-1 text-xs font-normal text-fg-3">{item.exchange}</span>}
                     </td>
-                    <td className="max-w-40 truncate px-3 py-2.5 text-muted" title={item.name}>
+                    <td className="max-w-40 truncate px-3 py-2.5 text-fg-2" title={item.name}>
                       {item.name ?? ''}
                     </td>
                     {quote ? (
                       <>
                         <td className="tabular px-3 py-2.5 text-right font-semibold">
                           {formatNumber(quote.price, quote.price >= 1000 ? 2 : 4)}{' '}
-                          <span className="text-xs font-normal text-faint">{quote.currency}</span>
+                          <span className="text-xs font-normal text-fg-3">{quote.currency}</span>
                         </td>
                         <td className="px-3 py-2.5 text-right">
                           <Change quote={quote} />
@@ -557,7 +549,7 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
                             </Badge>
                           )}
                         </td>
-                        <td className="px-3 py-2.5 text-xs whitespace-nowrap text-faint" title={quote.sourceName}>
+                        <td className="px-3 py-2.5 text-xs whitespace-nowrap text-fg-3" title={quote.sourceName}>
                           {quote.asOf ? formatDateTime(quote.asOf) : formatRelative(quote.fetchedAt, now)}
                           {section?.error ? `  · ${t('markets.lastGood', { time: formatRelative(section.fetchedAt, now) })}` : ''}
                         </td>
@@ -567,7 +559,7 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
                         {section?.error ? (
                           <span className="text-down">{errorText(section.error)}</span>
                         ) : (
-                          <span className="text-faint">{hasKey ? '…' : '—'}</span>
+                          <span className="text-fg-3">{hasKey ? '…' : '—'}</span>
                         )}
                       </td>
                     )}
@@ -589,7 +581,7 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
           </table>
         </div>
       ) : (
-        <ul className="divide-y divide-line overflow-hidden rounded-xl bg-surface-2">
+        <ul className="divide-y divide-stroke overflow-hidden rounded-xl border border-stroke bg-card">
           {items.map((item) => {
             const key = watchKey(item);
             const section = sections[key];
@@ -605,14 +597,14 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
                   >
                     <p className="truncate text-base font-semibold">
                       {item.symbol}
-                      {item.exchange && <span className="ml-1 text-xs font-normal text-faint">{item.exchange}</span>}
+                      {item.exchange && <span className="ml-1 text-xs font-normal text-fg-3">{item.exchange}</span>}
                     </p>
-                    <p className="truncate text-xs text-faint">{item.name ?? ''}</p>
+                    <p className="truncate text-xs text-fg-3">{item.name ?? ''}</p>
                   </button>
                   {quote ? (
                     <div className="text-right">
                       <p className="tabular text-base font-semibold">
-                        {formatNumber(quote.price, quote.price >= 1000 ? 2 : 4)} <span className="text-xs font-normal text-faint">{quote.currency}</span>
+                        {formatNumber(quote.price, quote.price >= 1000 ? 2 : 4)} <span className="text-xs font-normal text-fg-3">{quote.currency}</span>
                       </p>
                       <Change quote={quote} />
                     </div>
@@ -621,7 +613,7 @@ function Watchlist({ hasKey, items, sections, now, wide, onAdd, onRemove }: Watc
                       {errorText(section.error)}
                     </span>
                   ) : (
-                    <span className="text-sm text-faint">{hasKey ? '…' : '—'}</span>
+                    <span className="text-sm text-fg-3">{hasKey ? '…' : '—'}</span>
                   )}
                   <IconButton size="sm" tone="danger" icon={Trash2} label={t('common.remove')} onClick={() => onRemove(key)} />
                 </div>
@@ -662,15 +654,15 @@ function WatchDetail({ item, quote, stale, now }: { item: WatchItem; quote: Quot
 
   let body: ReactNode;
   if (error) body = <p className="text-sm text-down">{error}</p>;
-  else if (!series) body = <p className="text-sm text-faint">{t('markets.loading')}</p>;
+  else if (!series) body = <p className="text-sm text-fg-3">{t('markets.loading')}</p>;
   else body = <LineChart points={series} detailed height={110} label={item.symbol} digits={quote && quote.price >= 1000 ? 2 : 4} />;
 
   return (
-    <div className="bg-surface-3/50 px-4 py-3">
-      <p className="mb-1 text-xs text-faint">{t('markets.dailySeries')}</p>
+    <div className="bg-layer px-4 py-3">
+      <p className="mb-1 text-xs text-fg-3">{t('markets.dailySeries')}</p>
       {body}
       {quote && (
-        <p className="mt-1.5 text-xs text-faint">
+        <p className="mt-1.5 text-xs text-fg-3">
           {quote.sourceName}
           {quote.asOf ? ` · ${formatDateTime(quote.asOf)}` : ''}
           {quote.note ? ` · ${quote.note}` : ''}

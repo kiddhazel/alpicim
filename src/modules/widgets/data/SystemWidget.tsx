@@ -48,16 +48,16 @@ export function SystemWidget({ config, active }: WidgetProps<SystemConfig>) {
 }
 
 function Meter({ icon: Icon, label, value, detail }: { icon: LucideIcon; label: string; value: number | null; detail: string }) {
-  const tone = value === null ? 'bg-surface-3' : value >= 90 ? 'bg-down' : value >= 70 ? 'bg-warn' : 'bg-accent';
+  const tone = value === null ? 'bg-control' : value >= 90 ? 'bg-down' : value >= 70 ? 'bg-warn' : 'bg-accent';
   return (
     <div>
       <div className="mb-1 flex items-center gap-2 text-sm">
-        <Icon size={14} className="text-muted" />
-        <span className="text-muted">{label}</span>
-        <span className="ml-auto truncate text-xs text-faint">{detail}</span>
-        <span className="tabular w-11 text-right text-sm font-semibold">{value === null ? '—' : `%${value}`}</span>
+        <Icon size={14} className="text-fg-2" />
+        <span className="text-fg-2">{label}</span>
+        <span className="ml-auto truncate text-xs text-fg-3">{detail}</span>
+        <span className="tabular-nums w-11 text-right text-sm font-semibold">{value === null ? '—' : `%${value}`}</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-surface-3">
+      <div className="h-2 overflow-hidden rounded-full bg-control">
         <div className={cx('h-full rounded-full transition-[width]', tone)} style={{ width: `${value ?? 0}%` }} />
       </div>
     </div>
@@ -74,7 +74,7 @@ export function SystemSettings({ config, setConfig }: WidgetSettingsProps<System
         max={60}
         value={config.refreshSeconds}
         onChange={(e) => setConfig({ refreshSeconds: num(Number(e.target.value), 1, 60, 3) })}
-        className="tabular w-20 text-right"
+        className="tabular-nums w-20 text-right"
       />
     </label>
   );

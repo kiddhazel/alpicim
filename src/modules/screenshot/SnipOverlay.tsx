@@ -73,7 +73,7 @@ export function SnipOverlay() {
         </div>
       )}
       {!rect && (
-        <p className="pointer-events-none absolute top-6 left-1/2 -translate-x-1/2 rounded-xl bg-black/70 px-4 py-2 text-sm text-white">
+        <p className="pointer-events-none absolute top-6 left-1/2 -translate-x-1/2 rounded-lg bg-black/70 px-4 py-2 text-sm text-white">
           {t('screenshot.hint')}
         </p>
       )}

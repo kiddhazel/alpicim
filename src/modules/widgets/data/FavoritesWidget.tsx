@@ -76,7 +76,7 @@ export function FavoritesWidget({ config }: WidgetProps<FavoritesConfig>) {
             title={item.path}
             disabled={!item.exists}
             onClick={() => void launch(item)}
-            className="flex h-[88px] w-full flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2 transition-colors hover:bg-surface-3 disabled:opacity-40"
+            className="flex h-[88px] w-full flex-col items-center justify-center gap-1.5 rounded-xl px-1 py-2 transition-colors hover:bg-control-hover disabled:opacity-40"
           >
             <AppIcon path={item.path} fallback={launcherIcon(item.icon)} size={32} className="text-accent" />
             <span className="w-full truncate text-center text-xs">{item.name}</span>
@@ -84,7 +84,7 @@ export function FavoritesWidget({ config }: WidgetProps<FavoritesConfig>) {
         </li>
       ))}
       {favorites.length === 0 && !config.onlyFavorites && (
-        <li className="col-span-full flex items-center justify-center gap-1 text-xs text-faint">
+        <li className="col-span-full flex items-center justify-center gap-1 text-xs text-fg-3">
           <Star size={12} /> {t('widgets.favorites.hint')}
         </li>
       )}

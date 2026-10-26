@@ -49,12 +49,12 @@ export function QuickNoteWidget({ size }: WidgetProps<QuickNoteConfig>) {
           }
         }}
         className={cx(
-          'selectable w-full resize-none rounded-xl bg-surface-2 px-3 py-2 text-sm leading-relaxed text-fg shadow-[inset_0_0_0_1px_var(--glass-edge)] placeholder:text-faint focus:ring-2 focus:ring-accent/40 focus:outline-none',
+          'selectable w-full resize-none rounded-xl bg-control px-3 py-2 text-sm leading-relaxed text-fg shadow-[inset_0_0_0_1px_var(--stroke)] placeholder:text-fg-3 focus:ring-2 focus:ring-accent/40 focus:outline-none',
           recent.length > 0 ? 'h-20 shrink-0' : 'min-h-0 flex-1',
         )}
       />
       <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={() => open()} className="inline-flex items-center gap-1 text-xs text-faint hover:text-accent">
+        <button type="button" onClick={() => open()} className="inline-flex items-center gap-1 text-xs text-fg-3 hover:text-accent">
           {t('widgets.quicknote.openAll', { n: notebook.notes.length })}
           <ArrowUpRight size={12} />
         </button>
@@ -71,11 +71,11 @@ export function QuickNoteWidget({ size }: WidgetProps<QuickNoteConfig>) {
                 <button
                   type="button"
                   onClick={() => open(n.id)}
-                  className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 text-left text-sm hover:bg-surface-3"
+                  className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 text-left text-sm hover:bg-control-hover"
                 >
                   <span
                     aria-hidden
-                    className={cx('h-2 w-2 shrink-0 rounded-full', !hue && 'bg-surface-3')}
+                    className={cx('h-2 w-2 shrink-0 rounded-full', !hue && 'bg-control')}
                     style={hue ? { backgroundColor: hue } : undefined}
                   />
                   <span className="min-w-0 flex-1 truncate">{noteTitle(n)}</span>

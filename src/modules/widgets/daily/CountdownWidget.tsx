@@ -39,9 +39,9 @@ export function CountdownWidget({ config, size }: WidgetProps<CountdownConfig>) 
   if (list.length === 0) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-1 px-4 text-center">
-        <Hourglass size={20} className="text-faint" />
-        <p className="text-sm text-muted">{t('widgets.countdown.empty')}</p>
-        <p className="text-xs text-faint">{t('widgets.countdown.emptyBody')}</p>
+        <Hourglass size={20} className="text-fg-3" />
+        <p className="text-sm text-fg-2">{t('widgets.countdown.empty')}</p>
+        <p className="text-xs text-fg-3">{t('widgets.countdown.emptyBody')}</p>
       </div>
     );
   }
@@ -55,25 +55,25 @@ export function CountdownWidget({ config, size }: WidgetProps<CountdownConfig>) 
           <p className="truncate text-base font-semibold" title={first.event.title}>
             {first.event.title}
           </p>
-          <p className="truncate text-xs text-faint">
+          <p className="truncate text-xs text-fg-3">
             {fmt(first.date, DATE_FMT)}
             {first.event.repeat !== 'none' && ` · ${t(REPEAT_KEY[first.event.repeat])}`}
           </p>
         </div>
-        <p className={cx('shrink-0 font-display font-semibold tabular', first.days > 1 ? 'text-4xl' : 'text-2xl', soon ? 'text-gradient' : first.days < 0 ? 'text-faint' : 'text-fg')}>
+        <p className={cx('shrink-0 font-display font-semibold tabular-nums', first.days > 1 ? 'text-4xl' : 'text-2xl', soon ? 'text-fg' : first.days < 0 ? 'text-fg-3' : 'text-fg')}>
           {first.days > 1 ? first.days : label(first)}
-          {first.days > 1 && <span className="ml-1 text-sm font-normal text-muted">{t('widgets.countdown.dayUnit')}</span>}
+          {first.days > 1 && <span className="ml-1 text-sm font-normal text-fg-2">{t('widgets.countdown.dayUnit')}</span>}
         </p>
       </div>
       {size.h >= 3 && rest.length > 0 && (
-        <ul className="min-h-0 flex-1 divide-y divide-line overflow-y-auto">
+        <ul className="min-h-0 flex-1 divide-y divide-stroke overflow-y-auto">
           {rest.map((o) => (
             <li key={o.event.id} className="flex items-center gap-2 py-1.5 text-sm">
-              {o.event.repeat !== 'none' && <RepeatIcon size={12} className="shrink-0 text-faint" aria-label={t(REPEAT_KEY[o.event.repeat])} />}
-              <span className={cx('min-w-0 flex-1 truncate', o.days < 0 && 'text-faint')} title={fmt(o.date, DATE_SHORT)}>
+              {o.event.repeat !== 'none' && <RepeatIcon size={12} className="shrink-0 text-fg-3" aria-label={t(REPEAT_KEY[o.event.repeat])} />}
+              <span className={cx('min-w-0 flex-1 truncate', o.days < 0 && 'text-fg-3')} title={fmt(o.date, DATE_SHORT)}>
                 {o.event.title}
               </span>
-              <span className={cx('shrink-0 tabular', o.days < 0 ? 'text-faint' : o.days <= 7 ? 'font-semibold text-accent' : 'text-muted')}>
+              <span className={cx('shrink-0 tabular-nums', o.days < 0 ? 'text-fg-3' : o.days <= 7 ? 'font-semibold text-accent' : 'text-fg-2')}>
                 {label(o)}
               </span>
             </li>
@@ -97,7 +97,7 @@ export function CountdownSettings({ config, setConfig }: WidgetSettingsProps<Cou
         {events.map((e) => (
           <li key={e.id} className="flex items-center gap-1.5 text-sm">
             <span className="min-w-0 flex-1 truncate">{e.title}</span>
-            <span className="shrink-0 text-xs text-faint">
+            <span className="shrink-0 text-xs text-fg-3">
               {fmt(e.date, DATE_SHORT)} · {t(REPEAT_KEY[e.repeat])}
             </span>
             <IconButton size="sm" icon={X} tone="danger" label={t('common.remove')} onClick={() => setConfig({ events: events.filter((x) => x.id !== e.id) })} />
@@ -133,7 +133,7 @@ export function CountdownSettings({ config, setConfig }: WidgetSettingsProps<Cou
           <IconButton icon={Plus} label={t('common.add')} type="submit" disabled={events.length >= MAX_COUNTDOWNS} />
         </div>
         {invalid && <p className="text-xs text-warn">{t('widgets.countdown.invalid')}</p>}
-        <p className="text-xs text-faint">{t('widgets.countdown.hint')}</p>
+        <p className="text-xs text-fg-3">{t('widgets.countdown.hint')}</p>
       </form>
     </div>
   );

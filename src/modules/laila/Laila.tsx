@@ -872,19 +872,19 @@ export function Laila({ hostRef, panel }: { hostRef: RefObject<HTMLElement | nul
       {bubble !== null && (
         <div
           ref={bubbleRef}
-          className={cx('glass absolute max-w-[220px] rounded-2xl px-3 py-2 text-sm', bubbleAction ? 'pointer-events-auto' : 'pointer-events-none')}
+          className={cx('absolute max-w-[220px] rounded-lg bg-card px-3 py-2 text-sm text-fg ring-1 ring-stroke-strong shadow-[var(--shadow-pop)]', bubbleAction ? 'pointer-events-auto' : 'pointer-events-none')}
           style={{ left: 0, top: 0 }}
         >
           {bubble}
           {bubbleAction && (
             <div className="mt-2 flex gap-2">
-              <button type="button" onClick={() => reminderOk(bubbleAction)} className="bg-accent-gradient rounded-lg px-2.5 py-1 text-xs font-medium text-white">
+              <button type="button" onClick={() => reminderOk(bubbleAction)} className="rounded-md bg-accent text-on-accent px-2.5 py-1 text-xs font-medium">
                 {t('laila.reminderOk')}
               </button>
               <button
                 type="button"
                 onClick={() => reminderLater(bubbleAction)}
-                className="rounded-lg bg-surface-2 px-2.5 py-1 text-xs font-medium text-fg shadow-[inset_0_0_0_1px_var(--glass-edge)] hover:bg-surface-3"
+                className="rounded-md bg-control px-2.5 py-1 text-xs font-medium text-fg hover:bg-control-hover"
               >
                 {t('laila.reminderSnooze')}
               </button>

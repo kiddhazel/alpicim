@@ -2,7 +2,7 @@ import { Heart, Pause, Play, Radio as RadioIcon, Search, Square } from 'lucide-r
 import { useCallback, useEffect, useState } from 'react';
 import { t } from '../../i18n';
 import { usePersistentState } from '../../shared/lib/usePersistentState';
-import { Badge, Button, cx, IconButton, Segmented, TextInput } from '../../shared/ui/primitives';
+import { Badge, Button, Card, IconButton, List, ListItem, Segmented, TextInput } from '../../shared/ui/primitives';
 import { describeError, SkeletonRows, StateView } from '../../shared/ui/StateView';
 import { audioService, useAudio } from './audioService';
 import { sanitizeFavorites, toggleFavorite, type RadioStation } from './radio';
@@ -62,7 +62,7 @@ export function RadioPanel() {
             setActive(query.trim());
           }}
         >
-          <Search size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-faint" />
+          <Search size={15} aria-hidden className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-fg-3" />
           <TextInput
             type="search"
             className="w-full pl-9"
@@ -104,53 +104,59 @@ export function RadioPanel() {
         ) : stations.length === 0 ? (
           <StateView kind="empty" title={tab === 'favorites' && !active ? t('radio.noFavorites') : t('radio.noResults')} />
         ) : (
-          <ul className="flex flex-col gap-1">
-            {stations.map((s) => {
-              const current = playingId === s.id;
-              const fav = favs.some((f) => f.id === s.id);
-              return (
-                <li key={s.id} className={cx('flex items-center gap-3 rounded-xl px-2 py-1.5', current ? 'bg-accent-soft' : 'hover:bg-surface-2')}>
-                  {s.favicon ? (
-                    <img src={s.favicon} alt="" loading="lazy" className="h-9 w-9 shrink-0 rounded-lg bg-surface-3 object-contain" />
-                  ) : (
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-faint">
-                      <RadioIcon size={18} aria-hidden />
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{s.name}</p>
-                    <p className="truncate text-xs text-faint">
-                      {[s.codec, s.bitrate ? `${s.bitrate} kbps` : '', s.tags.split(',').slice(0, 2).join(', ')].filter(Boolean).join(' · ')}
-                    </p>
-                  </div>
-                  {current && audio.error && <Badge tone="down">{t('radio.playError')}</Badge>}
-                  <IconButton
-                    icon={Heart}
-                    active={fav}
-                    label={fav ? t('radio.removeFavorite') : t('radio.addFavorite')}
-                    onClick={() => setFavs((f) => toggleFavorite(f, s))}
+          <Card className="p-1">
+            <List>
+              {stations.map((s) => {
+                const current = playingId === s.id;
+                const fav = favs.some((f) => f.id === s.id);
+                return (
+                  <ListItem
+                    key={s.id}
+                    selected={current}
+                    leading={
+                      s.favicon ? (
+                        <img src={s.favicon} alt="" loading="lazy" className="h-8 w-8 shrink-0 rounded-md bg-control object-contain" />
+                      ) : (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-control text-fg-3">
+                          <RadioIcon size={16} aria-hidden />
+                        </span>
+                      )
+                    }
+                    title={s.name}
+                    subtitle={[s.codec, s.bitrate ? `${s.bitrate} kbps` : '', s.tags.split(',').slice(0, 2).join(', ')].filter(Boolean).join(' · ')}
+                    trailing={
+                      <span className="flex items-center gap-1">
+                        {current && audio.error && <Badge tone="down">{t('radio.playError')}</Badge>}
+                        <IconButton
+                          icon={Heart}
+                          active={fav}
+                          label={fav ? t('radio.removeFavorite') : t('radio.addFavorite')}
+                          onClick={() => setFavs((f) => toggleFavorite(f, s))}
+                        />
+                        <IconButton
+                          icon={current && audio.playing ? Pause : Play}
+                          label={current && audio.playing ? t('media.pause') : t('media.play')}
+                          onClick={() => play(s)}
+                        />
+                      </span>
+                    }
                   />
-                  <IconButton
-                    icon={current && audio.playing ? Pause : Play}
-                    label={current && audio.playing ? t('media.pause') : t('media.play')}
-                    onClick={() => play(s)}
-                  />
-                </li>
-              );
-            })}
-          </ul>
+                );
+              })}
+            </List>
+          </Card>
         )}
-        {data && data.skippedHttp > 0 && <p className="pt-2 text-xs text-faint">{t('radio.skippedHttp', { n: data.skippedHttp })}</p>}
+        {data && data.skippedHttp > 0 && <p className="pt-2 text-xs text-fg-3">{t('radio.skippedHttp', { n: data.skippedHttp })}</p>}
       </div>
 
       {audio.source?.kind === 'radio' && (
-        <div className="glass flex items-center gap-3 px-4 py-2">
+        <Card className="m-3 mt-0 flex items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{audio.source.title}</p>
-            <p className="truncate text-xs text-faint">{audio.loading ? t('common.loading') : audio.source.subtitle}</p>
+            <p className="truncate text-xs text-fg-3">{audio.loading ? t('common.loading') : audio.source.subtitle}</p>
           </div>
           <IconButton icon={Square} label={t('radio.stop')} onClick={() => audioService.stop()} />
-        </div>
+        </Card>
       )}
     </div>
   );

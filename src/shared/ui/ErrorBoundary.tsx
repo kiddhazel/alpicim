@@ -44,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <button
             type="button"
             onClick={() => this.setState({ error: null })}
-            className="h-9 rounded-lg border border-line px-3.5 text-sm font-medium hover:bg-surface-3"
+            className="h-9 rounded-lg border border-stroke px-3.5 text-sm font-medium hover:bg-control-hover"
           >
             {t('common.retry')}
           </button>

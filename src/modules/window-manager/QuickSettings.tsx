@@ -9,7 +9,8 @@ import { displayService, type DisplayMode, type DisplaySnapshot } from '../displ
 import { useFocus } from '../focus/useFocus';
 import { MonitorSelect } from '../display/MonitorSelect';
 import { useSettings, type ThemeMode } from '../settings/settings';
-import { PANELS, type PanelId } from './panels';
+import { useEnabledPanels } from '../../core/modules/useModules';
+import type { PanelId } from './panels';
 
 /** Hızlı ayarlar: tema, ekran modu/monitör, bu çalışma alanının panelleri ve performans modu. */
 export function QuickSettings({
@@ -34,6 +35,7 @@ export function QuickSettings({
   onClose: () => void;
 }) {
   const [settings, setSettings] = useSettings();
+  const panels = useEnabledPanels();
   const { focus, toggle: toggleFocus } = useFocus();
   const toast = useToast();
   const ref = useRef<HTMLDivElement>(null);
@@ -63,13 +65,13 @@ export function QuickSettings({
   };
 
   return (
-    <div ref={ref} role="dialog" aria-label={t('quick.title')} className="glass absolute top-11 right-0 z-40 w-96 rounded-3xl p-5 text-sm">
+    <div ref={ref} role="dialog" aria-label={t('quick.title')} className="absolute top-full right-0 z-40 mt-1 max-h-[80vh] w-96 overflow-y-auto rounded-xl bg-card p-4 text-sm shadow-[inset_0_0_0_1px_var(--stroke-strong),var(--shadow-pop)]">
       <Section title={t('quick.layout')}>
         <div className="flex flex-col gap-2">
           <div className={canSplit || split ? 'flex items-center justify-between py-1' : 'flex items-center justify-between py-1 opacity-50'}>
             <div>
               <p className="text-sm font-medium">{t('stage.split')}</p>
-              <p className="text-xs text-muted">{t('stage.splitHint')}</p>
+              <p className="text-xs text-fg-2">{t('stage.splitHint')}</p>
             </div>
             <Toggle checked={split} label={t('stage.split')} onChange={(v) => (canSplit || !v) && onToggleSplit(v)} />
           </div>
@@ -110,7 +112,7 @@ export function QuickSettings({
       </Section>
       <Section title={t('quick.panels')}>
         <div className="grid grid-cols-2 gap-1">
-          {PANELS.map((p) => {
+          {panels.map((p) => {
             const Icon = p.icon;
             const on = docked.includes(p.id);
             return (
@@ -119,7 +121,7 @@ export function QuickSettings({
                 type="button"
                 aria-pressed={on}
                 onClick={() => onTogglePanel(p.id)}
-                className={on ? 'flex h-9 items-center gap-2 rounded-lg bg-accent-soft px-2.5 text-left text-sm text-accent' : 'flex h-9 items-center gap-2 rounded-lg px-2.5 text-left text-sm text-muted hover:bg-surface-3'}
+                className={on ? 'flex h-9 items-center gap-2 rounded-lg bg-accent-soft px-2.5 text-left text-sm text-accent' : 'flex h-9 items-center gap-2 rounded-lg px-2.5 text-left text-sm text-fg-2 hover:bg-control-hover'}
               >
                 <Icon size={16} />
                 <span className="truncate">{t(p.titleKey)}</span>
@@ -131,14 +133,14 @@ export function QuickSettings({
       <div className="flex items-center justify-between py-1.5">
         <div>
           <p className="text-sm font-medium">{t('focus.enable')}</p>
-          <p className="text-xs text-muted">{t('focus.quickHint')}</p>
+          <p className="text-xs text-fg-2">{t('focus.quickHint')}</p>
         </div>
         <Toggle checked={focus.on} label={t('focus.enable')} onChange={toggleFocus} />
       </div>
       <div className="flex items-center justify-between py-1.5">
         <div>
           <p className="text-sm font-medium">{t('settings.performance')}</p>
-          <p className="text-xs text-muted">{t('quick.performanceHint')}</p>
+          <p className="text-xs text-fg-2">{t('quick.performanceHint')}</p>
         </div>
         <Toggle checked={settings.performanceMode} label={t('settings.performance')} onChange={(v) => setSettings((s) => ({ ...s, performanceMode: v }))} />
       </div>
@@ -160,7 +162,7 @@ export function QuickSettings({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mb-4">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-faint">{title}</h3>
+      <h3 className="mb-2 text-xs font-semibold text-fg-3">{title}</h3>
       {children}
     </section>
   );

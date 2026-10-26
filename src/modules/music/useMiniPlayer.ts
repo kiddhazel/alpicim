@@ -9,6 +9,26 @@ import type { PanelId } from '../window-manager/panels';
 import { currentPositionMs, useMediaSession, type MediaAction } from '../system/systemService';
 import { musicService } from './musicService';
 
+const MUSIC_VOLUME_KEY = 'alpicim.volume.music';
+
+function loadMusicVolume(): number {
+  try {
+    const raw = localStorage.getItem(MUSIC_VOLUME_KEY);
+    const v = Number(raw);
+    return raw !== null && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
+  } catch {
+    return 1;
+  }
+}
+
+function saveMusicVolume(v: number): void {
+  try {
+    localStorage.setItem(MUSIC_VOLUME_KEY, String(v));
+  } catch {
+    /* kalıcılık yoksa yalnız bu oturumda */
+  }
+}
+
 /** Mini oynatıcı durumu: SMTC oturumu, ilerleme, arama ve genişletilmiş sayfa. */
 export function useMiniPlayer(musicTabOpen: boolean, onOpenPanel: (p: PanelId) => void) {
   const [settings] = useSettings();
@@ -26,6 +46,7 @@ export function useMiniPlayer(musicTabOpen: boolean, onOpenPanel: (p: PanelId) =
   const [query, setQuery] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [muted, setMuted] = useState(false);
+  const [volume, setVolumeState] = useState(loadMusicVolume);
 
   // Müzik sekmesi açılınca sayfa kapanır (tek webview, sekme öncelikli).
   useEffect(() => {
@@ -62,7 +83,25 @@ export function useMiniPlayer(musicTabOpen: boolean, onOpenPanel: (p: PanelId) =
     }
   }, [muted, fail]);
 
+  const setVolume = useCallback(
+    (v: number) => {
+      const next = Math.min(1, Math.max(0, v));
+      setVolumeState(next);
+      saveMusicVolume(next);
+      void musicService.setVolume(next).catch(fail);
+    },
+    [fail],
+  );
+
+  // YouTube Music parça değişince kendi sesini geri yükleyebilir: son değeri yeniden uygula.
+  const trackKey = session?.own ? `${session.title}|${session.artist}` : '';
+  useEffect(() => {
+    if (trackKey && loadMusicVolume() < 1) void musicService.setVolume(loadMusicVolume()).catch(() => {});
+  }, [trackKey]);
+
   return {
+    volume,
+    setVolume,
     session,
     playing,
     positionMs,

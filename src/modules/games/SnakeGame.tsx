@@ -87,7 +87,7 @@ export function SnakeGame({ autoplay, scoreRef, onEnd }: AutoplayProps) {
     const ctx = canvas?.getContext('2d');
     if (!canvas || !ctx) return;
     const accent = cssVar(canvas, '--accent', '#7c5cff');
-    const accent2 = cssVar(canvas, '--accent-2', '#22d3ee');
+    const accent2 = cssVar(canvas, '--text', '#f2f2f4');
     const down = cssVar(canvas, '--down', '#ef4444');
     const line = cssVar(canvas, '--border', 'rgba(255,255,255,0.08)');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -150,24 +150,24 @@ export function SnakeGame({ autoplay, scoreRef, onEnd }: AutoplayProps) {
           <Button icon={RotateCcw} onClick={reset}>{t('games.newGame')}</Button>
         </div>
       </div>
-      <div className="glass relative touch-none select-none overflow-hidden rounded-2xl p-1.5" {...swipe}>
+      <div className="relative rounded-xl bg-layer touch-none select-none overflow-hidden rounded-xl p-1.5" {...swipe}>
         <canvas
           ref={canvasRef}
           width={state.cols * CELL}
           height={state.rows * CELL}
           aria-label={t('games.board')}
-          className="block h-auto w-full rounded-xl bg-surface-2"
+          className="block h-auto w-full rounded-xl bg-layer"
         />
         {(!running || state.over) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-bg/60 backdrop-blur-sm">
-            <p className="text-gradient font-mono text-xl font-bold">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-bg/60">
+            <p className="text-lg font-semibold">
               {state.over ? t('games.snakeOver') : state.score > 0 ? t('games.paused') : t('games.start')}
             </p>
             {state.over && <Button variant="primary" onClick={reset}>{t('games.again')}</Button>}
           </div>
         )}
       </div>
-      <p className="text-center text-sm text-muted">{t('games.hintSnake')}</p>
+      <p className="text-center text-sm text-fg-2">{t('games.hintSnake')}</p>
     </div>
   );
 }

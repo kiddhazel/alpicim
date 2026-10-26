@@ -1,4 +1,4 @@
-﻿import {
+import {
   AppWindow,
   Command,
   Globe,
@@ -10,6 +10,9 @@
   type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { commandsOf } from '../../core/modules/registry';
+import type { PaletteContext } from '../../core/modules/types';
+import { useEnabledPanels, useEnabledWidgetDefs, useModules } from '../../core/modules/useModules';
 import { t, type MessageKey } from '../../i18n';
 import { setOverlay } from '../../shared/lib/overlay';
 import { readKey } from '../../shared/lib/store';
@@ -21,12 +24,9 @@ import { BROWSER_KEYS, sanitizeBookmarks, type Bookmark } from '../browser/brows
 import { launcherService, type LaunchItem } from '../launcher/launcherService';
 import { NOTEBOOK_KEY, notePreview, noteTitle, sanitizeNotebook, sortNotes, type Note } from '../notebook/notebook';
 import { requestNotebook } from '../notebook/notebookService';
-import { LAILA_CHAT_EVENT, LAILA_LEAVE_EVENT } from '../laila/lailaEvents';
-import { screenshotService } from '../screenshot/screenshotService';
 import { useSettings } from '../settings/settings';
-import { WIDGETS } from '../widgets/registry';
 import type { WidgetType } from '../widgets/types';
-import { PANELS, type PanelId } from '../window-manager/panels';
+import type { PanelId } from '../window-manager/panels';
 import type { Workspace } from '../workspaces/workspaces';
 import { useFocus } from '../focus/useFocus';
 import { rankItems,type PaletteGroup, type PaletteItem } from './palette';
@@ -63,6 +63,9 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
   const toast = useToast();
   const [settings] = useSettings();
   const { focus, toggle: toggleFocus } = useFocus();
+  const { active, isEnabled } = useModules();
+  const panels = useEnabledPanels();
+  const widgetDefs = useEnabledWidgetDefs();
   const [query, setQuery] = useState('');
   const [index, setIndex] = useState(0);
   const [apps, setApps] = useState<LaunchItem[]>([]);
@@ -81,28 +84,15 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
     void readKey<unknown>(NOTEBOOK_KEY, null).then((raw) => setNotes(sortNotes(sanitizeNotebook(raw).notes)));
   }, []);
 
+  const moduleCtx = useMemo<PaletteContext>(
+    () => ({ openPanel: commands.openPanel, settings, toast, focus: { on: focus.on, toggle: toggleFocus } }),
+    [commands.openPanel, settings, toast, focus.on, toggleFocus],
+  );
+
   const items = useMemo<PaletteItem[]>(() => {
     const list: PaletteItem[] = [
       { id: 'act:fullscreen', group: 'action', title: t('palette.toggleFullscreen'), keywords: 'tam ekran f11 monitör', run: commands.toggleFullscreen },
       { id: 'act:hide', group: 'action', title: t('palette.hideApp'), keywords: 'gizle tepsi', run: commands.hideApp },
-      ...(isTauri()
-        ? [
-            {
-              id: 'act:screenshot',
-              group: 'action' as const,
-              title: t('palette.screenshot'),
-              keywords: 'ekran görüntüsü ekran alıntısı screenshot snip kırp',
-              run: () => screenshotService.start().catch((err: unknown) => toast.push('error', `${t('screenshot.failed')}: ${describeError(err).description}`)),
-            },
-            {
-              id: 'act:record',
-              group: 'action' as const,
-              title: t('palette.recordScreen'),
-              keywords: 'ekran kaydı video kayıt record',
-              run: () => screenshotService.openRecorder().catch(() => toast.push('error', t('screenshot.recordFailed'))),
-            },
-          ]
-        : []),
       {
         id: 'act:perf',
         group: 'action',
@@ -110,25 +100,11 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
         keywords: 'performans hız animasyon',
         run: commands.togglePerformance,
       },
-      {
-        id: 'act:focus',
-        group: 'action',
-        title: focus.on ? t('focus.paletteOff') : t('focus.paletteOn'),
-        keywords: 'odak focus sessiz dikkat pomodoro',
-        run: toggleFocus,
-      },
-      ...(settings.lailaEnabled
-        ? [
-            { id: 'act:laila-chat', group: 'action' as const, title: t('laila.paletteChat'), keywords: 'laila sohbet konuş', run: () => window.dispatchEvent(new Event(LAILA_CHAT_EVENT)) },
-            ...(settings.lailaDesktop && isTauri()
-              ? [{ id: 'act:laila-leave', group: 'action' as const, title: t('laila.paletteLeave'), keywords: 'laila dışarı masaüstü gez', run: () => window.dispatchEvent(new Event(LAILA_LEAVE_EVENT)) }]
-              : []),
-          ]
-        : []),
+      ...commandsOf(active, moduleCtx),
       { id: 'act:nexttab', group: 'action', title: t('bar.paletteNextTab'), keywords: 'sekme sonraki ctrl tab', run: commands.nextTab },
       { id: 'act:closetab', group: 'action', title: t('bar.paletteCloseTab'), keywords: 'sekme kapat ctrl w', run: commands.closeTab },
       { id: 'act:split', group: 'action', title: t('bar.paletteSplit'), keywords: 'bölünmüş split iki panel', run: commands.toggleSplit },
-      ...PANELS.map<PaletteItem>((p) => ({
+      ...panels.map<PaletteItem>((p) => ({
         id: `panel:${p.id}`,
         group: 'panel',
         title: t(p.titleKey),
@@ -143,7 +119,7 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
         keywords: 'çalışma alanı',
         run: () => commands.switchWorkspace(w.id),
       })),
-      ...WIDGETS.map<PaletteItem>((d) => ({
+      ...widgetDefs.map<PaletteItem>((d) => ({
         id: `widget:${d.type}`,
         group: 'widget',
         title: t('palette.addWidget', { name: t(d.titleKey) }),
@@ -151,7 +127,7 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
         keywords: 'widget ekle',
         run: () => commands.addWidget(d.type),
       })),
-      ...apps.map<PaletteItem>((a) => ({
+      ...(isEnabled('launcher') ? apps : []).map<PaletteItem>((a) => ({
         id: `app:${a.id}`,
         group: 'app',
         title: a.name,
@@ -165,25 +141,14 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
           }
         },
       })),
-      ...bookmarks.map<PaletteItem>((b) => ({
+      ...(isEnabled('browser') ? bookmarks : []).map<PaletteItem>((b) => ({
         id: `bm:${b.url}`,
         group: 'bookmark',
         title: b.title,
         subtitle: b.url,
         run: () => commands.openUrlInBrowser(b.url),
       })),
-      {
-        id: 'act:newnote',
-        group: 'note',
-        title: t('palette.newNote'),
-        subtitle: t('palette.newNoteHint'),
-        keywords: 'not ekle yaz',
-        run: () => {
-          void requestNotebook({ action: 'new' });
-          commands.openPanel('notes');
-        },
-      },
-      ...notes.map<PaletteItem>((n) => ({
+      ...(isEnabled('notes') ? notes : []).map<PaletteItem>((n) => ({
         id: `note:${n.id}`,
         group: 'note',
         title: noteTitle(n) || t('notebook.untitled'),
@@ -196,7 +161,7 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
       })),
     ];
     return list;
-  }, [commands, apps, bookmarks, notes, focus.on, toggleFocus, settings.performanceMode, settings.lailaEnabled, settings.lailaDesktop, settings.launcherFocusExisting, toast]);
+  }, [commands, apps, bookmarks, notes, panels, widgetDefs, active, isEnabled, moduleCtx, settings.performanceMode, settings.launcherFocusExisting, toast]);
 
   const results = useMemo(() => rankItems(items, query, 40), [items, query]);
   useEffect(() => setIndex(0), [query]);
@@ -211,15 +176,15 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-start justify-center bg-black/50 p-6 pt-[12vh] backdrop-blur-md" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-[1000] flex items-start justify-center bg-overlay p-6 pt-[12vh]" onMouseDown={onClose}>
       <div
         role="dialog"
         aria-label={t('palette.title')}
-        className="w-full max-w-xl glass overflow-hidden rounded-3xl"
+        className="w-full max-w-xl overflow-hidden rounded-xl bg-card shadow-[inset_0_0_0_1px_var(--stroke-strong),var(--shadow-pop)]"
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-3 border-b border-line px-5">
-          <Search size={20} className="text-faint" />
+        <div className="flex items-center gap-3 border-b border-stroke px-4">
+          <Search size={16} strokeWidth={1.75} className="text-fg-3" />
           <input
             autoFocus
             value={query}
@@ -240,12 +205,12 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
             }}
             placeholder={t('palette.placeholder')}
             aria-label={t('palette.placeholder')}
-            className="h-14 flex-1 bg-transparent text-md text-fg placeholder:text-faint focus:outline-none"
+            className="h-12 flex-1 bg-transparent text-base text-fg placeholder:text-fg-3 focus:outline-none"
           />
-          <kbd className="rounded-md bg-surface-3 px-1.5 text-xs text-faint">Esc</kbd>
+          <kbd className="rounded-md bg-control px-1.5 text-xs text-fg-2">Esc</kbd>
         </div>
         <ul ref={listRef} role="listbox" className="max-h-[55vh] overflow-y-auto p-2">
-          {results.length === 0 && <li className="px-3 py-8 text-center text-sm text-faint">{t('palette.noResults')}</li>}
+          {results.length === 0 && <li className="px-3 py-8 text-center text-sm text-fg-3">{t('palette.noResults')}</li>}
           {results.map((item, i) => {
             const g = GROUP[item.group];
             const Icon = item.id === 'act:fullscreen' ? Maximize : g.icon;
@@ -255,21 +220,20 @@ export function CommandPalette({ commands, onClose }: { commands: PaletteCommand
                   type="button"
                   onMouseMove={() => setIndex(i)}
                   onClick={() => run(item)}
-                  className={cx('relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left', i === index ? 'bg-accent-soft' : 'hover:bg-surface-2')}
+                  className={cx('relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors duration-150', i === index ? 'bg-accent-soft' : 'hover:bg-card-hover')}
                 >
-                  {i === index && <span aria-hidden className="bg-accent-gradient absolute top-2 bottom-2 left-0 w-[3px] rounded-full" />}
-                  <Icon size={18} className={i === index ? 'text-accent' : 'text-muted'} />
+                  <Icon size={16} strokeWidth={1.75} className={i === index ? 'text-accent' : 'text-fg-2'} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-base">{item.title}</span>
-                    {item.subtitle && <span className="block truncate text-xs text-faint">{item.subtitle}</span>}
+                    {item.subtitle && <span className="block truncate text-xs text-fg-3">{item.subtitle}</span>}
                   </span>
-                  <span className="shrink-0 text-xs text-faint">{t(g.key)}</span>
+                  <span className="shrink-0 text-xs text-fg-3">{t(g.key)}</span>
                 </button>
               </li>
             );
           })}
         </ul>
-        <p className="border-t border-line px-5 py-2.5 text-xs text-faint">{t('palette.footer')}</p>
+        <p className="border-t border-stroke bg-layer px-4 py-2 text-xs text-fg-3">{t('palette.footer')}</p>
       </div>
     </div>
   );

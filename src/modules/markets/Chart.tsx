@@ -10,17 +10,14 @@ interface Props {
   detailed?: boolean;
   label: string;
   digits?: number;
-  /** Alan dolgusu belirgin gradyan olsun (kart sparkline'ı). */
-  rich?: boolean;
   /** Dışarıda tanımlı bir <linearGradient> kimliği; verilirse alan bununla doldurulur. */
   fillId?: string;
 }
 
 /**
- * Bağımlılıksız SVG çizgi grafiği. Yönü (yükseliş/düşüş) rengiyle değil, ilk-son değer farkıyla belirler;
- * renk ek bilgi olarak kullanılır, sayısal değer her zaman ayrıca yazılır.
+ * Bağımlılıksız SVG çizgi grafiği. Sparkline nötr renkli; yön rengi yalnız değişim metninde gösterilir.
  */
-export function LineChart({ points, height = 44, detailed = false, label, digits = 4, rich = false, fillId }: Props) {
+export function LineChart({ points, height = 44, detailed = false, label, digits = 4, fillId }: Props) {
   const gradientId = useId();
   const [hover, setHover] = useState<number | null>(null);
   const width = 300;
@@ -42,10 +39,10 @@ export function LineChart({ points, height = 44, detailed = false, label, digits
   }, [points, height, pad.l, pad.r, pad.t, pad.b]);
 
   if (!geo) {
-    return <div style={{ height }} className="flex items-center justify-center text-xs text-faint" aria-hidden />;
+    return <div style={{ height }} className="flex items-center justify-center text-xs text-fg-3" aria-hidden />;
   }
 
-  const color = geo.up ? 'var(--up)' : 'var(--down)';
+  const color = detailed ? 'var(--accent)' : 'var(--text-3)';
   const lastPoint = points[points.length - 1];
   const lastTop = lastPoint ? (geo.y(lastPoint.v) / height) * 100 : 0;
   const hp = hover !== null ? points[hover] : undefined;
@@ -72,25 +69,25 @@ export function LineChart({ points, height = 44, detailed = false, label, digits
       >
         <defs>
           <linearGradient id={gradientId} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={rich || detailed ? 0.38 : 0.18} />
+            <stop offset="0%" stopColor={color} stopOpacity={detailed ? 0.18 : 0} />
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
         <path d={geo.area} fill={`url(#${fillId ?? gradientId})`} />
-        <path d={geo.line} fill="none" stroke={color} strokeWidth={rich || detailed ? 2.25 : 1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        <path d={geo.line} fill="none" stroke={color} strokeWidth={detailed ? 2 : 1.5} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
         {hp && hover !== null && (
           <line
             x1={geo.x(hover)}
             x2={geo.x(hover)}
             y1={pad.t}
             y2={height - pad.b}
-            stroke="var(--border-strong)"
+            stroke="var(--stroke-strong)"
             vectorEffect="non-scaling-stroke"
           />
         )}
       </svg>
       {detailed && (
-        <div className="tabular mt-0.5 flex justify-between gap-2 text-xs text-faint">
+        <div className="tabular mt-0.5 flex justify-between gap-2 text-xs text-fg-3">
           <span>{points[0]?.t}</span>
           <span>
             {t('wide.chartMin')} {formatNumber(geo.min, digits)} · {t('wide.chartMax')} {formatNumber(geo.max, digits)}
@@ -100,15 +97,15 @@ export function LineChart({ points, height = 44, detailed = false, label, digits
       )}
       {detailed && (
         <>
-          <span className="tabular pointer-events-none absolute top-0 left-1 text-xs text-faint">{formatNumber(geo.max, digits)}</span>
+          <span className="tabular pointer-events-none absolute top-0 left-1 text-xs text-fg-3">{formatNumber(geo.max, digits)}</span>
           <span
-            className="tabular pointer-events-none absolute left-1 text-xs text-faint"
+            className="tabular pointer-events-none absolute left-1 text-xs text-fg-3"
             style={{ bottom: pad.b + 22 }}
           >
             {formatNumber(geo.min, digits)}
           </span>
           <span
-            className="tabular pointer-events-none absolute right-1 -translate-y-1/2 rounded-md bg-surface-3 px-1.5 py-0.5 text-xs font-medium text-fg"
+            className="tabular pointer-events-none absolute right-1 -translate-y-1/2 rounded-md bg-control px-1.5 py-0.5 text-xs font-medium text-fg"
             style={{ top: `${Math.min(88, Math.max(6, lastTop))}%` }}
             title={t('wide.chartLast')}
           >
@@ -117,7 +114,7 @@ export function LineChart({ points, height = 44, detailed = false, label, digits
         </>
       )}
       {detailed && hp && (
-        <div className="tabular pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 rounded bg-surface-3 px-1.5 py-0.5 text-xs text-fg">
+        <div className="tabular pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 rounded bg-control px-1.5 py-0.5 text-xs text-fg">
           {hp.t}: {formatNumber(hp.v, digits)}
         </div>
       )}

@@ -37,7 +37,7 @@ export function WorkspaceSettings() {
           const editing = editId === w.id;
           return (
             <li key={w.id} className="flex items-center gap-2 py-1.5">
-              <Icon size={15} className={w.id === store.activeId ? 'text-accent' : 'text-muted'} />
+              <Icon size={15} className={w.id === store.activeId ? 'text-accent' : 'text-fg-2'} />
               {editing ? (
                 <form
                   className="flex flex-1 gap-1"
@@ -73,7 +73,7 @@ export function WorkspaceSettings() {
                     {w.name}
                     {w.id === store.activeId && <span className="text-xs text-accent"> · {t('palette.active')}</span>}
                   </button>
-                  <span className="text-xs text-faint">{t('workspaces.summary', { panels: w.layout.docked.length, widgets: w.widgets.length })}</span>
+                  <span className="text-xs text-fg-3">{t('workspaces.summary', { panels: w.layout.docked.length, widgets: w.widgets.length })}</span>
                   <IconButton
                     size="sm"
                     icon={Pencil}

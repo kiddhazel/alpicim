@@ -91,7 +91,7 @@ function Scene({ onDismiss }: { onDismiss: () => void }) {
     <div
       role="dialog"
       aria-label={t('screensaver.title')}
-      className="fixed inset-0 z-[90] flex cursor-none select-none flex-col items-center justify-center overflow-hidden bg-bg/85 text-fg backdrop-blur-xl"
+      className="fixed inset-0 z-[90] flex cursor-none select-none flex-col items-center justify-center overflow-hidden bg-bg/85 text-fg"
     >
       <style>{`
         @keyframes ss-rise { from { transform: translate3d(0, 0, 0); opacity: 0; } 10% { opacity: .6; } 90% { opacity: .6; } to { transform: translate3d(var(--ss-drift), -110vh, 0); opacity: 0; } }
@@ -116,13 +116,13 @@ function Scene({ onDismiss }: { onDismiss: () => void }) {
       ))}
 
       <div className="relative flex flex-col items-center gap-3 text-center">
-        <div className="text-gradient text-8xl font-semibold tabular-nums tracking-tight">
+        <div className="text-8xl font-semibold tabular-nums tracking-tight">
           {date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
         </div>
-        <div className="text-lg text-muted">
+        <div className="text-lg text-fg-2">
           {date.toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
         </div>
-        {weather && <div className="text-base text-muted">{weather}</div>}
+        {weather && <div className="text-base text-fg-2">{weather}</div>}
       </div>
 
       <div className="relative mt-12" style={{ width: SPRITE_W * SPRITE_SCALE, height: SPRITE_H * SPRITE_SCALE }}>
@@ -150,7 +150,7 @@ function Scene({ onDismiss }: { onDismiss: () => void }) {
         ))}
       </div>
 
-      <div className="absolute bottom-8 text-sm text-muted">{t('screensaver.dismissHint')}</div>
+      <div className="absolute bottom-8 text-sm text-fg-2">{t('screensaver.dismissHint')}</div>
     </div>
   );
 }

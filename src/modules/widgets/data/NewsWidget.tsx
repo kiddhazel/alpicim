@@ -67,13 +67,13 @@ export function NewsWidget({ config }: WidgetProps<NewsConfig>) {
           <button
             type="button"
             onClick={() => void open(item)}
-            className="w-full px-4 py-2.5 text-left transition-colors hover:bg-surface-3"
+            className="w-full px-4 py-2.5 text-left transition-colors hover:bg-control-hover"
             title={item.summary || item.title}
           >
-            <p className={news.readIds.has(item.id) ? 'line-clamp-2 text-sm text-muted' : 'line-clamp-2 text-sm font-medium'}>
+            <p className={news.readIds.has(item.id) ? 'line-clamp-2 text-sm text-fg-2' : 'line-clamp-2 text-sm font-semibold'}>
               {item.title}
             </p>
-            <p className="text-xs text-faint">
+            <p className="text-xs text-fg-3">
               {item.source} · {formatRelative(item.publishedAt, now)}
             </p>
           </button>
@@ -105,7 +105,7 @@ export function NewsSettings({ config, setConfig }: WidgetSettingsProps<NewsConf
           max={30}
           value={config.count}
           onChange={(e) => setConfig({ count: num(Number(e.target.value), 3, 30, 8) })}
-          className="tabular w-20 text-right"
+          className="tabular-nums w-20 text-right"
         />
       </label>
     </div>

@@ -146,7 +146,7 @@ function MonitorMap({ snapshot }: { snapshot: ReturnType<typeof useDisplay>['sna
           key={m.id}
           className={cx(
             'absolute flex flex-col items-center justify-center rounded border text-xs',
-            m.target ? 'border-accent bg-accent-soft text-accent' : 'border-line-strong bg-surface-3 text-muted',
+            m.target ? 'border-accent bg-accent-soft text-accent' : 'border-stroke-strong bg-control text-fg-2',
           )}
           style={{ left: (m.x - minX) * scale + 2, top: (m.y - minY) * scale + 2, width: m.width * scale - 4, height: m.height * scale - 4 }}
         >
@@ -205,8 +205,8 @@ export function ShortcutSettings() {
 
   return (
     <Group title={t('shortcuts.title')}>
-      <p className="py-3 text-sm text-muted">{t('shortcuts.hint')}</p>
-      {list.length === 0 && <p className="py-3 text-sm text-faint">{t('errors.desktopBody')}</p>}
+      <p className="py-3 text-sm text-fg-2">{t('shortcuts.hint')}</p>
+      {list.length === 0 && <p className="py-3 text-sm text-fg-3">{t('errors.desktopBody')}</p>}
       {list.map((s) => (
         <Row key={s.action} label={t(ACTION_LABELS[s.action])} hint={s.error ?? undefined}>
           <div className="flex items-center gap-1">
@@ -220,7 +220,7 @@ export function ShortcutSettings() {
           </div>
         </Row>
       ))}
-      <p className="py-3 text-xs text-faint">{t('shortcuts.inApp')}</p>
+      <p className="py-3 text-xs text-fg-3">{t('shortcuts.inApp')}</p>
     </Group>
   );
 }

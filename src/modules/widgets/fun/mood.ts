@@ -12,15 +12,17 @@ export interface MoodEntry {
 
 export type MoodLog = Record<string, MoodEntry>;
 
-/** Isı haritası renkleri (iyiden kötüye). */
-export const MOOD_COLORS: Record<MoodId, string> = {
-  great: '#34d399',
-  good: '#a3e635',
-  ok: '#facc15',
-  tired: '#60a5fa',
-  sad: '#a78bfa',
-  angry: '#fb7185',
+/** Isı haritası: tek vurgu rengi, yoğunluk (yüzde) iyiden kötüye azalır. */
+export const MOOD_TINT: Record<MoodId, number> = {
+  great: 90,
+  good: 70,
+  ok: 50,
+  tired: 35,
+  sad: 22,
+  angry: 12,
 };
+
+export const moodTint = (m: MoodId): string => `color-mix(in srgb, var(--accent) ${MOOD_TINT[m]}%, transparent)`;
 
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 

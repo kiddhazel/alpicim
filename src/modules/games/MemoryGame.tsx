@@ -102,7 +102,7 @@ export function MemoryGame({ autoplay, scoreRef, onEnd }: AutoplayProps) {
         <Stat label={t('games.time')} value={fmt(seconds)} />
         <Button icon={RotateCcw} className="ml-auto" onClick={reset}>{t('games.newGame')}</Button>
       </div>
-      <div className="glass relative grid grid-cols-4 gap-2 rounded-2xl p-2" role="grid" aria-label={t('games.board')}>
+      <div className="relative rounded-xl bg-layer grid grid-cols-4 gap-2 rounded-xl p-2" role="grid" aria-label={t('games.board')}>
         {state.cards.map((c) => {
           const Icon = ICONS[c.pair % ICONS.length] as LucideIcon;
           const shown = c.open || c.matched;
@@ -117,9 +117,9 @@ export function MemoryGame({ autoplay, scoreRef, onEnd }: AutoplayProps) {
                 'flex aspect-square items-center justify-center rounded-xl transition-all duration-200',
                 shown
                   ? c.matched
-                    ? 'bg-accent-gradient text-white shadow-[0_0_16px_-4px_var(--accent)]'
-                    : 'bg-surface-3 text-accent shadow-[inset_0_0_0_2px_var(--accent)]'
-                  : 'bg-surface-2 text-transparent shadow-[0_3px_0_var(--border-strong)] hover:-translate-y-0.5 hover:bg-surface-3',
+                    ? 'bg-accent text-on-accent'
+                    : 'bg-control text-accent shadow-[inset_0_0_0_2px_var(--accent)]'
+                  : 'bg-layer text-transparent ring-1 ring-stroke-strong hover:bg-control-hover',
               )}
             >
               <Icon size={28} strokeWidth={2} />
@@ -127,14 +127,14 @@ export function MemoryGame({ autoplay, scoreRef, onEnd }: AutoplayProps) {
           );
         })}
         {done && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-bg/70 backdrop-blur-sm">
-            <p className="text-gradient font-mono text-xl font-bold">{t('games.done')}</p>
-            <p className="text-sm text-muted">{`${t('games.moves')}: ${state.moves} · ${t('games.time')}: ${fmt(seconds)}`}</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-xl bg-bg/80">
+            <p className="text-lg font-semibold">{t('games.done')}</p>
+            <p className="text-sm text-fg-2">{`${t('games.moves')}: ${state.moves} · ${t('games.time')}: ${fmt(seconds)}`}</p>
             <Button variant="primary" onClick={reset}>{t('games.again')}</Button>
           </div>
         )}
       </div>
-      <p className="text-center text-sm text-muted">{t('games.hintMemory')}</p>
+      <p className="text-center text-sm text-fg-2">{t('games.hintMemory')}</p>
     </div>
   );
 }

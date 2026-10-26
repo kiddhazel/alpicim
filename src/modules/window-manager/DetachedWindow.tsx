@@ -34,7 +34,7 @@ export function DetachedWindow({ panel }: { panel: PanelId }) {
   );
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-bg">
       <TitleBar
         title={t(meta.titleKey)}
         icon={meta.icon}
@@ -47,8 +47,8 @@ export function DetachedWindow({ panel }: { panel: PanelId }) {
       >
         <IconButton size="sm" icon={PanelLeftClose} label={t('shell.dock')} onClick={() => void dock()} />
       </TitleBar>
-      <div className="min-h-0 flex-1 p-3">
-        <div className="h-full overflow-hidden glass rounded-3xl">
+      <div className="min-h-0 flex-1 px-4 pb-3">
+        <div className="h-full overflow-hidden rounded-xl">
           <PanelHost panel={panel} onOpenPanel={openPanel} />
         </div>
       </div>

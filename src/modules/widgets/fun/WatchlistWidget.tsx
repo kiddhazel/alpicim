@@ -1,8 +1,8 @@
-import { Dices, Minus, Plus, Trash2 } from 'lucide-react';
+import { Dices, Film, Minus, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { t } from '../../../i18n';
 import { usePersistentState } from '../../../shared/lib/usePersistentState';
-import { Button, cx, IconButton, Segmented, TextInput } from '../../../shared/ui/primitives';
+import { Button, cx, EmptyState, IconButton, List, ListItem, Segmented, TextInput } from '../../../shared/ui/primitives';
 import { celebrate } from '../../fx/confetti';
 import {
   addItem,
@@ -86,18 +86,18 @@ export function WatchlistWidget({ size }: WidgetProps<WatchlistConfig>) {
       <div
         ref={wheelRef}
         className={cx(
-          'flex shrink-0 items-center gap-2 rounded-xl bg-surface-2 px-3',
+          'flex shrink-0 items-center gap-2 rounded-xl bg-control px-3',
           compact ? 'h-12' : 'h-16',
         )}
         aria-live="polite"
       >
-        <Dices size={22} aria-hidden className={cx('shrink-0 text-accent', spinning && 'animate-spin')} />
+        <Dices size={20} aria-hidden className="shrink-0 text-fg-2" />
         <p
           className={cx(
             'min-w-0 flex-1 truncate font-semibold transition-transform',
-            compact ? 'text-sm' : 'text-md',
-            spinning && 'scale-105 text-muted',
-            winner && !spinning && 'text-gradient',
+            compact ? 'text-sm' : 'text-base',
+            spinning && 'scale-105 text-fg-2',
+            winner && !spinning && 'text-fg',
           )}
         >
           {shown ? (winner && !spinning ? t('widgets.watchlist.tonight', { title: shown }) : shown) : t('widgets.watchlist.prompt')}
@@ -138,42 +138,47 @@ export function WatchlistWidget({ size }: WidgetProps<WatchlistConfig>) {
         options={WATCH_STATUSES.map((s) => ({ value: s, label: statusLabel(s) }))}
       />
 
-      <ul className="min-h-0 flex-1 overflow-y-auto">
-        {visible.length === 0 && <li className="py-3 text-center text-sm text-faint">{t('widgets.watchlist.empty')}</li>}
-        {visible.map((i) => (
-          <li key={i.id} className={cx('flex items-center gap-1 rounded-lg px-1 py-1', winner === i.id && 'bg-accent-soft')}>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium" title={i.title}>
-                {i.title}
-              </p>
-              <p className="text-xs text-faint">
-                {t(`widgets.watchlist.${i.kind}`)}
-                {i.kind === 'dizi' && ` · ${progressLabel(i)}`}
-              </p>
-            </div>
-            {i.kind === 'dizi' && (
-              <>
-                <IconButton size="sm" icon={Minus} label={t('widgets.watchlist.episodeDown')} onClick={() => setState((s) => ({ items: bumpEpisode(s.items, i.id, -1) }))} />
-                <IconButton size="sm" icon={Plus} label={t('widgets.watchlist.episodeUp')} onClick={() => setState((s) => ({ items: bumpEpisode(s.items, i.id, 1) }))} />
-                <Button onClick={() => setState((s) => ({ items: nextSeason(s.items, i.id) }))}>{t('widgets.watchlist.nextSeason')}</Button>
-              </>
-            )}
-            <select
-              className="h-[30px] rounded-lg bg-surface-2 px-1 text-sm"
-              value={i.status}
-              aria-label={t('widgets.watchlist.statusLabel')}
-              onChange={(e) => setState((s) => ({ items: setStatus(s.items, i.id, e.target.value as WatchStatus) }))}
-            >
-              {WATCH_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {statusLabel(s)}
-                </option>
-              ))}
-            </select>
-            <IconButton size="sm" tone="danger" icon={Trash2} label={t('common.remove')} onClick={() => setState((s) => ({ items: removeItem(s.items, i.id) }))} />
-          </li>
-        ))}
-      </ul>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {visible.length === 0 ? (
+          <EmptyState icon={Film} title={t('widgets.watchlist.empty')} className="!py-4" />
+        ) : (
+          <List>
+            {visible.map((i) => (
+              <ListItem
+                key={i.id}
+                dense
+                selected={winner === i.id}
+                title={i.title}
+                subtitle={`${t(`widgets.watchlist.${i.kind}`)}${i.kind === 'dizi' ? ` · ${progressLabel(i)}` : ''}`}
+                trailing={
+                  <span className="flex items-center gap-1">
+                    {i.kind === 'dizi' && (
+                      <>
+                        <IconButton size="sm" icon={Minus} label={t('widgets.watchlist.episodeDown')} onClick={() => setState((s) => ({ items: bumpEpisode(s.items, i.id, -1) }))} />
+                        <IconButton size="sm" icon={Plus} label={t('widgets.watchlist.episodeUp')} onClick={() => setState((s) => ({ items: bumpEpisode(s.items, i.id, 1) }))} />
+                        <Button onClick={() => setState((s) => ({ items: nextSeason(s.items, i.id) }))}>{t('widgets.watchlist.nextSeason')}</Button>
+                      </>
+                    )}
+                    <select
+                      className="h-7 rounded-lg bg-control px-1 text-sm text-fg"
+                      value={i.status}
+                      aria-label={t('widgets.watchlist.statusLabel')}
+                      onChange={(e) => setState((s) => ({ items: setStatus(s.items, i.id, e.target.value as WatchStatus) }))}
+                    >
+                      {WATCH_STATUSES.map((st) => (
+                        <option key={st} value={st}>
+                          {statusLabel(st)}
+                        </option>
+                      ))}
+                    </select>
+                    <IconButton size="sm" tone="danger" icon={Trash2} label={t('common.remove')} onClick={() => setState((s) => ({ items: removeItem(s.items, i.id) }))} />
+                  </span>
+                }
+              />
+            ))}
+          </List>
+        )}
+      </div>
     </div>
   );
 }

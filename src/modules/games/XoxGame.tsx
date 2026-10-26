@@ -80,7 +80,7 @@ export function XoxGame() {
         <Button icon={RotateCcw} className="ml-auto" onClick={reset}>{winner ? t('games.again') : t('games.newGame')}</Button>
       </div>
       <LailaFace mood={mood} line={line} />
-      <div role="grid" aria-label={t('games.board')} className="glass mx-auto grid w-full max-w-xs grid-cols-3 gap-2 rounded-2xl p-2">
+      <div role="grid" aria-label={t('games.board')} className="mx-auto rounded-xl bg-layer grid w-full max-w-xs grid-cols-3 gap-2 rounded-xl p-2">
         {board.map((m, i) => (
           <button
             key={i}
@@ -88,9 +88,9 @@ export function XoxGame() {
             aria-label={`${t('games.card')} ${i + 1}`}
             onClick={() => click(i)}
             className={cx(
-              'flex aspect-square items-center justify-center rounded-xl bg-surface-2 transition-colors',
-              !m && !winner && !lailaTurn && 'hover:bg-surface-3',
-              m === 'X' ? 'text-accent' : 'text-accent-2',
+              'flex aspect-square items-center justify-center rounded-xl bg-layer transition-colors',
+              !m && !winner && !lailaTurn && 'hover:bg-control-hover',
+              m === 'X' ? 'text-accent' : 'text-fg-2',
             )}
           >
             {m === 'X' && <X size={36} strokeWidth={2.5} />}
@@ -98,7 +98,7 @@ export function XoxGame() {
           </button>
         ))}
       </div>
-      <p className="text-center text-sm text-muted">{t('games.hintXox')}</p>
+      <p className="text-center text-sm text-fg-2">{t('games.hintXox')}</p>
     </div>
   );
 }

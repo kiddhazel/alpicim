@@ -27,8 +27,8 @@ export function FortuneWidget({ size }: WidgetProps<FortuneConfig>) {
       {opened ? (
         <>
           <Cookie size={big ? 48 : 36} className="shrink-0 text-accent" aria-hidden />
-          <p className={big ? 'text-md leading-relaxed font-medium' : 'text-sm leading-relaxed font-medium'}>{text}</p>
-          <p className="text-xs text-faint">{t('widgets.fortune.tomorrow')}</p>
+          <p className={big ? 'text-base leading-relaxed font-semibold' : 'text-sm leading-relaxed font-semibold'}>{text}</p>
+          <p className="text-xs text-fg-3">{t('widgets.fortune.tomorrow')}</p>
         </>
       ) : (
         <>

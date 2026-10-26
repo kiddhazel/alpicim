@@ -45,8 +45,8 @@ function fmt(f: Intl.DateTimeFormat, key: string): string {
 function EventRow({ ev, showDate, onRemove }: { ev: CalendarEvent; showDate?: boolean; onRemove: (id: string) => void }) {
   const readOnly = ev.source === 'ics';
   return (
-    <li className="group flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-surface-3">
-      <span className="w-[72px] shrink-0 text-xs text-accent tabular-nums">
+    <li className="group flex items-center gap-2 rounded-lg px-1.5 py-1 hover:bg-control-hover">
+      <span className="w-[72px] shrink-0 text-xs text-accent tabular-nums-nums">
         {showDate ? fmt(SHORT_FMT, ev.date) : ''}
         {showDate && ev.time ? ' ' : ''}
         {ev.time ?? (showDate ? '' : t('widgets.calendar.allDay'))}
@@ -55,7 +55,7 @@ function EventRow({ ev, showDate, onRemove }: { ev: CalendarEvent; showDate?: bo
         {ev.title}
       </span>
       {readOnly ? (
-        <span title={t('widgets.calendar.icsReadOnly')} className="shrink-0 rounded-md bg-surface-3 px-1.5 py-0.5 text-xs text-muted">
+        <span title={t('widgets.calendar.icsReadOnly')} className="shrink-0 rounded-md bg-control px-1.5 py-0.5 text-xs text-fg-2">
           {t('widgets.calendar.icsBadge')}
         </span>
       ) : (
@@ -63,7 +63,7 @@ function EventRow({ ev, showDate, onRemove }: { ev: CalendarEvent; showDate?: bo
           type="button"
           aria-label={t('common.remove')}
           onClick={() => onRemove(ev.id)}
-          className="rounded p-1 text-faint opacity-0 group-hover:opacity-100 hover:text-down focus:opacity-100"
+          className="rounded p-1 text-fg-3 opacity-0 group-hover:opacity-100 hover:text-down focus:opacity-100"
         >
           <X size={14} />
         </button>
@@ -106,7 +106,7 @@ export function CalendarWidget({ config, setConfig, size, active }: WidgetProps<
         value={time}
         onChange={(e) => setTime(e.target.value)}
         aria-label={t('widgets.calendar.time')}
-        className="h-[30px] w-[88px] shrink-0 rounded-lg bg-surface-2 px-1.5 text-sm text-fg shadow-[inset_0_0_0_1px_var(--glass-edge)] focus:outline-none focus:ring-2 focus:ring-accent/40"
+        className="h-[30px] w-[88px] shrink-0 rounded-lg bg-control px-1.5 text-sm text-fg shadow-[inset_0_0_0_1px_var(--stroke)] focus:outline-none focus:ring-2 focus:ring-accent/40"
       />
       <TextInput
         value={title}
@@ -124,12 +124,12 @@ export function CalendarWidget({ config, setConfig, size, active }: WidgetProps<
     return (
       <div className="flex h-full flex-col px-3 pb-2">
         <div className="flex items-baseline justify-between px-1">
-          <span className="text-sm font-medium capitalize">{fmt(DAY_FMT, today)}</span>
-          <span className="text-xs text-faint">{t('widgets.calendar.todayCount', { n: eventsOn(events, today).length })}</span>
+          <span className="text-sm font-semibold capitalize">{fmt(DAY_FMT, today)}</span>
+          <span className="text-xs text-fg-3">{t('widgets.calendar.todayCount', { n: eventsOn(events, today).length })}</span>
         </div>
-        <p className="px-1 pt-1.5 text-xs text-muted">{t('widgets.calendar.upcoming')}</p>
+        <p className="px-1 pt-1.5 text-xs text-fg-2">{t('widgets.calendar.upcoming')}</p>
         <ul className="min-h-0 flex-1 overflow-y-auto">
-          {list.length === 0 && <li className="px-1 py-2 text-sm text-faint">{t('widgets.calendar.noUpcoming')}</li>}
+          {list.length === 0 && <li className="px-1 py-2 text-sm text-fg-3">{t('widgets.calendar.noUpcoming')}</li>}
           {list.map((ev) => (
             <EventRow key={ev.id} ev={ev} showDate onRemove={remove} />
           ))}
@@ -147,7 +147,7 @@ export function CalendarWidget({ config, setConfig, size, active }: WidgetProps<
           <IconButton size="sm" icon={ChevronLeft} label={t('widgets.calendar.prev')} onClick={() => setView((v) => addMonths(v.year, v.month, -1))} />
           <button
             type="button"
-            className="text-sm font-medium capitalize hover:text-accent"
+            className="text-sm font-semibold capitalize hover:text-accent"
             title={t('widgets.calendar.goToday')}
             onClick={() => {
               const d = new Date();
@@ -159,7 +159,7 @@ export function CalendarWidget({ config, setConfig, size, active }: WidgetProps<
           </button>
           <IconButton size="sm" icon={ChevronRight} label={t('widgets.calendar.next')} onClick={() => setView((v) => addMonths(v.year, v.month, 1))} />
         </div>
-        <div className="grid grid-cols-7 text-center text-xs text-faint">
+        <div className="grid grid-cols-7 text-center text-xs text-fg-3">
           {WEEKDAYS.map((w) => (
             <span key={w} className="py-0.5 capitalize">
               {w}
@@ -175,10 +175,10 @@ export function CalendarWidget({ config, setConfig, size, active }: WidgetProps<
               aria-label={fmt(DAY_FMT, c.date)}
               aria-pressed={c.date === day}
               className={cx(
-                'relative flex items-center justify-center rounded-lg text-sm tabular-nums transition-colors hover:bg-surface-3',
-                !c.inMonth && 'text-faint',
+                'relative flex items-center justify-center rounded-lg text-sm tabular-nums-nums transition-colors hover:bg-control-hover',
+                !c.inMonth && 'text-fg-3',
                 c.date === today && 'ring-2 ring-accent',
-                c.date === day && 'bg-surface-3 font-semibold',
+                c.date === day && 'bg-control font-semibold',
               )}
             >
               {c.day}
@@ -188,15 +188,15 @@ export function CalendarWidget({ config, setConfig, size, active }: WidgetProps<
         </div>
       </div>
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <p className="px-1 pb-1 text-sm font-medium capitalize">{fmt(DAY_FMT, day)}</p>
+        <p className="px-1 pb-1 text-sm font-semibold capitalize">{fmt(DAY_FMT, day)}</p>
         <ul className="min-h-0 flex-1 overflow-y-auto">
-          {dayEvents.length === 0 && <li className="px-1 py-2 text-sm text-faint">{t('widgets.calendar.noEvents')}</li>}
+          {dayEvents.length === 0 && <li className="px-1 py-2 text-sm text-fg-3">{t('widgets.calendar.noEvents')}</li>}
           {dayEvents.map((ev) => (
             <EventRow key={ev.id} ev={ev} onRemove={remove} />
           ))}
           {soon.length > 0 && (
             <>
-              <li className="px-1 pt-2 text-xs text-muted">{t('widgets.calendar.upcoming')}</li>
+              <li className="px-1 pt-2 text-xs text-fg-2">{t('widgets.calendar.upcoming')}</li>
               {soon.slice(0, 5).map((ev) => (
                 <EventRow key={`u${ev.id}`} ev={ev} showDate onRemove={remove} />
               ))}

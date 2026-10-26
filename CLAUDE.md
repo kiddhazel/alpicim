@@ -1,7 +1,7 @@
 # CLAUDE.md — Alpicim
 
 Kişisel Windows masaüstü kontrol merkezi: haberler, kur/borsa, uygulama başlatıcı; kenarlıksız, ayrılabilir pencereler.
-Ayrıntılı plan: `docs/implementation-plan.md`. Kullanıcı belgeleri: `README.md` (Türkçe).
+Ayrıntılı plan: `docs/dev/history-implementation-plan.md` (tarihsel), ajan notları: `docs/dev/agent-brief.md`. Kullanıcı belgeleri: `README.md` (Türkçe).
 
 ## Komutlar
 
@@ -22,6 +22,8 @@ Ayrıntılı plan: `docs/implementation-plan.md`. Kullanıcı belgeleri: `README
 ```
 src/
   App.tsx                    Pencere etiketine göre: "main" → Shell, "panel-<id>" → DetachedWindow
+  core/modules/              manifest kayıt defteri (index.ts, registry.ts, types.ts), useModules (etkin/kapalı, "modules" anahtarı),
+                             ModuleServices (etkin modüllerin arka plan servislerini bağlar)
   i18n/                      tr.ts (tüm metinler) + t() — anahtarlar derleme zamanında denetlenir
   shared/lib/                tauri.ts (call/AppError), store.ts (kalıcı KV + pencereler arası olay),
                              usePersistentState, net.ts (Rust net_get sarmalayıcı), time.ts, hooks.ts
@@ -51,6 +53,8 @@ src/
                              "browser.tabs" anahtarı), useTabAdblock (kalkan), BrowserPanel/TabStrip/BrowserPane/StartPage;
                              adblockService (Rust sözleşmesi), useAdblock + AdblockSettings (Ayarlar → Reklam engelleyici)
   modules/apps/              embedService, useEmbeddedApps, AppsPanel, WindowPicker (pencere gömme)
+  modules/{achievements,focus,fx,games,gpu,laila,library,mixer,podcasts,quick,radio,room,screensaver,screenshot,watchlist,design}/
+                             eğlence/araç modülleri: her biri manifest.ts + kendi panel/servis dosyaları; `design` = galeri (?panel=__design)
   modules/palette/           palette.ts (saf sıralama), CommandPalette (Ctrl+K)
   modules/ticker/            ticker.ts (saf seçim/biçim), useTicker, TickerBar (alt çubuk: kurlar + kayan haberler)
   modules/music/MiniPlayer   useMiniPlayer: arama (music_search), SMTC denetimleri, ilerleme, genişletilmiş oynatıcı
@@ -90,13 +94,14 @@ Veri konumları (Windows): `%APPDATA%\com.alperen.alpicim\` → `alpicim.json` (
 
 ## Kurallar
 
-- **Tasarım**: `docs/design-system.md` bağlayıcıdır (v0.4 "Aurora": `glass`, `bg-accent-gradient`, `text-gradient`
-  yardımcıları; yarı saydam yüzey belirteçleri; en küçük metin 12px; panel başına tek araç çubuğu). Kabuk kökü opak
-  zemin boyamaz (aurora `body` üzerinde). Keyfî `text-[11px]` gibi boyutlar yazılmaz.
+- **Tasarım**: `docs/design-system.md` (v1.0) bağlayıcıdır: gradyan/cam/`backdrop-blur`/widget başına renk/emoji yok; yalnız
+  belirteçler (`bg-card`, `bg-layer`, `bg-control`, `border-stroke`, `text-fg-2/3`, tek `accent`) ve `shared/ui` bileşenleri
+  (`Card`, `List`, `EmptyState`, `Toolbar`, `Tabs`, `Dialog`…); en küçük metin 12px; panel başına tek araç çubuğu.
 
 - **İş mantığı bileşenlerde değil**: servis/adaptör/hook katmanında. Bileşenler yalnız durum + görünüm.
-- **Yeni panel**: `panels.ts` kaydı + `PanelHost.tsx` eşlemesi + `windows.rs` → `PANELS` + `tr.ts` başlığı.
-- **Yeni widget**: ayrı bileşen + `defaults`/`sanitize` + `widgets/registry.ts` kaydı + `workspaces.ts` → `WIDGET_TYPES` + `tr.ts`.
+- **Yeni modül**: `modules/<ad>/manifest.ts` + `core/modules/index.ts` kaydı (+ panel ise `windows.rs` → `PANELS`) + `tr.ts`
+  metinleri. Panel/widget/ayar bölümü/palet komutu/servis manifestten türetilir; widget için ayrıca `defaults`/`sanitize` +
+  `workspaces.ts` → `WIDGET_TYPES`.
 - **Yerel yüzeyler** (alt webview, gömülü pencere) HTML'in üstünde çizilir: HTML katman açan her bileşen `setOverlay` çağırmalı.
 - **Yeni piyasa sağlayıcısı**: `adapters/provider.ts` arayüzlerinden birini uygulayan ayrı dosya; anahtar gerekiyorsa
   `providers.rs::PROVIDERS` (kimlik, sunucu, başlık/sorgu biçimi) güncellenir. Anahtar asla webview'e dönmez.

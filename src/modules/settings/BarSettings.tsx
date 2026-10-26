@@ -15,7 +15,7 @@ export function BarSettings() {
   return (
     <Group title={t('bar.title')}>
       <Row label={t('bar.ticker')} hint={t('bar.tickerHint')}>
-        <Toggle checked={settings.barTicker} label={t('bar.ticker')} onChange={(v) => set('barTicker', v)} />
+        <Toggle checked={settings.barTicker} label={t('bar.ticker')} onChange={(v) => setSettings((s) => ({ ...s, barTicker: v, barTickerSet: true }))} />
       </Row>
       <Row label={t('bar.player')} hint={t('bar.playerHint')}>
         <Toggle checked={settings.barPlayer} label={t('bar.player')} onChange={(v) => set('barPlayer', v)} />

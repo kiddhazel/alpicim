@@ -158,6 +158,7 @@ pub fn run() {
             music::music_is_open,
             music::music_action,
             music::music_set_muted,
+            music::music_set_volume,
             music::music_search,
             system::system_stats,
             system::autostart_get,

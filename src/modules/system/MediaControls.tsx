@@ -36,11 +36,11 @@ export function MediaControls({ compact, preferOwn = true, className }: { compac
         {session && session.title ? (
           <p className="truncate text-sm" title={`${session.title} — ${session.artist} (${sourceName(session.appId)})`}>
             <span className="font-medium text-fg">{session.title}</span>
-            {session.artist && <span className="text-muted"> · {session.artist}</span>}
-            {!session.own && <span className="text-faint"> · {sourceName(session.appId)}</span>}
+            {session.artist && <span className="text-fg-2"> · {session.artist}</span>}
+            {!session.own && <span className="text-fg-3"> · {sourceName(session.appId)}</span>}
           </p>
         ) : (
-          <p className="truncate text-sm text-faint">{t('media.none')}</p>
+          <p className="truncate text-sm text-fg-3">{t('media.none')}</p>
         )}
       </div>
     </div>

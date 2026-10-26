@@ -53,7 +53,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <div
               key={item.id}
               role={item.tone === 'error' ? 'alert' : 'status'}
-              className="glass pointer-events-auto flex items-start gap-2 rounded-2xl px-3.5 py-3"
+              className="pointer-events-auto flex items-start gap-2 rounded-xl bg-raised px-3.5 py-3 shadow-pop ring-1 ring-stroke-strong"
             >
               <Icon
                 size={16}
@@ -86,7 +86,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 type="button"
                 aria-label={t('common.close')}
                 onClick={() => dismiss(item.id)}
-                className="text-faint hover:text-fg"
+                className="text-fg-3 hover:text-fg"
               >
                 <X size={14} />
               </button>

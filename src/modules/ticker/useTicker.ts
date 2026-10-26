@@ -1,7 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { t } from '../../i18n';
-import { useInterval } from '../../shared/lib/hooks';
+import { useInterval, useNow } from '../../shared/lib/hooks';
 import { isTauri } from '../../shared/lib/tauri';
 import { useToast } from '../../shared/ui/Toast';
 import { useMarkets } from '../markets/useMarkets';
@@ -31,6 +31,7 @@ export function useTicker() {
   const news = useNews(settings.newsRefreshMinutes);
   const markets = useMarkets(settings.marketsRefreshSeconds);
   const toast = useToast();
+  const now = useNow();
   const reduced = useReducedMotion();
   const animate = !settings.performanceMode && !reduced;
 
@@ -61,5 +62,5 @@ export function useTicker() {
     [markRead, toast],
   );
 
-  return { quotes, headlines, current, animate, durationSec, openHeadline, newsLoaded: news.loaded };
+  return { now, quotes, headlines, current, animate, durationSec, openHeadline, newsLoaded: news.loaded };
 }

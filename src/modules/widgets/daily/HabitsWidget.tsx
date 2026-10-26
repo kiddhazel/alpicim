@@ -57,7 +57,7 @@ export function HabitsWidget({ config, setConfig, size }: WidgetProps<HabitsConf
   return (
     <div className="flex h-full flex-col">
       {habits.length > 0 && showWeek && (
-        <div className="flex items-center gap-2.5 px-4 pb-1 text-xs text-faint">
+        <div className="flex items-center gap-2.5 px-4 pb-1 text-xs text-fg-3">
           <span className="min-w-0 flex-1">{t('widgets.habits.summary', { done: doneToday, total: habits.length })}</span>
           <span className="flex gap-1" aria-hidden>
             {week.map((d) => (
@@ -70,7 +70,7 @@ export function HabitsWidget({ config, setConfig, size }: WidgetProps<HabitsConf
         </div>
       )}
       <ul className="min-h-0 flex-1 overflow-y-auto px-2">
-        {habits.length === 0 && <li className="px-2 py-3 text-center text-sm text-faint">{t('widgets.habits.empty')}</li>}
+        {habits.length === 0 && <li className="px-2 py-3 text-center text-sm text-fg-3">{t('widgets.habits.empty')}</li>}
         {habits.map((h) => {
           const done = isDone(h, today);
           const stats = habitStats(h, today);
@@ -78,12 +78,12 @@ export function HabitsWidget({ config, setConfig, size }: WidgetProps<HabitsConf
             stats.unit === 'day' ? t('widgets.habits.streakDay', { n: stats.streak }) : t('widgets.habits.streakWeek', { n: stats.streak });
           const bestText = t('widgets.habits.bestLine', { n: stats.best });
           return (
-            <li key={h.id} className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 hover:bg-surface-3">
+            <li key={h.id} className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 hover:bg-control-hover">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium" title={`${h.name} · ${goalText(h.goal)}`}>
+                <p className="truncate text-sm font-semibold" title={`${h.name} · ${goalText(h.goal)}`}>
                   {h.name}
                 </p>
-                <p className="flex min-w-0 items-center gap-1 text-xs text-faint" title={goalText(h.goal)}>
+                <p className="flex min-w-0 items-center gap-1 text-xs text-fg-3" title={goalText(h.goal)}>
                   <Flame size={12} className={stats.streak > 0 ? 'shrink-0 text-warn' : 'shrink-0'} />
                   <span className="truncate">
                     {streakText} · {bestText}
@@ -96,7 +96,7 @@ export function HabitsWidget({ config, setConfig, size }: WidgetProps<HabitsConf
                       <span
                         key={d}
                         title={DAY_FMT.format(dayDate(d))}
-                        className={cx('h-1.5 w-1.5 rounded-full', isDone(h, d) ? 'bg-accent' : 'bg-surface-3', d === today && 'ring-1 ring-accent')}
+                        className={cx('h-1.5 w-1.5 rounded-full', isDone(h, d) ? 'bg-accent' : 'bg-control', d === today && 'ring-1 ring-accent')}
                       />
                     ))}
                   </div>
@@ -119,7 +119,7 @@ export function HabitsWidget({ config, setConfig, size }: WidgetProps<HabitsConf
                         onClick={(e) => (on ? set(toggleDay(habits, h.id, d, today)) : mark(e, h.id, d))}
                         className={cx(
                           'h-4 w-4 rounded-full transition-colors',
-                          on ? 'bg-accent-gradient' : 'bg-surface-3 hover:bg-accent-soft',
+                          on ? 'bg-accent text-on-accent' : 'bg-control hover:bg-accent-soft',
                           d === today && 'ring-1 ring-accent ring-offset-1 ring-offset-transparent',
                         )}
                       />
@@ -136,8 +136,8 @@ export function HabitsWidget({ config, setConfig, size }: WidgetProps<HabitsConf
                 className={cx(
                   'flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all',
                   done
-                    ? 'bg-accent-gradient text-white shadow-[0_0_16px_-4px_var(--accent)]'
-                    : 'text-faint shadow-[inset_0_0_0_1.5px_var(--glass-edge)] hover:bg-accent-soft hover:text-accent',
+                    ? 'bg-accent text-on-accent'
+                    : 'text-fg-3 shadow-[inset_0_0_0_1.5px_var(--stroke)] hover:bg-accent-soft hover:text-accent',
                 )}
               >
                 <Check size={16} strokeWidth={2.5} />

@@ -39,7 +39,8 @@ describe('ayarlar', () => {
   it('alt çubuk ayarlarını doğrular', () => {
     const bad = sanitizeSettings({ barTicker: 'x', barPlayer: 0, tickerSpeed: 'ışık', tickerCategory: 'yok', tickerQuotes: 99 });
     expect(bad).toMatchObject({ barTicker: true, barPlayer: true, tickerSpeed: 'normal', tickerCategory: 'all', tickerQuotes: 8 });
-    const ok = sanitizeSettings({ barTicker: false, barPlayer: false, tickerSpeed: 'fast', tickerCategory: 'spor', tickerQuotes: -3 });
+    const ok = sanitizeSettings({ barTicker: false, barTickerSet: true, barPlayer: false, tickerSpeed: 'fast', tickerCategory: 'spor', tickerQuotes: -3 });
+    expect(sanitizeSettings({ barTicker: false })).toMatchObject({ barTicker: true });
     expect(ok).toMatchObject({ barTicker: false, barPlayer: false, tickerSpeed: 'fast', tickerCategory: 'spor', tickerQuotes: 0 });
   });
 });

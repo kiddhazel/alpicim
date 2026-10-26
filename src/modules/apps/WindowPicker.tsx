@@ -47,11 +47,11 @@ export function WindowPicker({
   }, [list, q]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-6 backdrop-blur-sm pt-[8vh]" onMouseDown={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-overlay p-6 pt-[8vh]" onMouseDown={onClose}>
       <div
         role="dialog"
         aria-label={t('apps.pickerTitle')}
-        className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl"
+        className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-card shadow-pop ring-1 ring-stroke-strong"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-4 py-3">
@@ -60,10 +60,10 @@ export function WindowPicker({
           <IconButton icon={RefreshCw} label={t('news.refresh')} onClick={load} />
           <IconButton icon={X} label={t('common.close')} onClick={onClose} />
         </div>
-        <div className="border-b border-line px-4 pb-3">
-          <p className="mb-2 text-sm text-muted">{t('apps.pickerHint')}</p>
+        <div className="border-b border-stroke px-4 pb-3">
+          <p className="mb-2 text-sm text-fg-2">{t('apps.pickerHint')}</p>
           <div className="relative">
-            <Search size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-faint" />
+            <Search size={15} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-3" />
             <TextInput value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('apps.searchPlaceholder')} className="h-9 w-full pl-9 text-sm" autoFocus />
           </div>
         </div>
@@ -75,15 +75,15 @@ export function WindowPicker({
           ) : filtered.length === 0 ? (
             <StateView kind="empty" title={t('apps.noWindows')} compact />
           ) : (
-            <ul className="divide-y divide-line">
+            <ul className="divide-y divide-stroke">
               {filtered.map((w) => (
                 <li key={w.hwnd} className="flex items-center gap-3 px-4 py-3">
-                  <AppWindow size={18} className={w.embeddable ? 'text-accent' : 'text-faint'} />
+                  <AppWindow size={18} className={w.embeddable ? 'text-accent' : 'text-fg-3'} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-base font-medium" title={w.title}>
                       {w.title}
                     </p>
-                    <p className="truncate text-xs text-muted" title={w.exePath}>
+                    <p className="truncate text-xs text-fg-2" title={w.exePath}>
                       {w.processName || '?'}
                       {w.reason && <span className="text-warn"> · {w.reason}</span>}
                     </p>
@@ -103,7 +103,7 @@ export function WindowPicker({
             </ul>
           )}
         </div>
-        <p className="border-t border-line px-4 py-2 text-xs text-faint">{t('apps.warning')}</p>
+        <p className="border-t border-stroke px-4 py-2 text-xs text-fg-3">{t('apps.warning')}</p>
       </div>
     </div>
   );

@@ -43,7 +43,7 @@ export interface WorkspaceStore {
 export const WORKSPACES_KEY = 'workspaces';
 
 const ICONS: readonly WorkspaceIcon[] = ['home', 'briefcase', 'newspaper', 'music', 'star'];
-const WIDGET_TYPES: readonly WidgetType[] = [
+export const WIDGET_TYPES: readonly WidgetType[] = [
   'clock',
   'weather',
   'notes',

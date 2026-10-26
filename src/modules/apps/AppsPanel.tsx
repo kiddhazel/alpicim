@@ -68,7 +68,7 @@ export function AppsPanel({ onOpenSettings }: { onOpenSettings: () => void }) {
       )}
 
       {/* Gömülü pencere bu alanın üstüne yerleştirilir. */}
-      <div ref={contentRef} className="relative min-h-0 flex-1 bg-surface">
+      <div ref={contentRef} className="relative min-h-0 flex-1 bg-card">
         {apps.tabs.length === 0 ? (
           <StateView
             kind="empty"
@@ -91,7 +91,7 @@ export function AppsPanel({ onOpenSettings }: { onOpenSettings: () => void }) {
             onRemove={() => void apps.detach(active)}
           />
         ) : (
-          <p className="p-4 text-sm text-faint">{t('apps.hiddenWhileMenu')}</p>
+          <p className="p-4 text-sm text-fg-3">{t('apps.hiddenWhileMenu')}</p>
         )}
       </div>
 
@@ -119,7 +119,7 @@ function TabButton({ tab, selected, missing, onSelect }: { tab: AppTab; selected
       title={tab.title}
       className={cx(
         'flex h-9 max-w-48 shrink-0 items-center gap-1.5 rounded-lg px-3 text-sm transition-colors',
-        selected ? 'bg-surface-3 text-fg' : 'text-muted hover:bg-surface-2 hover:text-fg',
+        selected ? 'bg-control text-fg' : 'text-fg-2 hover:bg-control hover:text-fg',
         missing && 'opacity-60',
       )}
     >
@@ -151,9 +151,9 @@ function AppCard({
       <AppWindow size={32} strokeWidth={1.5} className="text-accent" />
       <div>
         <p className="text-lg font-semibold">{appName(tab)}</p>
-        <p className="max-w-md truncate text-sm text-muted">{tab.title}</p>
+        <p className="max-w-md truncate text-sm text-fg-2">{tab.title}</p>
       </div>
-      <p className="max-w-md text-sm text-muted">
+      <p className="max-w-md text-sm text-fg-2">
         {missing ? t('apps.missingBody') : idle ? t('apps.idleBody') : tab.mode === 'card' ? t('apps.cardBody') : t('common.loading')}
       </p>
       <div className="flex flex-wrap justify-center gap-2">

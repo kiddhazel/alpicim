@@ -205,13 +205,13 @@ export function LauncherPanel() {
     <div className="@container flex h-full flex-col">
       <div className="flex shrink-0 items-center justify-center gap-2 px-4 pt-4 pb-3">
         <div className="relative w-full max-w-xl">
-          <Search size={20} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-faint" />
+          <Search size={20} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-fg-3" />
           <TextInput
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('launcher.searchPlaceholder')}
             aria-label={t('launcher.searchPlaceholder')}
-            className="h-12 w-full rounded-2xl pl-11 text-base"
+            className="h-12 w-full rounded-xl pl-11 text-base"
           />
         </div>
         <IconButton icon={ScanSearch} label={t('launcher.scan')} onClick={() => setScanning(true)} />
@@ -241,7 +241,7 @@ export function LauncherPanel() {
       </div>
 
       {editing && (
-        <p className="shrink-0 bg-surface-2 px-4 py-2 text-sm text-muted">
+        <p className="shrink-0 bg-layer px-4 py-2 text-sm text-fg-2">
           {canReorder ? t('launcher.editHint') : t('launcher.reorderDisabled')}
         </p>
       )}
@@ -256,7 +256,7 @@ export function LauncherPanel() {
               onClick={() => setFilter(f.key)}
               className={cx(
                 'flex h-10 items-center gap-2 rounded-xl px-3 text-left text-base transition-colors',
-                filter === f.key ? 'bg-accent-soft font-medium text-accent' : 'text-muted hover:bg-surface-3 hover:text-fg',
+                filter === f.key ? 'bg-accent-soft font-medium text-accent' : 'text-fg-2 hover:bg-card-hover hover:text-fg',
               )}
             >
               {f.icon && <Star size={16} className="shrink-0" />}
@@ -295,7 +295,7 @@ export function LauncherPanel() {
               <div className="flex flex-col gap-8">
                 {showQuick && recentItems.length > 0 && (
                   <section aria-label={t('redesign.recentHero')}>
-                    <h4 className="mb-3 px-2 text-sm font-semibold text-muted">{t('redesign.recentHero')}</h4>
+                    <h4 className="mb-3 px-2 text-sm font-semibold text-fg-2">{t('redesign.recentHero')}</h4>
                     <ul className="flex gap-4 overflow-x-auto pb-1">
                       {recentItems.map((item) => (
                         <li key={item.id} className="w-36 shrink-0">
@@ -307,7 +307,7 @@ export function LauncherPanel() {
                 )}
                 {showQuick && topItems.length > 0 && (
                   <section aria-label={t('wide.launcherTop')}>
-                    <h4 className="mb-3 px-2 text-sm font-semibold text-muted">{t('wide.launcherTop')}</h4>
+                    <h4 className="mb-3 px-2 text-sm font-semibold text-fg-2">{t('wide.launcherTop')}</h4>
                     <ul className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2">
                       {topItems.map((item) => (
                         <li key={item.id}>{renderTile(item, { category: null, interactive: false })}</li>
@@ -318,9 +318,9 @@ export function LauncherPanel() {
                 {groups.map(({ category, list }) => (
                   <section key={category ?? '__all'} aria-label={category ?? undefined}>
                     {category !== null && (
-                      <h4 className="mb-3 flex items-center gap-2 px-2 text-sm font-semibold text-muted">
+                      <h4 className="mb-3 flex items-center gap-2 px-2 text-sm font-semibold text-fg-2">
                         {category || t('launcher.uncategorized')}
-                        <span className="tabular font-normal text-faint">{list.length}</span>
+                        <span className="tabular font-normal text-fg-3">{list.length}</span>
                       </h4>
                     )}
                     <ul className="grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2">
@@ -381,7 +381,7 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
       onClick={onClick}
       className={cx(
         'inline-flex h-8 shrink-0 items-center gap-1 rounded-lg px-3 text-sm',
-        active ? 'bg-accent-soft text-accent' : 'text-muted hover:bg-surface-3 hover:text-fg',
+        active ? 'bg-accent-soft text-accent' : 'text-fg-2 hover:bg-card-hover hover:text-fg',
       )}
     >
       {children}
@@ -410,8 +410,9 @@ function LaunchTile({ item, hero, editing, showCategory, canMoveUp, canMoveDown,
   return (
     <div
       className={cx(
-        'group relative flex h-full flex-col items-center gap-2 rounded-2xl p-3 text-center transition-all duration-150',
-        item.exists ? 'hover:-translate-y-0.5 hover:bg-surface-3' : 'ring-1 ring-warn/50',
+        'group relative flex h-full flex-col items-center gap-2 rounded-xl p-3 text-center transition-all duration-150',
+        'border border-stroke bg-card',
+        item.exists ? 'hover:bg-card-hover' : 'ring-1 ring-warn/50',
       )}
     >
       <button
@@ -423,15 +424,15 @@ function LaunchTile({ item, hero, editing, showCategory, canMoveUp, canMoveDown,
       >
         <span
           className={cx(
-            'flex items-center justify-center rounded-2xl',
+            'flex items-center justify-center rounded-xl',
             box,
-            !item.exists ? 'bg-warn/15 text-warn' : usesSystemIcon(item.icon) ? '' : 'bg-accent-soft text-accent',
+            !item.exists ? 'bg-warn/15 text-warn' : usesSystemIcon(item.icon) ? '' : 'bg-control text-fg-2',
           )}
         >
           {!item.exists ? (
             <AlertTriangle size={hero ? 36 : 28} strokeWidth={1.75} />
           ) : usesSystemIcon(item.icon) ? (
-            <AppIcon path={item.path} fallback={Icon} size={hero ? 64 : 48} className="text-accent" />
+            <AppIcon path={item.path} fallback={Icon} size={hero ? 64 : 48} className="text-fg-2" />
           ) : (
             <Icon size={hero ? 36 : 28} strokeWidth={1.75} />
           )}
@@ -452,14 +453,14 @@ function LaunchTile({ item, hero, editing, showCategory, canMoveUp, canMoveDown,
         title={item.favorite ? t('launcher.unfavorite') : t('launcher.favorite')}
         className={cx(
           'absolute top-2 right-2 rounded p-1',
-          item.favorite ? 'text-warn' : 'text-faint opacity-0 group-hover:opacity-100 focus:opacity-100',
+          item.favorite ? 'text-warn' : 'text-fg-3 opacity-0 group-hover:opacity-100 focus:opacity-100',
         )}
       >
         <Star size={14} fill={item.favorite ? 'currentColor' : 'none'} />
       </button>
       {editing && (
         <div className="flex flex-wrap items-center justify-center gap-0.5">
-          <GripVertical size={14} className="text-faint" aria-hidden />
+          <GripVertical size={14} className="text-fg-3" aria-hidden />
           <IconButton size="sm" icon={ArrowUp} label={t('launcher.moveUp')} disabled={!canMoveUp} onClick={() => onMove(-1)} />
           <IconButton size="sm" icon={ArrowDown} label={t('launcher.moveDown')} disabled={!canMoveDown} onClick={() => onMove(1)} />
           <IconButton size="sm" icon={Pencil} label={t('launcher.editItem')} onClick={onEdit} />
@@ -486,7 +487,7 @@ function EditCard({
   const listId = `cats-${item.id}`;
   return (
     <form
-      className="flex h-full flex-col gap-1.5 rounded-xl border border-accent bg-surface-2 p-2.5"
+      className="flex h-full flex-col gap-1.5 rounded-xl border border-accent bg-layer p-2.5"
       onSubmit={(e) => {
         e.preventDefault();
         onSave({ id: item.id, name, category, icon });
