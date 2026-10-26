@@ -1,6 +1,6 @@
 [package]
 name = "alpicim"
-version = "0.1.0"
+version = "0.2.0"
 description = "Kişisel masaüstü kontrol merkezi"
 authors = ["Alperen"]
 edition = "2021"
